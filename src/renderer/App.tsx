@@ -8,6 +8,10 @@ export function App(): JSX.Element {
   const [info, setInfo] = useState<AppInfo | null>(null);
 
   useEffect(() => {
+    // The bridge is absent outside Electron (e.g. plain Vite/preview, tests).
+    if (typeof window.recrd === "undefined") {
+      return;
+    }
     let active = true;
     window.recrd
       .getAppInfo()

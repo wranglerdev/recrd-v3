@@ -13,8 +13,16 @@
       "@domain/*": ["src/domain/*"],
       "@application/*": ["src/application/*"],
       "@main/*": ["src/main/*"],
+      "@renderer/*": ["src/renderer/*"],
       "@shared/*": ["src/shared/*"]
     }
   },
-  "include": ["tests", "scripts", "vite.config.ts", "vitest.config.ts", "playwright.config.ts"]
+  "include": [
+    "tests",
+    "scripts",
+    "src/renderer/global.d.ts",
+    "vite.config.ts",
+    "vitest.config.ts",
+    "playwright.config.ts"
+  ]
 }

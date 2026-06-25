@@ -39,6 +39,12 @@ function validateAction(action: ScriptAction, index: number): ValidationIssue[] 
     case "input":
       requireSelector(action.selector);
       break;
+    case "pressKey":
+      requireSelector(action.selector);
+      if (isBlank(action.key)) {
+        issues.push({ index, message: "Key press must specify a key" });
+      }
+      break;
     case "assertText":
       requireSelector(action.selector);
       if (isBlank(action.text)) {

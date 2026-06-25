@@ -6,6 +6,7 @@ export type ScriptAction =
   | { readonly type: "navigate"; readonly url: string }
   | { readonly type: "click"; readonly selector: string }
   | { readonly type: "input"; readonly selector: string; readonly value: string }
+  | { readonly type: "pressKey"; readonly selector: string; readonly key: string }
   | { readonly type: "wait"; readonly selector: string }
   | { readonly type: "assertText"; readonly selector: string; readonly text: string };
 

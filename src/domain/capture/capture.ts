@@ -22,6 +22,14 @@ export function captureNavigate(url: string): ScriptAction {
 }
 
 /**
+ * A keyboard interaction on an element (PRD §10 "Captura de teclado"). `key`
+ * is a Playwright/Browser key name such as "Enter", "Tab" or "Control+A".
+ */
+export function captureKeyPress(element: ElementDescriptor, key: string): ScriptAction {
+  return { type: "pressKey", selector: bestSelector(element).value, key };
+}
+
+/**
  * Value stored when a mass variable is dragged onto a field (PRD §12): the
  * literal value is replaced by a `{{variable}}` reference.
  */

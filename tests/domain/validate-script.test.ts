@@ -13,12 +13,19 @@ describe("validateScript (PRD §13)", () => {
         { type: "navigate", url: "https://example.com" },
         { type: "click", selector: "#login" },
         { type: "input", selector: "#email", value: "{{usuario}}" },
+        { type: "pressKey", selector: "#email", key: "Enter" },
         { type: "wait", selector: "#dashboard" },
         { type: "assertText", selector: "#welcome", text: "Bem-vindo" },
       ]),
     );
     expect(result.valid).toBe(true);
     expect(result.errors).toEqual([]);
+  });
+
+  it("requires a key on pressKey actions", () => {
+    const result = validateScript(script([{ type: "pressKey", selector: "#x", key: " " }]));
+    expect(result.valid).toBe(false);
+    expect(result.errors[0]).toEqual({ index: 0, message: expect.stringMatching(/key/i) });
   });
 
   it("rejects an empty name and empty action list", () => {

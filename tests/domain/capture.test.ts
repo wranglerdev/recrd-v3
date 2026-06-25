@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   captureClick,
   captureInput,
+  captureKeyPress,
   captureNavigate,
   inspectElement,
   massVariableValue,
@@ -37,6 +38,14 @@ describe("capture (PRD §10, §12)", () => {
     expect(captureNavigate("https://example.com")).toEqual({
       type: "navigate",
       url: "https://example.com",
+    });
+  });
+
+  it("captures a key press using the best selector", () => {
+    expect(captureKeyPress(el({ attributes: { "data-testid": "search" } }), "Enter")).toEqual({
+      type: "pressKey",
+      selector: '[data-testid="search"]',
+      key: "Enter",
     });
   });
 });

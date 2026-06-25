@@ -16,4 +16,4 @@ run("npm", ["run", "typecheck"]);
 run("npm", ["run", "lint"]);
 run("npm", ["run", "build:renderer"]);
 run("npm", ["run", "build:main"]);
-run("npm", ["run", "test:unit"]);
+run("npm", ["run", "test:coverage"]);

@@ -11,3 +11,4 @@ export {
   type IpcResponse,
   type RecrdApi,
 } from "./ipc-contract.js";
+export { createVersionInfo, type VersionInfo } from "./version-info.js";

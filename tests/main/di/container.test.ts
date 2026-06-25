@@ -36,6 +36,19 @@ describe("Container", () => {
     expect(c.resolve(greeterToken).greet()).toBe("hi ada");
   });
 
+  it("resolves a class provider with no declared dependencies", () => {
+    class Clock {
+      now(): number {
+        return 0;
+      }
+    }
+    const token = new Token<Clock>("clock");
+    const c = new Container();
+    c.register(token, { useClass: Clock });
+
+    expect(c.resolve(token)).toBeInstanceOf(Clock);
+  });
+
   it("returns the same instance for singletons (default)", () => {
     const c = new Container();
     const token = new Token<object>("singleton");

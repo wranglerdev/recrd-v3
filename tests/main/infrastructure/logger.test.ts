@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { SinkLogger, type LogLevel, type LogSink } from "@main/infrastructure/logging/logger";
 
 function recordingSink(): LogSink & {
@@ -42,5 +42,28 @@ describe("SinkLogger", () => {
     logger.info("no meta");
 
     expect(sink.records[0]).toEqual({ level: "info", message: "no meta", meta: undefined });
+  });
+
+  describe("default console sink", () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it("routes each level to the matching console method", () => {
+      const error = vi.spyOn(console, "error").mockImplementation(() => undefined);
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+      const log = vi.spyOn(console, "log").mockImplementation(() => undefined);
+      const logger = new SinkLogger({ level: "debug" });
+
+      logger.error("boom", { password: "x" });
+      logger.warn("careful");
+      logger.info("hello");
+      logger.debug("trace");
+
+      expect(error).toHaveBeenCalledWith("[ERROR] boom", { password: "[REDACTED]" });
+      expect(warn).toHaveBeenCalledWith("[WARN] careful");
+      expect(log).toHaveBeenCalledWith("[INFO] hello");
+      expect(log).toHaveBeenCalledWith("[DEBUG] trace");
+    });
   });
 });

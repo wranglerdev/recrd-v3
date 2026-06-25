@@ -28,8 +28,35 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reportsDirectory: "coverage",
-      include: ["src/domain/**", "src/application/**"],
       reporter: ["text", "html", "lcov"],
+      all: true,
+      // Platform-agnostic, unit-testable code must stay at 100% (PRD §22, §28).
+      // Electron-coupled entry points/adapters are integration-tested instead and
+      // are excluded here; barrels (index.ts) are re-exports with no logic.
+      include: [
+        "src/domain/**",
+        "src/application/**",
+        "src/shared/**",
+        "src/main/di/**",
+        "src/main/app/**",
+        "src/main/infrastructure/**",
+        "src/main/ipc/**",
+        "scripts/lib/release-format.ts",
+        "scripts/lib/release-artifacts.ts",
+      ],
+      exclude: [
+        "**/index.ts",
+        "**/*.d.ts",
+        "src/main/main.ts",
+        "src/main/infrastructure/logging/electron-logger.ts",
+        "src/main/infrastructure/config/electron-store-config.ts",
+      ],
+      thresholds: {
+        lines: 100,
+        branches: 100,
+        functions: 100,
+        statements: 100,
+      },
     },
   },
 });

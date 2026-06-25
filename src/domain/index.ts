@@ -1,6 +1,13 @@
 // Domain layer — pure business rules, platform-agnostic (no Electron/Node).
 export type { UserContext } from "./auth/user-context.js";
 export { createAuditFields, touchAuditFields, type AuditFields } from "./audit/audit-fields.js";
+export {
+  ROBOT_PROJECT_DIRS,
+  missingRobotPaths,
+  requiredRobotPaths,
+  robotProjectFiles,
+  type RobotFile,
+} from "./robot/robot-project-template.js";
 export type { ElementDescriptor } from "./selectors/element-descriptor.js";
 export {
   bestSelector,

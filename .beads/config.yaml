@@ -1,4 +1,6 @@
 repos:
   primary: "."
-  additional:
-    - "y"
+
+routing.mode: "maintainer"
+
+routing.contributor: .

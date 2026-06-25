@@ -1,52 +1,54 @@
-// Single source of truth for the typed IPC boundary (PRD §3). Lives in the
-// preload (bridge) layer because it is the contract shared by main, preload and
-// renderer. It contains only plain, serialisable wire types — no Node/Electron
-// imports — so the renderer can depend on it without reaching into Node.
+// Aggregate source of truth for the typed IPC boundary (PRD §3). It composes the
+// per-feature contracts in ./ipc/ into a single channel map and a single renderer
+// API. Adding a feature is a three-line change here (extend the map, append the
+// names, spread the API factory) plus a new file under ./ipc/.
+//
+// Lives in the shared layer because it is the contract shared by main, preload
+// and renderer. It contains only plain, serialisable wire types — no
+// Node/Electron imports — so the renderer can depend on it without reaching into
+// the platform.
 
-/** Wire DTO returned by `app:getInfo`. */
-export type AppInfo = {
-  readonly name: string;
-  readonly version: string;
-  readonly platform: string;
-};
+import type { Invoke } from "./ipc/core.js";
+import { APP_CHANNELS, createAppApi, type AppApi, type AppChannels } from "./ipc/app.js";
+
+export type { ChannelDef, ChannelMap, Invoke, RequestOf, ResponseOf } from "./ipc/core.js";
+export type { AppInfo } from "./ipc/app.js";
 
 /**
- * The set of IPC channels. Each entry declares the request and response wire
- * types. Feature channels are added here as features land; this is the only
- * place a channel is defined.
+ * Every IPC channel, composed from the feature channel maps by intersection
+ * (e.g. `AppChannels & ProjectChannels & MassChannels`). This is the only place
+ * the full channel set is assembled; add a feature by `&`-ing in its map.
  */
-export interface IpcChannelMap {
-  "app:getInfo": { request: void; response: AppInfo };
-}
+export type IpcChannelMap = AppChannels;
 
 export type IpcChannel = keyof IpcChannelMap;
 export type IpcRequest<C extends IpcChannel> = IpcChannelMap[C]["request"];
 export type IpcResponse<C extends IpcChannel> = IpcChannelMap[C]["response"];
 
-/** Every channel name, useful for binding/iteration. Keep in sync with the map. */
-export const IPC_CHANNELS = ["app:getInfo"] as const satisfies readonly IpcChannel[];
+/** Function the renderer-side bridge uses to invoke a channel (ipcRenderer.invoke). */
+export type IpcInvoke = Invoke<IpcChannelMap>;
+
+/**
+ * Every channel name, composed from the feature name lists. Useful for
+ * binding/iteration; `satisfies` keeps it in lock-step with the channel map.
+ */
+export const IPC_CHANNELS = [...APP_CHANNELS] as const satisfies readonly IpcChannel[];
 
 /**
  * The typed API surface exposed to the renderer on `window.recrd` via
- * contextBridge. The renderer calls these methods instead of touching Node, the
- * filesystem or the database directly (PRD §3, §18).
+ * contextBridge. Composed from the per-feature API slices; the renderer calls
+ * these methods instead of touching Node, the filesystem or the database
+ * directly (PRD §3, §18).
  */
-export interface RecrdApi {
-  getAppInfo(): Promise<AppInfo>;
-}
-
-/** Function the renderer-side bridge uses to invoke a channel (ipcRenderer.invoke). */
-export type IpcInvoke = <C extends IpcChannel>(
-  channel: C,
-  request: IpcRequest<C>,
-) => Promise<IpcResponse<C>>;
+export type RecrdApi = AppApi;
 
 /**
- * Builds the renderer API from an `invoke` function. Pure and injectable, so the
- * mapping from API methods to IPC channels is unit-testable without Electron.
+ * Builds the renderer API from an `invoke` function by composing the per-feature
+ * API factories. Pure and injectable, so the mapping from API methods to IPC
+ * channels is unit-testable without Electron.
  */
 export function createRecrdApi(invoke: IpcInvoke): RecrdApi {
   return {
-    getAppInfo: () => invoke("app:getInfo", undefined),
+    ...createAppApi(invoke),
   };
 }

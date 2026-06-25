@@ -19,6 +19,8 @@ function stepFor(action: ScriptAction): string {
       return `Click${INDENT}${action.selector}`;
     case "input":
       return `Fill Text${INDENT}${action.selector}${INDENT}${toRobotVariables(action.value)}`;
+    case "pressKey":
+      return `Press Keys${INDENT}${action.selector}${INDENT}${action.key}`;
     case "wait":
       return `Wait For Elements State${INDENT}${action.selector}${INDENT}visible`;
     case "assertText":

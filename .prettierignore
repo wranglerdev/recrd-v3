@@ -1,0 +1,12 @@
+dist/
+coverage/
+release/
+node_modules/
+.beads/
+.claude/
+*.jsonl
+
+# Pre-existing project docs — kept as authored
+PRD.md
+AGENTS.md
+CLAUDE.md

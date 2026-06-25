@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "../../dist/main",
+    "rootDir": ".",
+    "lib": ["ES2022"],
+    "types": ["node"],
+    "paths": {
+      "@domain/*": ["../domain/*"],
+      "@application/*": ["../application/*"]
+    }
+  },
+  "references": [{ "path": "../domain" }, { "path": "../application" }],
+  "include": ["."]
+}

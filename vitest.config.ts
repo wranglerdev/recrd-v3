@@ -10,6 +10,7 @@ export default defineConfig({
       "@domain": resolve(__dirname, "src/domain"),
       "@application": resolve(__dirname, "src/application"),
       "@main": resolve(__dirname, "src/main"),
+      "@shared": resolve(__dirname, "src/shared"),
     },
   },
   test: {

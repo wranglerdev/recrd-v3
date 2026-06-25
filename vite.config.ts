@@ -13,6 +13,7 @@ export default defineConfig({
     alias: {
       "@domain": resolve(__dirname, "src/domain"),
       "@application": resolve(__dirname, "src/application"),
+      "@shared": resolve(__dirname, "src/shared"),
     },
   },
   build: {

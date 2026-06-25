@@ -7,9 +7,10 @@
     "types": ["node"],
     "paths": {
       "@domain/*": ["../domain/*"],
-      "@application/*": ["../application/*"]
+      "@application/*": ["../application/*"],
+      "@shared/*": ["../shared/*"]
     }
   },
-  "references": [{ "path": "../domain" }, { "path": "../application" }],
+  "references": [{ "path": "../domain" }, { "path": "../application" }, { "path": "../shared" }],
   "include": ["."]
 }

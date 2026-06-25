@@ -4,6 +4,7 @@
   "references": [
     { "path": "./src/domain" },
     { "path": "./src/application" },
+    { "path": "./src/shared" },
     { "path": "./src/main" },
     { "path": "./src/preload" },
     { "path": "./src/renderer" }

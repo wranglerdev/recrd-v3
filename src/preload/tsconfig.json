@@ -6,9 +6,10 @@
     "lib": ["ES2022", "DOM"],
     "types": ["node"],
     "paths": {
-      "@domain/*": ["../domain/*"]
+      "@domain/*": ["../domain/*"],
+      "@shared/*": ["../shared/*"]
     }
   },
-  "references": [{ "path": "../domain" }],
+  "references": [{ "path": "../domain" }, { "path": "../shared" }],
   "include": ["."]
 }

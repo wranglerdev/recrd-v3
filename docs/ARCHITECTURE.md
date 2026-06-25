@@ -20,9 +20,11 @@ detalhamento funcional; este documento descreve a arquitetura técnica.
 src/
 ├── domain/        Regras de negócio puras (sem Electron/Node) — entidades, VOs, serviços
 ├── application/   Casos de uso / orquestração — depende apenas de domain
+├── shared/        Contratos puros entre processos (ex.: contrato IPC) — sem Electron/Node
 ├── main/          Processo principal Electron (Node)
-│   ├── infrastructure/  SQLite (Drizzle), Git, Robot, Python, auth
-│   └── ipc/             Handlers IPC tipados
+│   ├── di/              Container de DI (composition root)
+│   ├── infrastructure/  paths/userData, logging, config; SQLite, Git, Robot, Python, auth
+│   └── ipc/             Registry IPC tipado + handlers
 ├── preload/       Bridge segura (contextBridge) main <-> renderer
 └── renderer/      UI React + TypeScript
 ```
@@ -33,6 +35,10 @@ importam Electron, `node:*`, banco ou logging — isso é **garantido pelo ESLin
 (`no-restricted-imports` em `eslint.config.js`) e pelos `tsconfig` por camada
 (`types: []`, sem `lib` DOM/Node).
 
+A camada `shared` é referenciada por `main`, `preload` e `renderer` e contém apenas tipos/
+funções puras serializáveis (o contrato IPC é a única fonte da verdade dos canais), sem
+acoplar nenhuma a outra processo.
+
 ### TypeScript por camada
 
 Cada camada tem seu próprio `tsconfig.json` (project references, `composite: true`),
@@ -40,7 +46,7 @@ estendendo `tsconfig.base.json` (modo `strict` + flags extras: `noUncheckedIndex
 `exactOptionalPropertyTypes`, `noImplicitOverride`, etc.). O `tsconfig.json` raiz é uma
 solução que referencia todas as camadas; `tsconfig.tests.json` cobre `tests/` e `scripts/`.
 
-- `domain` / `application`: `lib: ["ES2022"]`, `types: []` — nada de DOM/Node.
+- `domain` / `application` / `shared`: `lib: ["ES2022"]`, `types: []` — nada de DOM/Node.
 - `main` / `preload`: `types: ["node"]`.
 - `renderer`: `lib` com DOM, `jsx: react-jsx`.
 

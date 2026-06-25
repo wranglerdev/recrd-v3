@@ -8,7 +8,7 @@ import { parseSidFromWhoami } from "./parse-whoami.js";
 // run on the Linux dev box. The pure SID parsing lives in parse-whoami.ts.
 export class WindowsUserContext implements UserContext {
   private readonly info = os.userInfo();
-  private readonly whoami = execFileSync("whoami", ["/user", "/fqdn"], { encoding: "utf8" });
+  private readonly whoami = execFileSync("whoami", ["/user"], { encoding: "utf8" });
 
   get username(): string {
     return this.info.username;

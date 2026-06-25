@@ -19,3 +19,10 @@ export {
 export { generateRobot } from "./compiler/robot-generator.js";
 export { optimizeScript } from "./compiler/optimize-script.js";
 export { validateRobotSyntax, type RobotValidation } from "./compiler/validate-robot.js";
+export {
+  parseMassCsv,
+  toVariableMap,
+  type MassParseResult,
+  type MassRecord,
+  type ParsedMass,
+} from "./mass/mass-csv.js";

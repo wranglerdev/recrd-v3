@@ -1,6 +1,23 @@
-import { describe, expect, it } from "vitest";
-import { buildIpcRegistry, composeContainer, type CoreServices } from "@main/app/compose";
-import { AppInfoToken, ConfigStoreToken, LoggerToken, UserContextToken } from "@main/di/tokens";
+import { describe, expect, it, vi } from "vitest";
+import {
+  buildIpcRegistry,
+  composeContainer,
+  registerInfrastructure,
+  type CoreServices,
+} from "@main/app/compose";
+import {
+  AppInfoToken,
+  ConfigStoreToken,
+  DatabaseToken,
+  GitServiceFactoryToken,
+  LoggerToken,
+  RepositoriesToken,
+  RobotProjectServiceToken,
+  RobotRunnerToken,
+  SandboxViewFactoryToken,
+  ToolRunnerToken,
+  UserContextToken,
+} from "@main/di/tokens";
 import {
   DEFAULT_SETTINGS,
   InMemoryConfigStore,
@@ -9,6 +26,9 @@ import {
 import { MockUserContext } from "@main/infrastructure/auth/mock-user-context";
 import { SinkLogger } from "@main/infrastructure/logging/logger";
 import { createAppPaths } from "@main/infrastructure/paths/app-paths";
+import { createDatabase } from "@main/infrastructure/db/connection";
+import { GitService } from "@main/infrastructure/git/git-service";
+import { RobotRunner } from "@main/infrastructure/robot/robot-runner";
 
 function fakeServices(): CoreServices {
   return {
@@ -29,6 +49,40 @@ describe("composeContainer", () => {
     expect(container.resolve(LoggerToken)).toBe(services.logger);
     expect(container.resolve(ConfigStoreToken)).toBe(services.config);
     expect(container.resolve(UserContextToken)).toBe(services.userContext);
+  });
+});
+
+describe("registerInfrastructure", () => {
+  it("registers infrastructure services so they can be resolved", () => {
+    const container = composeContainer(fakeServices());
+    const database = createDatabase(":memory:");
+    const sandboxViewFactory = vi.fn();
+    try {
+      registerInfrastructure(container, { database, sandboxViewFactory });
+
+      expect(container.resolve(DatabaseToken)).toBe(database);
+
+      // Repositories are a lazy factory built from the database handle.
+      const repositories = container.resolve(RepositoriesToken);
+      expect(repositories.projects).toBeDefined();
+      expect(repositories.masses).toBeDefined();
+
+      // Git is project-scoped: the token resolves a factory keyed by cwd.
+      const gitFactory = container.resolve(GitServiceFactoryToken);
+      expect(gitFactory("/repo")).toBeInstanceOf(GitService);
+
+      // Tool runner + robot project service are concrete singletons.
+      expect(typeof container.resolve(ToolRunnerToken)).toBe("function");
+      expect(typeof container.resolve(RobotProjectServiceToken).create).toBe("function");
+
+      // The robot runner is a lazy singleton.
+      expect(container.resolve(RobotRunnerToken)).toBeInstanceOf(RobotRunner);
+
+      // The sandbox-view factory is injected as a value by main.ts.
+      expect(container.resolve(SandboxViewFactoryToken)).toBe(sandboxViewFactory);
+    } finally {
+      database.close();
+    }
   });
 });
 

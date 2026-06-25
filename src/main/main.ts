@@ -2,12 +2,14 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { app, BrowserWindow, ipcMain } from "electron";
 import type { AppInfo } from "../shared/ipc-contract.js";
-import { buildIpcRegistry, composeContainer } from "./app/compose.js";
+import { buildIpcRegistry, composeContainer, registerInfrastructure } from "./app/compose.js";
 import { createUserContext } from "./infrastructure/auth/user-context-factory.js";
 import { ElectronStoreConfig } from "./infrastructure/config/electron-store-config.js";
+import { createDatabase, type DatabaseHandle } from "./infrastructure/db/connection.js";
 import { createElectronLogger } from "./infrastructure/logging/electron-logger.js";
 import { createAppPaths, ensureAppDirectories } from "./infrastructure/paths/app-paths.js";
 import { bindIpcMain } from "./ipc/electron-ipc.js";
+import { createSandboxView } from "./sandbox/sandbox-view.js";
 
 // Electron entry point (PRD §3, §18). Composes the core services, wires the typed
 // IPC layer onto ipcMain, then opens a hardened BrowserWindow: contextIsolation
@@ -17,6 +19,9 @@ import { bindIpcMain } from "./ipc/electron-ipc.js";
 const here = dirname(fileURLToPath(import.meta.url));
 const PRELOAD = join(here, "../preload/preload.cjs");
 const RENDERER_HTML = join(here, "../renderer/index.html");
+
+// SQLite handle, opened once at bootstrap and closed on quit (PRD §4, §6).
+let database: DatabaseHandle | null = null;
 
 function bootstrap(): void {
   const paths = createAppPaths(app.getPath("userData"));
@@ -30,8 +35,16 @@ function bootstrap(): void {
     platform: process.platform,
   };
 
+  // Open the database at bootstrap (runs migrations) so use cases resolve a
+  // ready connection from the container.
+  database = createDatabase(paths.database);
+
   const userContext = createUserContext();
   const container = composeContainer({ paths, logger, config, appInfo, userContext });
+  registerInfrastructure(container, {
+    database,
+    sandboxViewFactory: createSandboxView,
+  });
   const registry = buildIpcRegistry(container);
   bindIpcMain(registry, ipcMain);
 
@@ -85,4 +98,10 @@ app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     bootstrap();
   }
+});
+
+app.on("will-quit", () => {
+  // Release the SQLite connection cleanly on shutdown (PRD §4).
+  database?.close();
+  database = null;
 });

@@ -1,14 +1,32 @@
 import type { UserContext } from "../../domain/auth/user-context.js";
 import type { AppInfo } from "../../shared/ipc-contract.js";
 import type { AppSettings, ConfigStore } from "../infrastructure/config/config-store.js";
+import type { DatabaseHandle } from "../infrastructure/db/connection.js";
+import type { Repositories } from "../infrastructure/db/repositories.js";
+import type { GitServiceFactory } from "../infrastructure/git/git-service.js";
 import type { Logger } from "../infrastructure/logging/logger.js";
 import type { AppPaths } from "../infrastructure/paths/app-paths.js";
+import type { ToolRunner } from "../infrastructure/python/environment.js";
+import type { RobotProjectService } from "../infrastructure/robot/robot-project.js";
+import type { RobotRunner } from "../infrastructure/robot/robot-runner.js";
+import type { SandboxViewFactory } from "../sandbox/sandbox-config.js";
 import { Token } from "./container.js";
 
-// Injection tokens for the application's core services (PRD §3, §31). Concrete
+// Injection tokens for the application's services (PRD §3, §31). Concrete
 // providers are registered at the composition root (see app/compose.ts).
+
+// Core services (constructed by main.ts, injected as values).
 export const AppPathsToken = new Token<AppPaths>("AppPaths");
 export const LoggerToken = new Token<Logger>("Logger");
 export const ConfigStoreToken = new Token<ConfigStore<AppSettings>>("ConfigStore");
 export const AppInfoToken = new Token<AppInfo>("AppInfo");
 export const UserContextToken = new Token<UserContext>("UserContext");
+
+// Infrastructure services (registered by registerInfrastructure).
+export const DatabaseToken = new Token<DatabaseHandle>("DatabaseHandle");
+export const RepositoriesToken = new Token<Repositories>("Repositories");
+export const GitServiceFactoryToken = new Token<GitServiceFactory>("GitServiceFactory");
+export const ToolRunnerToken = new Token<ToolRunner>("ToolRunner");
+export const RobotProjectServiceToken = new Token<RobotProjectService>("RobotProjectService");
+export const RobotRunnerToken = new Token<RobotRunner>("RobotRunner");
+export const SandboxViewFactoryToken = new Token<SandboxViewFactory>("SandboxViewFactory");

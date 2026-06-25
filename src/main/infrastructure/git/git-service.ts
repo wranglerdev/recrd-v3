@@ -10,6 +10,16 @@ export type GitRunner = (args: string[], cwd: string) => string;
 const defaultRunner: GitRunner = (args, cwd) =>
   execFileSync("git", args, { cwd, encoding: "utf8" });
 
+/**
+ * Builds a {@link GitService} bound to a working directory. Git is repository-
+ * (project-)scoped, so the composition root registers a factory rather than a
+ * single instance; callers create one per project `cwd`.
+ */
+export type GitServiceFactory = (cwd: string) => GitService;
+
+/** Default factory using the production git runner. */
+export const createGitService: GitServiceFactory = (cwd) => new GitService(cwd);
+
 export class GitService {
   constructor(
     private readonly cwd: string,

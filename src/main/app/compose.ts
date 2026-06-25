@@ -5,12 +5,26 @@ import {
   AppInfoToken,
   AppPathsToken,
   ConfigStoreToken,
+  DatabaseToken,
+  GitServiceFactoryToken,
   LoggerToken,
+  RepositoriesToken,
+  RobotProjectServiceToken,
+  RobotRunnerToken,
+  SandboxViewFactoryToken,
+  ToolRunnerToken,
   UserContextToken,
 } from "../di/tokens.js";
 import type { AppSettings, ConfigStore } from "../infrastructure/config/config-store.js";
+import type { DatabaseHandle } from "../infrastructure/db/connection.js";
+import { createRepositories } from "../infrastructure/db/repositories.js";
+import { createGitService } from "../infrastructure/git/git-service.js";
 import type { Logger } from "../infrastructure/logging/logger.js";
 import type { AppPaths } from "../infrastructure/paths/app-paths.js";
+import { nodeToolRunner } from "../infrastructure/python/environment.js";
+import { createRobotProjectService } from "../infrastructure/robot/robot-project.js";
+import { RobotRunner } from "../infrastructure/robot/robot-runner.js";
+import type { SandboxViewFactory } from "../sandbox/sandbox-config.js";
 import { registerAppHandlers } from "../ipc/handlers/app-handlers.js";
 import { IpcRegistry } from "../ipc/typed-ipc.js";
 
@@ -34,6 +48,40 @@ export function composeContainer(services: CoreServices): Container {
   container.register(ConfigStoreToken, { useValue: services.config });
   container.register(AppInfoToken, { useValue: services.appInfo });
   container.register(UserContextToken, { useValue: services.userContext });
+  return container;
+}
+
+/**
+ * Electron-coupled infrastructure constructed by main.ts at bootstrap and handed
+ * to {@link registerInfrastructure}: the SQLite handle (opened against userData,
+ * so it must not be opened in pure unit code) and the sandbox-view factory (which
+ * pulls in Electron's BrowserView).
+ */
+export interface InfrastructureServices {
+  readonly database: DatabaseHandle;
+  readonly sandboxViewFactory: SandboxViewFactory;
+}
+
+/**
+ * Registers the infrastructure layer into the container (PRD §3, §31): the
+ * database handle + repositories, a project-scoped Git service factory, the
+ * Python/Robot tool runner, the Robot project service and runner, and the
+ * sandbox-view factory. Repositories and the Robot runner are lazy factories so
+ * they are only constructed when first resolved.
+ */
+export function registerInfrastructure(
+  container: Container,
+  services: InfrastructureServices,
+): Container {
+  container.register(DatabaseToken, { useValue: services.database });
+  container.register(RepositoriesToken, {
+    useFactory: (c) => createRepositories(c.resolve(DatabaseToken).db),
+  });
+  container.register(GitServiceFactoryToken, { useValue: createGitService });
+  container.register(ToolRunnerToken, { useValue: nodeToolRunner });
+  container.register(RobotProjectServiceToken, { useValue: createRobotProjectService() });
+  container.register(RobotRunnerToken, { useFactory: () => new RobotRunner() });
+  container.register(SandboxViewFactoryToken, { useValue: services.sandboxViewFactory });
   return container;
 }
 

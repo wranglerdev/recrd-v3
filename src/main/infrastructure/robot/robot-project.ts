@@ -37,3 +37,17 @@ export function inspectRobotProject(root: string): RobotProjectInspection {
   const missing = missingRobotPaths(existing);
   return { valid: missing.length === 0, missing };
 }
+
+/**
+ * The Robot-project capability as a single injectable service. Groups the
+ * scaffold/inspect functions so the composition root can register one token and
+ * use cases depend on the interface rather than the loose module functions.
+ */
+export type RobotProjectService = {
+  create(root: string): string[];
+  inspect(root: string): RobotProjectInspection;
+};
+
+export function createRobotProjectService(): RobotProjectService {
+  return { create: createRobotProject, inspect: inspectRobotProject };
+}

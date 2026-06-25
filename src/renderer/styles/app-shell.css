@@ -1,0 +1,89 @@
+/*
+ * App shell layout (PRD §8, §9): a persistent navigation sidebar, a scrollable
+ * main content area per view, and a status bar pinned to the bottom. Uses the
+ * design tokens from theme.css; no hard-coded colours.
+ */
+
+.app-shell {
+  display: grid;
+  grid-template-columns: 14rem 1fr;
+  grid-template-rows: 1fr auto;
+  grid-template-areas:
+    "sidebar main"
+    "status status";
+  height: 100%;
+}
+
+.app-shell__sidebar {
+  grid-area: sidebar;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-3);
+  background-color: var(--color-surface);
+  border-right: var(--border-width) solid var(--color-border-subtle);
+  overflow-y: auto;
+}
+
+.app-shell__brand {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.02em;
+  padding: var(--space-2) var(--space-3) var(--space-4);
+  color: var(--color-text);
+}
+
+.app-shell__nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.app-shell__nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  text-align: left;
+  font-size: var(--font-size-md);
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.app-shell__nav-item:hover {
+  background-color: var(--color-surface-hover);
+  color: var(--color-text);
+}
+
+.app-shell__nav-item[aria-current="page"] {
+  background-color: var(--color-surface-active);
+  color: var(--color-text);
+}
+
+.app-shell__nav-icon {
+  width: 1.25rem;
+  text-align: center;
+  flex: none;
+}
+
+.app-shell__main {
+  grid-area: main;
+  overflow-y: auto;
+  padding: var(--space-5);
+}
+
+.app-shell__status {
+  grid-area: status;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-4);
+  background-color: var(--color-surface-raised);
+  border-top: var(--border-width) solid var(--color-border-subtle);
+  color: var(--color-text-subtle);
+  font-size: var(--font-size-xs);
+}

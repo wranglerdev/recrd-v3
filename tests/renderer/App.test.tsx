@@ -54,4 +54,24 @@ describe("App", () => {
     fireEvent.click(screen.getByRole("button", { name: /importar massa/i }));
     expect(screen.getByRole("heading", { name: /nova massa/i })).toBeInTheDocument();
   });
+
+  it("exposes a primary navigation sidebar that routes between views", () => {
+    render(<App />);
+
+    const nav = screen.getByRole("navigation", { name: /navegação principal/i });
+    expect(nav).toBeInTheDocument();
+
+    // The current view is marked on its nav item.
+    expect(screen.getByRole("button", { name: /início/i })).toHaveAttribute("aria-current", "page");
+
+    fireEvent.click(screen.getByRole("button", { name: /automação/i }));
+    expect(screen.getByRole("heading", { name: /nova automação/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /automação/i })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /massas/i }));
+    expect(screen.getByRole("heading", { name: /nova massa/i })).toBeInTheDocument();
+  });
 });

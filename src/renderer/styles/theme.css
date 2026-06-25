@@ -1,0 +1,117 @@
+/*
+ * Design tokens for the recrd UI (PRD §8, §9).
+ *
+ * A deliberately restricted black/white/gray palette: no accent hues, so the
+ * interface stays calm and corporate and contrast carries the hierarchy. Every
+ * surface, border, text and focus colour is derived from the neutral ramp below;
+ * components must consume these variables instead of hard-coding colours.
+ *
+ * The ramp is authored for a dark UI (the product default). Tokens are split into
+ * a raw neutral scale (`--gray-*`) and semantic aliases (`--color-*`); components
+ * use the semantic aliases so the scale can be retuned in one place.
+ */
+
+:root {
+  /* Neutral ramp — the only colours in the system. */
+  --black: #000000;
+  --white: #ffffff;
+  --gray-950: #0a0a0a;
+  --gray-900: #111111;
+  --gray-850: #181818;
+  --gray-800: #1f1f1f;
+  --gray-700: #2a2a2a;
+  --gray-600: #3a3a3a;
+  --gray-500: #5a5a5a;
+  --gray-400: #7a7a7a;
+  --gray-300: #9a9a9a;
+  --gray-200: #c2c2c2;
+  --gray-100: #e4e4e4;
+  --gray-50: #f5f5f5;
+
+  /* Semantic surfaces (back to front). */
+  --color-bg: var(--gray-950);
+  --color-surface: var(--gray-900);
+  --color-surface-raised: var(--gray-850);
+  --color-surface-overlay: var(--gray-800);
+  --color-surface-hover: var(--gray-800);
+  --color-surface-active: var(--gray-700);
+
+  /* Semantic text. */
+  --color-text: var(--gray-50);
+  --color-text-muted: var(--gray-300);
+  --color-text-subtle: var(--gray-400);
+  --color-text-inverse: var(--gray-950);
+  --color-text-disabled: var(--gray-500);
+
+  /* Borders & dividers. */
+  --color-border: var(--gray-700);
+  --color-border-strong: var(--gray-500);
+  --color-border-subtle: var(--gray-800);
+
+  /* Interactive (inverse: a white control on the dark UI). */
+  --color-accent: var(--gray-50);
+  --color-accent-hover: var(--white);
+  --color-on-accent: var(--gray-950);
+
+  /* Focus ring — the single most important affordance in a neutral UI. */
+  --color-focus: var(--white);
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+
+  /* Status, rendered tonally (no colour) so the palette holds. */
+  --color-status-pass: var(--gray-100);
+  --color-status-fail: var(--gray-300);
+  --color-status-error: var(--gray-400);
+
+  /* Typography. */
+  --font-sans: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "Cascadia Code", "JetBrains Mono", "SF Mono", Consolas, "Liberation Mono", monospace;
+
+  --font-size-xs: 0.75rem; /* 12px */
+  --font-size-sm: 0.8125rem; /* 13px */
+  --font-size-md: 0.875rem; /* 14px — base UI size */
+  --font-size-lg: 1rem; /* 16px */
+  --font-size-xl: 1.25rem; /* 20px */
+  --font-size-2xl: 1.5rem; /* 24px */
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+
+  /* Spacing scale (4px base). */
+  --space-0: 0;
+  --space-1: 0.25rem; /* 4px */
+  --space-2: 0.5rem; /* 8px */
+  --space-3: 0.75rem; /* 12px */
+  --space-4: 1rem; /* 16px */
+  --space-5: 1.5rem; /* 24px */
+  --space-6: 2rem; /* 32px */
+  --space-7: 3rem; /* 48px */
+
+  /* Radii. */
+  --radius-sm: 3px;
+  --radius-md: 5px;
+  --radius-lg: 8px;
+  --radius-full: 9999px;
+
+  /* Borders. */
+  --border-width: 1px;
+
+  /* Elevation (neutral, low-contrast shadows). */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.6);
+
+  /* Motion. */
+  --transition-fast: 80ms ease;
+  --transition-base: 140ms ease;
+
+  /* Stacking. */
+  --z-toolbar: 10;
+  --z-overlay: 100;
+  --z-modal: 110;
+  --z-toast: 120;
+}

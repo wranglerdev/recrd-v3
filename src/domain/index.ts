@@ -35,6 +35,14 @@ export {
   type ParsedMass,
 } from "./mass/mass-csv.js";
 export {
+  appendImport,
+  editMassValue,
+  massFromCsv,
+  renameMass,
+  type Mass,
+  type MassImport,
+} from "./mass/mass.js";
+export {
   executionLogFileName,
   recrdJsonFileName,
   robotFileName,

@@ -43,6 +43,13 @@ export {
   type MassImport,
 } from "./mass/mass.js";
 export {
+  buildExecution,
+  formatLogLine,
+  resultFromExitCode,
+  type Execution,
+  type ExecutionResult,
+} from "./execution/execution.js";
+export {
   executionLogFileName,
   recrdJsonFileName,
   robotFileName,

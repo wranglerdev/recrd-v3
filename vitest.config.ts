@@ -52,6 +52,7 @@ export default defineConfig({
         "src/main/infrastructure/config/electron-store-config.ts",
         "src/main/infrastructure/auth/windows-user-context.ts",
         "src/main/infrastructure/auth/user-context-factory.ts",
+        "src/main/infrastructure/robot/robot-runner.ts",
       ],
       thresholds: {
         lines: 100,

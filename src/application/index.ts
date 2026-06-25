@@ -6,3 +6,9 @@ export {
   exportManualScriptJson,
   type ExportEnvironment,
 } from "./export/export-service.js";
+export {
+  recordAuditEvent,
+  type AuditEvent,
+  type AuditEventType,
+  type AuditSink,
+} from "./audit/audit-service.js";

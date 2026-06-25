@@ -1,0 +1,49 @@
+name: Release (Windows)
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+# Windows packaging job (PRD §25, §26): builds the NSIS installer + portable exe
+# with electron-builder and publishes traceable artifacts (version.json,
+# SHA256SUM.txt, CHANGELOG.md). The runtime is embedded — no prior install needed.
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history so CHANGELOG can read recent commits
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Build and package release
+        run: npm run release
+        env:
+          # electron-builder must not try to publish anywhere.
+          EB_PUBLISH: never
+
+      - name: Smoke check artifacts exist
+        shell: pwsh
+        run: |
+          $exes = Get-ChildItem release -Filter *.exe -ErrorAction SilentlyContinue
+          if ($exes.Count -lt 1) { throw "No .exe artifacts produced in release/" }
+          if (-not (Test-Path release/version.json)) { throw "version.json missing" }
+          if (-not (Test-Path release/SHA256SUM.txt)) { throw "SHA256SUM.txt missing" }
+          Get-Content release/version.json
+          Get-Content release/SHA256SUM.txt
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: recrd-windows-x64
+          path: |
+            release/*.exe
+            release/version.json
+            release/SHA256SUM.txt
+            release/CHANGELOG.md
+          if-no-files-found: error

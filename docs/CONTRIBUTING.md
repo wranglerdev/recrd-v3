@@ -82,6 +82,14 @@ npm run format:check
 npm test
 ```
 
+## CI/CD
+
+- **`.github/workflows/ci.yml`** roda em push para `main` e em PRs: `npm ci`, lint,
+  type-check, `test:coverage` (gate de cobertura 100%) e build (Vite + esbuild).
+- **`.github/workflows/release.yml`** roda em tags `v*` (ou manualmente): empacota no
+  Windows com electron-builder (NSIS + portable, x64), gera `version.json`,
+  `SHA256SUM.txt` e `CHANGELOG.md` e publica os artefatos.
+
 ## Commits
 
 `MAJOR.MINOR.PATCH` para releases (PRD §27), gerenciado pelo campo `version` do

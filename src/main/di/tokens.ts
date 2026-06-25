@@ -1,3 +1,4 @@
+import type { UserContext } from "../../domain/auth/user-context.js";
 import type { AppInfo } from "../../shared/ipc-contract.js";
 import type { AppSettings, ConfigStore } from "../infrastructure/config/config-store.js";
 import type { Logger } from "../infrastructure/logging/logger.js";
@@ -10,3 +11,4 @@ export const AppPathsToken = new Token<AppPaths>("AppPaths");
 export const LoggerToken = new Token<Logger>("Logger");
 export const ConfigStoreToken = new Token<ConfigStore<AppSettings>>("ConfigStore");
 export const AppInfoToken = new Token<AppInfo>("AppInfo");
+export const UserContextToken = new Token<UserContext>("UserContext");

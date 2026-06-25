@@ -1,6 +1,13 @@
+import type { UserContext } from "../../domain/auth/user-context.js";
 import type { AppInfo } from "../../shared/ipc-contract.js";
 import { Container } from "../di/container.js";
-import { AppInfoToken, AppPathsToken, ConfigStoreToken, LoggerToken } from "../di/tokens.js";
+import {
+  AppInfoToken,
+  AppPathsToken,
+  ConfigStoreToken,
+  LoggerToken,
+  UserContextToken,
+} from "../di/tokens.js";
 import type { AppSettings, ConfigStore } from "../infrastructure/config/config-store.js";
 import type { Logger } from "../infrastructure/logging/logger.js";
 import type { AppPaths } from "../infrastructure/paths/app-paths.js";
@@ -16,6 +23,7 @@ export interface CoreServices {
   readonly logger: Logger;
   readonly config: ConfigStore<AppSettings>;
   readonly appInfo: AppInfo;
+  readonly userContext: UserContext;
 }
 
 /** Registers the core services into a fresh DI container. */
@@ -25,6 +33,7 @@ export function composeContainer(services: CoreServices): Container {
   container.register(LoggerToken, { useValue: services.logger });
   container.register(ConfigStoreToken, { useValue: services.config });
   container.register(AppInfoToken, { useValue: services.appInfo });
+  container.register(UserContextToken, { useValue: services.userContext });
   return container;
 }
 

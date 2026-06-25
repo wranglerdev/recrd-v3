@@ -3,6 +3,7 @@ import { dirname, join } from "node:path";
 import { app, BrowserWindow, ipcMain } from "electron";
 import type { AppInfo } from "../shared/ipc-contract.js";
 import { buildIpcRegistry, composeContainer } from "./app/compose.js";
+import { createUserContext } from "./infrastructure/auth/user-context-factory.js";
 import { ElectronStoreConfig } from "./infrastructure/config/electron-store-config.js";
 import { createElectronLogger } from "./infrastructure/logging/electron-logger.js";
 import { createAppPaths, ensureAppDirectories } from "./infrastructure/paths/app-paths.js";
@@ -29,11 +30,16 @@ function bootstrap(): void {
     platform: process.platform,
   };
 
-  const container = composeContainer({ paths, logger, config, appInfo });
+  const userContext = createUserContext();
+  const container = composeContainer({ paths, logger, config, appInfo, userContext });
   const registry = buildIpcRegistry(container);
   bindIpcMain(registry, ipcMain);
 
-  logger.info("recrd starting", { version: appInfo.version, userData: paths.userData });
+  logger.info("recrd starting", {
+    version: appInfo.version,
+    userData: paths.userData,
+    user: userContext.username,
+  });
 
   void createMainWindow(config);
 }

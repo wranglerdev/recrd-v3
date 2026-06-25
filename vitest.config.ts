@@ -50,6 +50,8 @@ export default defineConfig({
         "src/main/main.ts",
         "src/main/infrastructure/logging/electron-logger.ts",
         "src/main/infrastructure/config/electron-store-config.ts",
+        "src/main/infrastructure/auth/windows-user-context.ts",
+        "src/main/infrastructure/auth/user-context-factory.ts",
       ],
       thresholds: {
         lines: 100,

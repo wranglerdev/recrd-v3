@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { buildIpcRegistry, composeContainer, type CoreServices } from "@main/app/compose";
-import { AppInfoToken, ConfigStoreToken, LoggerToken } from "@main/di/tokens";
+import { AppInfoToken, ConfigStoreToken, LoggerToken, UserContextToken } from "@main/di/tokens";
 import {
   DEFAULT_SETTINGS,
   InMemoryConfigStore,
   type AppSettings,
 } from "@main/infrastructure/config/config-store";
+import { MockUserContext } from "@main/infrastructure/auth/mock-user-context";
 import { SinkLogger } from "@main/infrastructure/logging/logger";
 import { createAppPaths } from "@main/infrastructure/paths/app-paths";
 
@@ -15,6 +16,7 @@ function fakeServices(): CoreServices {
     logger: new SinkLogger({ sink: { write: () => undefined } }),
     config: new InMemoryConfigStore<AppSettings>(DEFAULT_SETTINGS),
     appInfo: { name: "recrd", version: "0.1.0", platform: "linux" },
+    userContext: new MockUserContext(),
   };
 }
 
@@ -26,6 +28,7 @@ describe("composeContainer", () => {
     expect(container.resolve(AppInfoToken)).toEqual(services.appInfo);
     expect(container.resolve(LoggerToken)).toBe(services.logger);
     expect(container.resolve(ConfigStoreToken)).toBe(services.config);
+    expect(container.resolve(UserContextToken)).toBe(services.userContext);
   });
 });
 

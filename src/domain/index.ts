@@ -18,6 +18,14 @@ export {
   type SelectorStrategy,
 } from "./selectors/selector-generator.js";
 export { isAbsoluteXpath, isStableCss } from "./selectors/selector-stability.js";
+export {
+  captureClick,
+  captureInput,
+  captureNavigate,
+  inspectElement,
+  massVariableValue,
+  type ElementInspection,
+} from "./capture/capture.js";
 export type { ActionType, ManualScript, ScriptAction } from "./scripts/script-action.js";
 export {
   validateScript,

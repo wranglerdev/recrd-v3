@@ -53,6 +53,7 @@ export default defineConfig({
         "src/main/infrastructure/auth/windows-user-context.ts",
         "src/main/infrastructure/auth/user-context-factory.ts",
         "src/main/infrastructure/robot/robot-runner.ts",
+        "src/main/sandbox/sandbox-view.ts",
       ],
       thresholds: {
         lines: 100,

@@ -1,4 +1,12 @@
 // Domain layer — pure business rules, platform-agnostic (no Electron/Node).
-// Entities, value objects and domain services are re-exported from here.
-// Populated by the domain-modelling epics; intentionally empty for now.
-export {};
+export type { UserContext } from "./auth/user-context.js";
+export type { ElementDescriptor } from "./selectors/element-descriptor.js";
+export {
+  bestSelector,
+  generateSelectors,
+  unstableSelectorWarning,
+  type GeneratedSelector,
+  type SelectorConfidence,
+  type SelectorStrategy,
+} from "./selectors/selector-generator.js";
+export { isAbsoluteXpath, isStableCss } from "./selectors/selector-stability.js";

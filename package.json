@@ -24,6 +24,7 @@
     "test:unit": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "pretest:e2e": "npm run build:renderer && npm run build:main",
     "test:e2e": "playwright test",
     "release": "tsx scripts/release.ts",
     "package": "electron-builder --win --x64"
@@ -67,6 +68,7 @@
   "allowScripts": {
     "esbuild@0.24.2": true,
     "esbuild@0.28.1": true,
-    "esbuild@0.25.12": true
+    "esbuild@0.25.12": true,
+    "better-sqlite3@11.10.0": true
   }
 }

@@ -1,0 +1,35 @@
+appId: com.recrd.agiletesting
+productName: recrd-agile-testing
+copyright: Copyright © 2026
+
+# Distribuição interna Windows self-contained (PRD §26). O runtime do
+# Electron/Node é embutido — não depende de instalação prévia na máquina.
+directories:
+  output: release
+  buildResources: build
+
+files:
+  - dist/**/*
+  - package.json
+
+asarUnpack:
+  - "**/node_modules/better-sqlite3/**"
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+    - target: portable
+      arch:
+        - x64
+  artifactName: ${productName}-setup-${version}.${ext}
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  deleteAppDataOnUninstall: false
+
+portable:
+  artifactName: ${productName}-portable-${version}.${ext}

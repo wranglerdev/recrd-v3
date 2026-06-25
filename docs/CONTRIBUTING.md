@@ -85,10 +85,13 @@ npm test
 ## CI/CD
 
 - **`.github/workflows/ci.yml`** roda em push para `main` e em PRs: `npm ci`, lint,
-  type-check, `test:coverage` (gate de cobertura 100%) e build (Vite + esbuild).
+  type-check, `test:coverage` (gate de cobertura 100%), build (Vite + esbuild) e E2E
+  (Playwright sob xvfb). Em push para `main`, o job `windows-package` empacota com
+  electron-builder o instalador NSIS (`.exe`) e a versão portátil (`.exe`), x64, e
+  publica os binários como artefatos do CI.
 - **`.github/workflows/release.yml`** roda em tags `v*` (ou manualmente): empacota no
   Windows com electron-builder (NSIS + portable, x64), gera `version.json`,
-  `SHA256SUM.txt` e `CHANGELOG.md` e publica os artefatos.
+  `SHA256SUM.txt` e `CHANGELOG.md` e publica os artefatos rastreáveis da release.
 
 ## Commits
 

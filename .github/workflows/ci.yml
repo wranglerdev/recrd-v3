@@ -75,3 +75,50 @@ jobs:
           name: playwright-report
           path: playwright-report/
           if-no-files-found: ignore
+
+  windows-package:
+    # Build the distributable Windows binaries from CI (PRD §26): NSIS installer
+    # (.exe) + portable (.exe), x64. Runs after the quality gate on pushes to
+    # main (skipped on PRs to keep them fast). Tagged official releases with
+    # traceable metadata are handled by release.yml.
+    runs-on: windows-latest
+    needs: quality
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build renderer (Vite)
+        run: npm run build:renderer
+
+      - name: Build main/preload (esbuild)
+        run: npm run build:main
+
+      - name: Package Windows installer + portable (electron-builder)
+        run: npx electron-builder --win --x64 --publish never
+        env:
+          # No signing certificate in CI; skip auto-discovery.
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+
+      - name: Verify both artifacts were produced
+        shell: pwsh
+        run: |
+          $exes = Get-ChildItem release -Filter *.exe -ErrorAction SilentlyContinue
+          $names = $exes.Name -join ', '
+          Write-Host "Artifacts: $names"
+          if (-not ($exes.Name -match 'setup')) { throw "NSIS installer (.exe) not found" }
+          if (-not ($exes.Name -match 'portable')) { throw "Portable (.exe) not found" }
+
+      - name: Upload Windows binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: recrd-windows-x64
+          path: release/*.exe
+          if-no-files-found: error

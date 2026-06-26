@@ -153,6 +153,7 @@ export type {
   IpcEventListener,
   StreamLineEvent,
   InstallDoneEvent,
+  CapturedActionEvent,
 } from "./ipc/events.js";
 export { IPC_EVENT_CHANNELS } from "./ipc/events.js";
 

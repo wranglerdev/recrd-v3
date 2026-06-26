@@ -8,6 +8,7 @@ describe("IPC_EVENT_CHANNELS", () => {
       "env:install:done",
       "run:line",
       "run:exit",
+      "capture:action",
     ]);
   });
 

@@ -139,6 +139,7 @@ export {
   type StreamLineEvent,
   type InstallDoneEvent,
   type RunExitEvent,
+  type CapturedActionEvent,
 } from "./events.js";
 export {
   RUN_CHANNELS,

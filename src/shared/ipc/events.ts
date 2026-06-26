@@ -6,9 +6,20 @@
 // Lives in the shared layer (plain, serialisable payloads, no Node/Electron) so
 // main, preload and renderer share one contract.
 
+import type { ScriptActionDto } from "./compile.js";
+
 /** A line of streamed install/run output. */
 export interface StreamLineEvent {
   readonly line: string;
+}
+
+/**
+ * An action captured in the Browser Sandbox (PRD §10). The sandbox content-script
+ * maps a DOM interaction to a script action and the main process forwards it to
+ * the renderer's recording session.
+ */
+export interface CapturedActionEvent {
+  readonly action: ScriptActionDto;
 }
 
 /** Completion of a streamed install: ok, or the command that failed. */
@@ -27,6 +38,7 @@ export type IpcEventMap = {
   "env:install:done": InstallDoneEvent;
   "run:line": StreamLineEvent;
   "run:exit": RunExitEvent;
+  "capture:action": CapturedActionEvent;
 };
 
 export type IpcEventChannel = keyof IpcEventMap;
@@ -36,6 +48,7 @@ export const IPC_EVENT_CHANNELS = [
   "env:install:done",
   "run:line",
   "run:exit",
+  "capture:action",
 ] as const satisfies readonly IpcEventChannel[];
 
 export type IpcEventListener<C extends IpcEventChannel> = (payload: IpcEventMap[C]) => void;

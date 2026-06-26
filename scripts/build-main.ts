@@ -32,6 +32,13 @@ async function main(): Promise<void> {
       format: "cjs",
       external: ["electron"],
     }),
+    build({
+      ...common,
+      entryPoints: ["src/preload/sandbox-preload.ts"],
+      outfile: "dist/preload/sandbox-preload.cjs",
+      format: "cjs",
+      external: ["electron"],
+    }),
   ]);
 }
 

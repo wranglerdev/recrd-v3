@@ -1,7 +1,7 @@
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { app, BrowserWindow, ipcMain } from "electron";
-import type { AppInfo } from "../shared/ipc-contract.js";
+import type { AppInfo, CapturedActionEvent } from "../shared/ipc-contract.js";
 import {
   buildIpcRegistry,
   composeContainer,
@@ -82,6 +82,13 @@ function bootstrap(): void {
   registerUseCases(container);
   const registry = buildIpcRegistry(container);
   bindIpcMain(registry, ipcMain, logger);
+
+  // Relay actions captured by the sandbox content-script to the renderer's
+  // recording session (PRD §10). The content-script sends over `capture:action`;
+  // the event emitter pushes it to the active window's webContents.
+  ipcMain.on("capture:action", (_event, payload: CapturedActionEvent) => {
+    eventEmitter.emit("capture:action", payload);
+  });
 
   logger.info("recrd starting", {
     version: appInfo.version,

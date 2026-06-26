@@ -26,7 +26,17 @@ async function main(): Promise<void> {
     sourcemap: true,
     external: ["electron"],
   });
-  await Promise.all([mainCtx.watch(), preloadCtx.watch()]);
+  const sandboxPreloadCtx = await context({
+    entryPoints: ["src/preload/sandbox-preload.ts"],
+    outfile: "dist/preload/sandbox-preload.cjs",
+    bundle: true,
+    platform: "node",
+    target: "node20",
+    format: "cjs",
+    sourcemap: true,
+    external: ["electron"],
+  });
+  await Promise.all([mainCtx.watch(), preloadCtx.watch(), sandboxPreloadCtx.watch()]);
 
   const server = await createServer();
   await server.listen();
@@ -46,6 +56,7 @@ async function main(): Promise<void> {
     void server.close();
     void mainCtx.dispose();
     void preloadCtx.dispose();
+    void sandboxPreloadCtx.dispose();
     process.exit(0);
   });
 }

@@ -118,3 +118,12 @@ export {
   type ExecutionResultDto,
   type ListRecentExecutionsRequest,
 } from "./execution.js";
+export {
+  ENVIRONMENT_CHANNELS,
+  createEnvironmentApi,
+  type EnvironmentApi,
+  type EnvironmentChannels,
+  type EnvironmentReportDto,
+  type EnvironmentStatusDto,
+  type CheckEnvironmentRequest,
+} from "./environment.js";

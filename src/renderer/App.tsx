@@ -9,6 +9,7 @@ import { SettingsScreen } from "./screens/SettingsScreen.js";
 import { GitPanel } from "./screens/GitPanel.js";
 import { AuditScreen } from "./screens/AuditScreen.js";
 import { ProjectExplorer } from "./screens/ProjectExplorer.js";
+import { EnvironmentScreen } from "./screens/EnvironmentScreen.js";
 import { ActiveProjectProvider, useBridge, useIpcQuery } from "./state/index.js";
 import "./styles/app-shell.css";
 
@@ -27,6 +28,7 @@ type View =
   | "mass"
   | "git"
   | "audit"
+  | "environment"
   | "about"
   | "settings";
 
@@ -45,6 +47,7 @@ const NAV_ITEMS: readonly NavItem[] = [
   { view: "mass", label: "Massas", icon: "▦" },
   { view: "git", label: "Git", icon: "⎇" },
   { view: "audit", label: "Auditoria", icon: "❑" },
+  { view: "environment", label: "Ambiente", icon: "🐍" },
   { view: "settings", label: "Configurações", icon: "⚙" },
   { view: "about", label: "Sobre", icon: "ⓘ" },
 ];
@@ -147,5 +150,7 @@ function renderView(view: View, setView: (view: View) => void): JSX.Element {
       return <GitPanel />;
     case "audit":
       return <AuditScreen />;
+    case "environment":
+      return <EnvironmentScreen />;
   }
 }

@@ -272,6 +272,7 @@ describe("buildIpcRegistry", () => {
         "git:openExternal",
         "audit:list",
         "execution:listRecent",
+        "env:check",
       ] as const) {
         expect(registry.has(channel)).toBe(true);
       }

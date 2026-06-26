@@ -54,6 +54,7 @@ import type { ExternalOpener } from "../infrastructure/shell/external-opener.js"
 import type { Logger } from "../infrastructure/logging/logger.js";
 import type { AppPaths } from "../infrastructure/paths/app-paths.js";
 import { nodeToolRunner } from "../infrastructure/python/environment.js";
+import { directoryHasVenv } from "../infrastructure/python/venv-probe.js";
 import { createRobotFileWriter } from "../infrastructure/robot/robot-file-writer.js";
 import { createRobotProjectService } from "../infrastructure/robot/robot-project.js";
 import { RobotRunner } from "../infrastructure/robot/robot-runner.js";
@@ -63,6 +64,7 @@ import { registerAuditHandlers } from "../ipc/handlers/audit-handlers.js";
 import { registerCompileHandlers } from "../ipc/handlers/compile-handlers.js";
 import { registerDialogHandlers } from "../ipc/handlers/dialog-handlers.js";
 import { registerExecutionHandlers } from "../ipc/handlers/execution-handlers.js";
+import { registerEnvironmentHandlers } from "../ipc/handlers/environment-handlers.js";
 import { registerHierarchyHandlers } from "../ipc/handlers/hierarchy-handlers.js";
 import { registerMassHandlers } from "../ipc/handlers/mass-handlers.js";
 import { registerGitHandlers } from "../ipc/handlers/git-handlers.js";
@@ -270,5 +272,9 @@ export function buildIpcRegistry(container: Container): IpcRegistry {
   });
   registerAuditHandlers(registry, container.resolve(AuditTrailToken));
   registerExecutionHandlers(registry, container.resolve(ExecutionUseCasesToken));
+  registerEnvironmentHandlers(registry, {
+    toolRunner: container.resolve(ToolRunnerToken),
+    venvPresent: directoryHasVenv,
+  });
   return registry;
 }

@@ -112,12 +112,22 @@ describe("registerUseCases", () => {
 });
 
 describe("buildIpcRegistry", () => {
-  it("registers the app:getInfo handler serving the injected app info", async () => {
+  it("registers the app:getInfo and robot:scaffold handlers", async () => {
     const services = fakeServices();
     const container = composeContainer(services);
-    const registry = buildIpcRegistry(container);
+    const database = createDatabase(":memory:");
+    try {
+      registerInfrastructure(container, { database, sandboxViewFactory: vi.fn() });
+      registerUseCases(container);
+      const registry = buildIpcRegistry(container);
 
-    expect(registry.has("app:getInfo")).toBe(true);
-    await expect(registry.dispatch("app:getInfo", undefined)).resolves.toEqual(services.appInfo);
+      expect(registry.has("app:getInfo")).toBe(true);
+      await expect(registry.dispatch("app:getInfo", undefined)).resolves.toEqual(services.appInfo);
+
+      // The robot scaffolding handler is wired from the use case container.
+      expect(registry.has("robot:scaffold")).toBe(true);
+    } finally {
+      database.close();
+    }
   });
 });

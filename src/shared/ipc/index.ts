@@ -10,3 +10,11 @@ export {
   type ResponseOf,
 } from "./core.js";
 export { APP_CHANNELS, createAppApi, type AppApi, type AppChannels, type AppInfo } from "./app.js";
+export {
+  ROBOT_CHANNELS,
+  createRobotApi,
+  type RobotApi,
+  type RobotChannels,
+  type ScaffoldRobotRequest,
+  type ScaffoldRobotResponse,
+} from "./robot.js";

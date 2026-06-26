@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { createProjectUseCases } from "../../application/project/project-service.js";
+import { createRobotProjectUseCases } from "../../application/robot/robot-project-service.js";
 import type { UserContext } from "../../domain/auth/user-context.js";
 import type { AppInfo } from "../../shared/ipc-contract.js";
 import { Container } from "../di/container.js";
@@ -13,6 +14,7 @@ import {
   ProjectUseCasesToken,
   RepositoriesToken,
   RobotProjectServiceToken,
+  RobotProjectUseCasesToken,
   RobotRunnerToken,
   SandboxViewFactoryToken,
   ToolRunnerToken,
@@ -29,6 +31,7 @@ import { createRobotProjectService } from "../infrastructure/robot/robot-project
 import { RobotRunner } from "../infrastructure/robot/robot-runner.js";
 import type { SandboxViewFactory } from "../sandbox/sandbox-config.js";
 import { registerAppHandlers } from "../ipc/handlers/app-handlers.js";
+import { registerRobotHandlers } from "../ipc/handlers/robot-handlers.js";
 import { IpcRegistry } from "../ipc/typed-ipc.js";
 
 // Composition root wiring (PRD §3, §31). Kept free of Electron lifecycle code so
@@ -104,6 +107,13 @@ export function registerUseCases(container: Container): Container {
         clock: () => new Date(),
       }),
   });
+  container.register(RobotProjectUseCasesToken, {
+    useFactory: (c) =>
+      createRobotProjectUseCases({
+        scaffolder: c.resolve(RobotProjectServiceToken),
+        projects: c.resolve(ProjectUseCasesToken),
+      }),
+  });
   return container;
 }
 
@@ -111,5 +121,6 @@ export function registerUseCases(container: Container): Container {
 export function buildIpcRegistry(container: Container): IpcRegistry {
   const registry = new IpcRegistry();
   registerAppHandlers(registry, container.resolve(AppInfoToken));
+  registerRobotHandlers(registry, container.resolve(RobotProjectUseCasesToken));
   return registry;
 }

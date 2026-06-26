@@ -31,6 +31,7 @@ const MASS: MassDto = {
   name: "Usuários",
   columns: ["usuario", "senha"],
   rows: [{ usuario: "ana", senha: "123" }],
+  history: [],
   createdBy: "j",
   createdAt: "2026-06-26T00:00:00.000Z",
   updatedBy: "j",

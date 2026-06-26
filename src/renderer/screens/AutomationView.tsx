@@ -7,6 +7,7 @@ import { CaseExecutionHistory } from "./CaseExecutionHistory.js";
 import { CompileResultView } from "./CompileResultView.js";
 import { PropertiesPanel } from "./PropertiesPanel.js";
 import { SandboxNavBar } from "./SandboxNavBar.js";
+import { TimelinePanel } from "./TimelinePanel.js";
 import { TogglesPanel } from "./TogglesPanel.js";
 import type { ViewportRect } from "./use-resize-rect.js";
 
@@ -158,7 +159,14 @@ export function AutomationView(): JSX.Element {
       }}
       navBar={<SandboxNavBar />}
       panels={{
-        timeline: <p>Ações capturadas: {recording.actions.length}</p>,
+        timeline: (
+          <TimelinePanel
+            actions={recording.actions}
+            onRemove={recording.removeAction}
+            onMove={recording.moveAction}
+            onUpdate={recording.updateAction}
+          />
+        ),
         properties: <PropertiesPanel />,
         toggles: <TogglesPanel />,
       }}

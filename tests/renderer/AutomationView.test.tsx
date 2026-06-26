@@ -301,7 +301,7 @@ describe("AutomationView (PRD §9, §15)", () => {
     renderView(PROJECT, { id: "c1", name: "Login" });
 
     fireEvent.click(screen.getByRole("button", { name: "Compilar" }));
-    expect(screen.getByText(/nenhuma ação gravada/i)).toBeInTheDocument();
+    expect(screen.getByText(/nenhuma ação gravada para compilar/i)).toBeInTheDocument();
     expect(window.recrd?.compileScript).not.toHaveBeenCalled();
   });
 

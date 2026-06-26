@@ -76,3 +76,55 @@ describe("useRecordingSession (PRD §10)", () => {
     expect(screen.getByTestId("count")).toHaveTextContent("0");
   });
 });
+
+describe("useRecordingSession timeline edits (PRD §13)", () => {
+  let session: import("@renderer/state").RecordingSession;
+
+  function EditHarness(): JSX.Element {
+    session = useRecordingSession({ caseId: "c1", caseName: "Login", active: true });
+    return <span data-testid="actions">{session.actions.map((a) => a.type).join(",")}</span>;
+  }
+
+  it("removes, reorders and updates actions, persisting each change", async () => {
+    const saveManualScript = vi.fn().mockResolvedValue(undefined);
+    stubBridge({ saveManualScript });
+    const emit = stubEvents();
+    render(<EditHarness />);
+
+    emit({ type: "navigate", url: "https://e.com" });
+    emit({ type: "input", selector: "#u", value: "ana" });
+    emit(CLICK);
+    expect(screen.getByTestId("actions")).toHaveTextContent("navigate,input,click");
+
+    act(() => session.moveAction(2, -1));
+    expect(screen.getByTestId("actions")).toHaveTextContent("navigate,click,input");
+
+    act(() => session.removeAction(0));
+    expect(screen.getByTestId("actions")).toHaveTextContent("click,input");
+
+    act(() => session.updateAction(1, { type: "input", selector: "#u", value: "bob" }));
+    await waitFor(() =>
+      expect(saveManualScript).toHaveBeenLastCalledWith({
+        caseId: "c1",
+        script: {
+          name: "Login",
+          actions: [
+            { type: "click", selector: "#go" },
+            { type: "input", selector: "#u", value: "bob" },
+          ],
+        },
+      }),
+    );
+  });
+
+  it("ignores out-of-range moves", () => {
+    stubBridge({ saveManualScript: vi.fn() });
+    const emit = stubEvents();
+    render(<EditHarness />);
+
+    emit(CLICK);
+    act(() => session.moveAction(0, -1)); // already at the top
+    act(() => session.moveAction(0, 1)); // only one element
+    expect(screen.getByTestId("actions")).toHaveTextContent("click");
+  });
+});

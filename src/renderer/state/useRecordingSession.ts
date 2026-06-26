@@ -22,6 +22,12 @@ export interface RecordingSession {
   readonly actions: readonly ScriptActionDto[];
   /** Discards the accumulated actions (e.g. when starting a new recording). */
   clear: () => void;
+  /** Removes the action at `index` (timeline edit). */
+  removeAction: (index: number) => void;
+  /** Moves the action at `index` by `delta` (-1 up, +1 down), clamped. */
+  moveAction: (index: number, delta: number) => void;
+  /** Replaces the action at `index` (e.g. after editing a field). */
+  updateAction: (index: number, action: ScriptActionDto) => void;
 }
 
 export function useRecordingSession(options: RecordingSessionOptions): RecordingSession {
@@ -45,5 +51,25 @@ export function useRecordingSession(options: RecordingSessionOptions): Recording
     });
   }, [bridge, options.caseId, options.caseName, actions]);
 
-  return { actions, clear: () => setActions([]) };
+  return {
+    actions,
+    clear: () => setActions([]),
+    removeAction: (index) => setActions((prev) => prev.filter((_, i) => i !== index)),
+    moveAction: (index, delta) =>
+      setActions((prev) => {
+        const target = index + delta;
+        if (index < 0 || index >= prev.length || target < 0 || target >= prev.length) {
+          return prev;
+        }
+        const next = [...prev];
+        const [moved] = next.splice(index, 1);
+        if (moved === undefined) {
+          return prev;
+        }
+        next.splice(target, 0, moved);
+        return next;
+      }),
+    updateAction: (index, action) =>
+      setActions((prev) => prev.map((current, i) => (i === index ? action : current))),
+  };
 }

@@ -4,6 +4,7 @@ import {
   createPlanUseCases,
   createSuiteUseCases,
 } from "../../application/hierarchy/hierarchy-service.js";
+import { createCompileUseCases } from "../../application/compile/compile-service.js";
 import { createMassUseCases } from "../../application/mass/mass-service.js";
 import { createProjectUseCases } from "../../application/project/project-service.js";
 import { createRobotProjectUseCases } from "../../application/robot/robot-project-service.js";
@@ -14,6 +15,7 @@ import {
   AppInfoToken,
   AppPathsToken,
   CaseUseCasesToken,
+  CompileUseCasesToken,
   ConfigStoreToken,
   CsvFileDialogToken,
   DatabaseToken,
@@ -23,6 +25,7 @@ import {
   PlanUseCasesToken,
   ProjectUseCasesToken,
   RepositoriesToken,
+  RobotFileWriterToken,
   RobotProjectServiceToken,
   RobotProjectUseCasesToken,
   RobotRunnerToken,
@@ -35,15 +38,18 @@ import type { AppSettings, ConfigStore } from "../infrastructure/config/config-s
 import type { DatabaseHandle } from "../infrastructure/db/connection.js";
 import { createMassRepository } from "../infrastructure/db/mass-repository.js";
 import { createRepositories } from "../infrastructure/db/repositories.js";
+import { createCompiledScriptRepository } from "../infrastructure/db/script-repository.js";
 import type { CsvFileDialog } from "../infrastructure/dialog/csv-file-dialog.js";
 import { createGitService } from "../infrastructure/git/git-service.js";
 import type { Logger } from "../infrastructure/logging/logger.js";
 import type { AppPaths } from "../infrastructure/paths/app-paths.js";
 import { nodeToolRunner } from "../infrastructure/python/environment.js";
+import { createRobotFileWriter } from "../infrastructure/robot/robot-file-writer.js";
 import { createRobotProjectService } from "../infrastructure/robot/robot-project.js";
 import { RobotRunner } from "../infrastructure/robot/robot-runner.js";
 import type { SandboxViewFactory } from "../sandbox/sandbox-config.js";
 import { registerAppHandlers } from "../ipc/handlers/app-handlers.js";
+import { registerCompileHandlers } from "../ipc/handlers/compile-handlers.js";
 import { registerHierarchyHandlers } from "../ipc/handlers/hierarchy-handlers.js";
 import { registerMassHandlers } from "../ipc/handlers/mass-handlers.js";
 import { registerProjectHandlers } from "../ipc/handlers/project-handlers.js";
@@ -103,6 +109,7 @@ export function registerInfrastructure(
   container.register(GitServiceFactoryToken, { useValue: createGitService });
   container.register(ToolRunnerToken, { useValue: nodeToolRunner });
   container.register(RobotProjectServiceToken, { useValue: createRobotProjectService() });
+  container.register(RobotFileWriterToken, { useValue: createRobotFileWriter() });
   container.register(RobotRunnerToken, { useFactory: () => new RobotRunner() });
   container.register(SandboxViewFactoryToken, { useValue: services.sandboxViewFactory });
   container.register(CsvFileDialogToken, { useValue: services.csvFileDialog });
@@ -182,6 +189,17 @@ export function registerUseCases(container: Container): Container {
       });
     },
   });
+  container.register(CompileUseCasesToken, {
+    useFactory: (c) =>
+      createCompileUseCases({
+        scripts: createCompiledScriptRepository(c.resolve(RepositoriesToken).scripts),
+        robotFiles: c.resolve(RobotFileWriterToken),
+        projects: c.resolve(ProjectUseCasesToken),
+        userContext: c.resolve(UserContextToken),
+        newId: randomUUID,
+        clock: () => new Date(),
+      }),
+  });
   return container;
 }
 
@@ -200,5 +218,6 @@ export function buildIpcRegistry(container: Container): IpcRegistry {
     masses: container.resolve(MassUseCasesToken),
     csvFileDialog: container.resolve(CsvFileDialogToken),
   });
+  registerCompileHandlers(registry, container.resolve(CompileUseCasesToken));
   return registry;
 }

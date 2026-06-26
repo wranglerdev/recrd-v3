@@ -3,6 +3,10 @@ import type {
   PlanUseCases,
   SuiteUseCases,
 } from "../../application/hierarchy/hierarchy-service.js";
+import type {
+  CompileUseCases,
+  RobotFileWriter,
+} from "../../application/compile/compile-service.js";
 import type { MassUseCases } from "../../application/mass/mass-service.js";
 import type { ProjectUseCases } from "../../application/project/project-service.js";
 import type { RobotProjectUseCases } from "../../application/robot/robot-project-service.js";
@@ -40,11 +44,13 @@ export const RobotProjectServiceToken = new Token<RobotProjectService>("RobotPro
 export const RobotRunnerToken = new Token<RobotRunner>("RobotRunner");
 export const SandboxViewFactoryToken = new Token<SandboxViewFactory>("SandboxViewFactory");
 export const CsvFileDialogToken = new Token<CsvFileDialog>("CsvFileDialog");
+export const RobotFileWriterToken = new Token<RobotFileWriter>("RobotFileWriter");
 
 // Application use cases (wired from infrastructure + core at the composition root).
 export const ProjectUseCasesToken = new Token<ProjectUseCases>("ProjectUseCases");
 export const RobotProjectUseCasesToken = new Token<RobotProjectUseCases>("RobotProjectUseCases");
 export const MassUseCasesToken = new Token<MassUseCases>("MassUseCases");
+export const CompileUseCasesToken = new Token<CompileUseCases>("CompileUseCases");
 export const PlanUseCasesToken = new Token<PlanUseCases>("PlanUseCases");
 export const SuiteUseCasesToken = new Token<SuiteUseCases>("SuiteUseCases");
 export const CaseUseCasesToken = new Token<CaseUseCases>("CaseUseCases");

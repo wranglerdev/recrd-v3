@@ -64,3 +64,15 @@ export {
   type EditMassValueRequest,
   type CsvSelectionDto,
 } from "./mass.js";
+export {
+  COMPILE_CHANNELS,
+  createCompileApi,
+  type CompileApi,
+  type CompileChannels,
+  type ScriptActionDto,
+  type ManualScriptDto,
+  type SelectorWarningDto,
+  type ValidationIssueDto,
+  type CompileRequest,
+  type CompileResponse,
+} from "./compile.js";

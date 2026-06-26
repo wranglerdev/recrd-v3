@@ -150,6 +150,7 @@ describe("buildIpcRegistry", () => {
         "mass:import",
         "mass:listByProject",
         "mass:selectCsv",
+        "compile:run",
       ] as const) {
         expect(registry.has(channel)).toBe(true);
       }

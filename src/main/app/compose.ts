@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+import { createProjectUseCases } from "../../application/project/project-service.js";
 import type { UserContext } from "../../domain/auth/user-context.js";
 import type { AppInfo } from "../../shared/ipc-contract.js";
 import { Container } from "../di/container.js";
@@ -8,6 +10,7 @@ import {
   DatabaseToken,
   GitServiceFactoryToken,
   LoggerToken,
+  ProjectUseCasesToken,
   RepositoriesToken,
   RobotProjectServiceToken,
   RobotRunnerToken,
@@ -82,6 +85,25 @@ export function registerInfrastructure(
   container.register(RobotProjectServiceToken, { useValue: createRobotProjectService() });
   container.register(RobotRunnerToken, { useFactory: () => new RobotRunner() });
   container.register(SandboxViewFactoryToken, { useValue: services.sandboxViewFactory });
+  return container;
+}
+
+/**
+ * Registers the application use cases (PRD §6, §16), wiring them from the
+ * infrastructure repositories and the core user context. Lazy factories so a use
+ * case is only built when first resolved. Must run after {@link composeContainer}
+ * and {@link registerInfrastructure}, whose tokens it depends on.
+ */
+export function registerUseCases(container: Container): Container {
+  container.register(ProjectUseCasesToken, {
+    useFactory: (c) =>
+      createProjectUseCases({
+        repository: c.resolve(RepositoriesToken).projects,
+        userContext: c.resolve(UserContextToken),
+        newId: randomUUID,
+        clock: () => new Date(),
+      }),
+  });
   return container;
 }
 

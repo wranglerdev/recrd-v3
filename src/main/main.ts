@@ -2,7 +2,12 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { app, BrowserWindow, ipcMain } from "electron";
 import type { AppInfo } from "../shared/ipc-contract.js";
-import { buildIpcRegistry, composeContainer, registerInfrastructure } from "./app/compose.js";
+import {
+  buildIpcRegistry,
+  composeContainer,
+  registerInfrastructure,
+  registerUseCases,
+} from "./app/compose.js";
 import { createUserContext } from "./infrastructure/auth/user-context-factory.js";
 import { ElectronStoreConfig } from "./infrastructure/config/electron-store-config.js";
 import { createDatabase, type DatabaseHandle } from "./infrastructure/db/connection.js";
@@ -45,6 +50,7 @@ function bootstrap(): void {
     database,
     sandboxViewFactory: createSandboxView,
   });
+  registerUseCases(container);
   const registry = buildIpcRegistry(container);
   bindIpcMain(registry, ipcMain);
 

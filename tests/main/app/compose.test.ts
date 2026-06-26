@@ -3,6 +3,7 @@ import {
   buildIpcRegistry,
   composeContainer,
   registerInfrastructure,
+  registerUseCases,
   type CoreServices,
 } from "@main/app/compose";
 import {
@@ -11,6 +12,7 @@ import {
   DatabaseToken,
   GitServiceFactoryToken,
   LoggerToken,
+  ProjectUseCasesToken,
   RepositoriesToken,
   RobotProjectServiceToken,
   RobotRunnerToken,
@@ -80,6 +82,29 @@ describe("registerInfrastructure", () => {
 
       // The sandbox-view factory is injected as a value by main.ts.
       expect(container.resolve(SandboxViewFactoryToken)).toBe(sandboxViewFactory);
+    } finally {
+      database.close();
+    }
+  });
+});
+
+describe("registerUseCases", () => {
+  it("wires the Project use cases over the real repository + user context", () => {
+    const services = fakeServices();
+    const container = composeContainer(services);
+    const database = createDatabase(":memory:");
+    try {
+      registerInfrastructure(container, { database, sandboxViewFactory: vi.fn() });
+      registerUseCases(container);
+
+      const projects = container.resolve(ProjectUseCasesToken);
+      const created = projects.create({ name: "Banco XYZ" });
+
+      // Audited with the injected user context and persisted via the repository.
+      expect(created.name).toBe("Banco XYZ");
+      expect(created.createdBy).toBe(services.userContext.username);
+      expect(projects.list()).toHaveLength(1);
+      expect(projects.open(created.id)).toEqual(created);
     } finally {
       database.close();
     }

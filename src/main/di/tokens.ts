@@ -1,3 +1,4 @@
+import type { ProjectUseCases } from "../../application/project/project-service.js";
 import type { UserContext } from "../../domain/auth/user-context.js";
 import type { AppInfo } from "../../shared/ipc-contract.js";
 import type { AppSettings, ConfigStore } from "../infrastructure/config/config-store.js";
@@ -30,3 +31,6 @@ export const ToolRunnerToken = new Token<ToolRunner>("ToolRunner");
 export const RobotProjectServiceToken = new Token<RobotProjectService>("RobotProjectService");
 export const RobotRunnerToken = new Token<RobotRunner>("RobotRunner");
 export const SandboxViewFactoryToken = new Token<SandboxViewFactory>("SandboxViewFactory");
+
+// Application use cases (wired from infrastructure + core at the composition root).
+export const ProjectUseCasesToken = new Token<ProjectUseCases>("ProjectUseCases");

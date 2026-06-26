@@ -43,6 +43,7 @@ import {
   type SettingsChannels,
 } from "./ipc/settings.js";
 import { GIT_CHANNELS, createGitApi, type GitApi, type GitChannels } from "./ipc/git.js";
+import { AUDIT_CHANNELS, createAuditApi, type AuditApi, type AuditChannels } from "./ipc/audit.js";
 
 export type { ChannelDef, ChannelMap, Invoke, RequestOf, ResponseOf } from "./ipc/core.js";
 export type { AppInfo } from "./ipc/app.js";
@@ -93,12 +94,8 @@ export type {
   RecordingPreferencesDto,
   WindowStateDto,
 } from "./ipc/settings.js";
-export type {
-  GitStatusResult,
-  GitChangeDto,
-  GitFileStatusDto,
-  GitPathRequest,
-} from "./ipc/git.js";
+export type { GitStatusResult, GitChangeDto, GitFileStatusDto, GitPathRequest } from "./ipc/git.js";
+export type { AuditEventDto, AuditEventTypeDto, ListAuditEventsRequest } from "./ipc/audit.js";
 
 /**
  * Every IPC channel, composed from the feature channel maps by intersection
@@ -113,7 +110,8 @@ export type IpcChannelMap = AppChannels &
   CompileChannels &
   DialogChannels &
   SettingsChannels &
-  GitChannels;
+  GitChannels &
+  AuditChannels;
 
 export type IpcChannel = keyof IpcChannelMap;
 export type IpcRequest<C extends IpcChannel> = IpcChannelMap[C]["request"];
@@ -136,6 +134,7 @@ export const IPC_CHANNELS = [
   ...DIALOG_CHANNELS,
   ...SETTINGS_CHANNELS,
   ...GIT_CHANNELS,
+  ...AUDIT_CHANNELS,
 ] as const satisfies readonly IpcChannel[];
 
 /**
@@ -152,7 +151,8 @@ export type RecrdApi = AppApi &
   CompileApi &
   DialogApi &
   SettingsApi &
-  GitApi;
+  GitApi &
+  AuditApi;
 
 /**
  * Builds the renderer API from an `invoke` function by composing the per-feature
@@ -170,5 +170,6 @@ export function createRecrdApi(invoke: IpcInvoke): RecrdApi {
     ...createDialogApi(invoke),
     ...createSettingsApi(invoke),
     ...createGitApi(invoke),
+    ...createAuditApi(invoke),
   };
 }

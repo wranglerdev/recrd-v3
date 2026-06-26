@@ -15,6 +15,7 @@ import { Container } from "../di/container.js";
 import {
   AppInfoToken,
   AppPathsToken,
+  AuditTrailToken,
   CaseUseCasesToken,
   CompileUseCasesToken,
   ConfigStoreToken,
@@ -40,6 +41,7 @@ import {
 } from "../di/tokens.js";
 import type { AppSettings, ConfigStore } from "../infrastructure/config/config-store.js";
 import type { DatabaseHandle } from "../infrastructure/db/connection.js";
+import { createAuditTrail } from "../infrastructure/db/audit-event-repository.js";
 import { createMassRepository } from "../infrastructure/db/mass-repository.js";
 import { createRepositories } from "../infrastructure/db/repositories.js";
 import { createCompiledScriptRepository } from "../infrastructure/db/script-repository.js";
@@ -55,6 +57,7 @@ import { createRobotProjectService } from "../infrastructure/robot/robot-project
 import { RobotRunner } from "../infrastructure/robot/robot-runner.js";
 import type { SandboxViewFactory } from "../sandbox/sandbox-config.js";
 import { registerAppHandlers } from "../ipc/handlers/app-handlers.js";
+import { registerAuditHandlers } from "../ipc/handlers/audit-handlers.js";
 import { registerCompileHandlers } from "../ipc/handlers/compile-handlers.js";
 import { registerDialogHandlers } from "../ipc/handlers/dialog-handlers.js";
 import { registerHierarchyHandlers } from "../ipc/handlers/hierarchy-handlers.js";
@@ -123,6 +126,11 @@ export function registerInfrastructure(
   container.register(ToolRunnerToken, { useValue: nodeToolRunner });
   container.register(RobotProjectServiceToken, { useValue: createRobotProjectService() });
   container.register(RobotFileWriterToken, { useValue: createRobotFileWriter() });
+  // Persistent audit trail (PRD §16): a lazy singleton over the audit_events
+  // repository, recorded into by the mutating use cases and read by audit:list.
+  container.register(AuditTrailToken, {
+    useFactory: (c) => createAuditTrail(c.resolve(RepositoriesToken).auditEvents, randomUUID),
+  });
   container.register(RobotRunnerToken, { useFactory: () => new RobotRunner() });
   container.register(SandboxViewFactoryToken, { useValue: services.sandboxViewFactory });
   container.register(CsvFileDialogToken, { useValue: services.csvFileDialog });
@@ -189,6 +197,7 @@ export function registerUseCases(container: Container): Container {
         userContext: c.resolve(UserContextToken),
         newId: randomUUID,
         clock: () => new Date(),
+        audit: c.resolve(AuditTrailToken),
       });
     },
   });
@@ -201,6 +210,7 @@ export function registerUseCases(container: Container): Container {
         userContext: c.resolve(UserContextToken),
         newId: randomUUID,
         clock: () => new Date(),
+        audit: c.resolve(AuditTrailToken),
       });
     },
   });
@@ -213,6 +223,7 @@ export function registerUseCases(container: Container): Container {
         userContext: c.resolve(UserContextToken),
         newId: randomUUID,
         clock: () => new Date(),
+        audit: c.resolve(AuditTrailToken),
       }),
   });
   return container;
@@ -244,5 +255,6 @@ export function buildIpcRegistry(container: Container): IpcRegistry {
     gitFactory: container.resolve(GitServiceFactoryToken),
     externalOpener: container.resolve(ExternalOpenerToken),
   });
+  registerAuditHandlers(registry, container.resolve(AuditTrailToken));
   return registry;
 }

@@ -52,7 +52,7 @@ describe("App", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /início/i }));
     fireEvent.click(screen.getByRole("button", { name: /importar massa/i }));
-    expect(screen.getByRole("heading", { name: /nova massa/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /^massas$/i })).toBeInTheDocument();
   });
 
   it("exposes a primary navigation sidebar that routes between views", () => {
@@ -72,6 +72,6 @@ describe("App", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: /massas/i }));
-    expect(screen.getByRole("heading", { name: /nova massa/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /^massas$/i })).toBeInTheDocument();
   });
 });

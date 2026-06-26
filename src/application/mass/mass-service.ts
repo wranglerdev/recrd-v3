@@ -3,6 +3,7 @@ import {
   touchAuditFields,
   type AuditFields,
 } from "../../domain/audit/audit-fields.js";
+import { recordAuditEvent, type AuditSink } from "../audit/audit-service.js";
 import { parseMassCsv } from "../../domain/mass/mass-csv.js";
 import { editMassValue, massFromCsv, renameMass, type Mass } from "../../domain/mass/mass.js";
 import {
@@ -48,6 +49,8 @@ export interface MassUseCaseDeps extends AuditContext {
   readonly repository: MassRepository;
   /** Existence check for the parent Project (hierarchy integrity). */
   readonly projectExists: ParentCheck;
+  /** Optional audit trail; an import records a `mass.import` event when present. */
+  readonly audit?: AuditSink;
 }
 
 export interface EditMassValueInput {
@@ -68,7 +71,7 @@ export interface MassUseCases {
 }
 
 export function createMassUseCases(deps: MassUseCaseDeps): MassUseCases {
-  const { repository, projectExists, userContext, newId, clock } = deps;
+  const { repository, projectExists, userContext, newId, clock, audit } = deps;
 
   // Reads the mass (asserting it exists), applies a pure domain transform, then
   // persists it with refreshed update-audit fields. `findById` guarantees the row
@@ -104,7 +107,22 @@ export function createMassUseCases(deps: MassUseCaseDeps): MassUseCases {
         projectId: input.projectId,
         ...createAuditFields(userContext.username, now),
       };
-      return { ok: true, mass: repository.create(stored) };
+      const created = repository.create(stored);
+      if (audit) {
+        recordAuditEvent(audit, {
+          type: "mass.import",
+          user: userContext.username,
+          now,
+          details: {
+            massId: created.id,
+            projectId: created.projectId,
+            name: created.name,
+            source: input.source,
+            rowCount: created.rows.length,
+          },
+        });
+      }
+      return { ok: true, mass: created };
     },
     listByProject: (projectId) => repository.list().filter((mass) => mass.projectId === projectId),
     rename: (id, name) =>

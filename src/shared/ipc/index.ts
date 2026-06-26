@@ -76,12 +76,7 @@ export {
   type CompileRequest,
   type CompileResponse,
 } from "./compile.js";
-export {
-  DIALOG_CHANNELS,
-  createDialogApi,
-  type DialogApi,
-  type DialogChannels,
-} from "./dialog.js";
+export { DIALOG_CHANNELS, createDialogApi, type DialogApi, type DialogChannels } from "./dialog.js";
 export {
   SETTINGS_CHANNELS,
   createSettingsApi,
@@ -103,3 +98,12 @@ export {
   type GitFileStatusDto,
   type GitPathRequest,
 } from "./git.js";
+export {
+  AUDIT_CHANNELS,
+  createAuditApi,
+  type AuditApi,
+  type AuditChannels,
+  type AuditEventDto,
+  type AuditEventTypeDto,
+  type ListAuditEventsRequest,
+} from "./audit.js";

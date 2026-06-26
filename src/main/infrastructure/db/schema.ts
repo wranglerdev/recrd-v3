@@ -71,4 +71,24 @@ export const masses = sqliteTable("masses", {
   ...auditColumns,
 });
 
-export const schema = { projects, plans, suites, cases, scripts, executions, masses };
+// Audit trail (PRD §16). Stands apart from the hierarchy tables: it has no audit
+// columns of its own (it *is* the audit), and `details` holds a JSON payload that
+// the infrastructure store redacts before persisting (PRD §18).
+export const auditEvents = sqliteTable("audit_events", {
+  id: text("id").primaryKey(),
+  type: text("type").notNull(),
+  user: text("user").notNull(),
+  at: text("at").notNull(),
+  details: text("details").notNull().default("{}"), // JSON Record<string, unknown>
+});
+
+export const schema = {
+  projects,
+  plans,
+  suites,
+  cases,
+  scripts,
+  executions,
+  masses,
+  auditEvents,
+};

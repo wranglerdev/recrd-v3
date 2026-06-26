@@ -16,6 +16,21 @@ export interface AuditSink {
   record(event: AuditEvent): void;
 }
 
+/** A persisted audit event: the event plus the store-assigned id. */
+export interface AuditEventRecord extends AuditEvent {
+  readonly id: string;
+}
+
+/**
+ * A queryable audit sink (PRD §16): records events like an {@link AuditSink} and
+ * lists them back for the audit trail, newest first. Implemented by the
+ * persistent infrastructure store; the use cases only record.
+ */
+export interface AuditTrail extends AuditSink {
+  /** Returns recorded events newest-first, capped to `limit` when given. */
+  list(limit?: number): AuditEventRecord[];
+}
+
 /** Builds an audit event, records it on the sink, and returns it. */
 export function recordAuditEvent(
   sink: AuditSink,

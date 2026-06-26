@@ -1,8 +1,0 @@
-repos:
-  primary: "."
-
-routing.mode: "maintainer"
-
-routing.contributor: .
-
-sync.remote: "https://github.com/wranglerdev/recrd-v3.git"

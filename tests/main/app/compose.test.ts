@@ -11,6 +11,7 @@ import {
 } from "@main/app/compose";
 import {
   AppInfoToken,
+  AuditTrailToken,
   CaseUseCasesToken,
   CompileUseCasesToken,
   ConfigStoreToken,
@@ -187,6 +188,15 @@ describe("registerUseCases", () => {
       if (compiled.ok) {
         expect(existsSync(compiled.robotFile)).toBe(true);
       }
+
+      // The mutating use cases record into the shared persistent audit trail
+      // (PRD §16): the case create, the mass import and the compile above.
+      const events = container.resolve(AuditTrailToken).list();
+      expect(events.map((event) => event.type).sort()).toEqual([
+        "compile",
+        "mass.import",
+        "test.change",
+      ]);
     } finally {
       database.close();
       rmSync(robotRoot, { recursive: true, force: true });
@@ -232,6 +242,7 @@ describe("buildIpcRegistry", () => {
         "settings:getAll",
         "git:status",
         "git:openExternal",
+        "audit:list",
       ] as const) {
         expect(registry.has(channel)).toBe(true);
       }

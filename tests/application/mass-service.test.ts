@@ -5,6 +5,7 @@ import {
   type MassUseCases,
   type StoredMass,
 } from "../../src/application/mass/mass-service";
+import type { AuditEvent, AuditSink } from "../../src/application/audit/audit-service";
 import type { UserContext } from "../../src/domain/auth/user-context";
 
 class FakeMassRepository implements MassRepository {
@@ -147,8 +148,61 @@ describe("createMassUseCases — list/rename/editValue (PRD §7, §16)", () => {
   });
 
   it("throws editing an unknown mass", () => {
-    expect(() =>
-      masses.editValue({ id: "ghost", rowIndex: 0, column: "x", value: "y" }),
-    ).toThrow(/massa inexistente/i);
+    expect(() => masses.editValue({ id: "ghost", rowIndex: 0, column: "x", value: "y" })).toThrow(
+      /massa inexistente/i,
+    );
+  });
+});
+
+describe("createMassUseCases — audit recording (PRD §16)", () => {
+  it("records a mass.import event when an audit sink is wired", () => {
+    const events: AuditEvent[] = [];
+    const audit: AuditSink = { record: (event) => events.push(event) };
+    const auditedMasses = createMassUseCases({
+      repository: new FakeMassRepository(),
+      projectExists: () => true,
+      userContext: USER,
+      newId: () => "mass-9",
+      clock: () => new Date("2026-06-25T12:00:00.000Z"),
+      audit,
+    });
+
+    auditedMasses.importCsv({
+      projectId: "proj-1",
+      name: "Usuários",
+      csv: "usuario,senha\nadmin,123",
+      source: "/tmp/u.csv",
+    });
+
+    expect(events).toEqual([
+      {
+        type: "mass.import",
+        user: "jdoe",
+        at: "2026-06-25T12:00:00.000Z",
+        details: {
+          massId: "mass-9",
+          projectId: "proj-1",
+          name: "Usuários",
+          source: "/tmp/u.csv",
+          rowCount: 1,
+        },
+      },
+    ]);
+  });
+
+  it("does not record when the import fails validation", () => {
+    const events: AuditEvent[] = [];
+    const auditedMasses = createMassUseCases({
+      repository: new FakeMassRepository(),
+      projectExists: () => true,
+      userContext: USER,
+      newId: () => "mass-9",
+      clock: () => new Date("2026-06-25T12:00:00.000Z"),
+      audit: { record: (event) => events.push(event) },
+    });
+
+    auditedMasses.importCsv({ projectId: "proj-1", name: "Bad", csv: "a,a\n1,2", source: "x" });
+
+    expect(events).toHaveLength(0);
   });
 });

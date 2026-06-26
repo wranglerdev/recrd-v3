@@ -7,6 +7,7 @@ import type {
   CompileUseCases,
   RobotFileWriter,
 } from "../../application/compile/compile-service.js";
+import type { AuditTrail } from "../../application/audit/audit-service.js";
 import type { MassUseCases } from "../../application/mass/mass-service.js";
 import type { ProjectUseCases } from "../../application/project/project-service.js";
 import type { RobotProjectUseCases } from "../../application/robot/robot-project-service.js";
@@ -51,6 +52,7 @@ export const CsvFileDialogToken = new Token<CsvFileDialog>("CsvFileDialog");
 export const DirectoryDialogToken = new Token<DirectoryDialog>("DirectoryDialog");
 export const ExternalOpenerToken = new Token<ExternalOpener>("ExternalOpener");
 export const RobotFileWriterToken = new Token<RobotFileWriter>("RobotFileWriter");
+export const AuditTrailToken = new Token<AuditTrail>("AuditTrail");
 
 // Application use cases (wired from infrastructure + core at the composition root).
 export const ProjectUseCasesToken = new Token<ProjectUseCases>("ProjectUseCases");

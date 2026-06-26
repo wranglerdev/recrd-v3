@@ -11,6 +11,7 @@ import {
   type TestCase,
 } from "../../src/application/hierarchy/hierarchy-service";
 import type { EntityRepository, Identified } from "../../src/application/crud/audited-crud";
+import type { AuditEvent, AuditSink } from "../../src/application/audit/audit-service";
 import type { UserContext } from "../../src/domain/auth/user-context";
 
 // Generic in-memory repository fake for any Identified entity.
@@ -217,5 +218,39 @@ describe("createCaseUseCases (PRD §6, §16)", () => {
     expect(cases.open(created.id).status).toBe("ready");
     cases.remove(created.id);
     expect(() => cases.remove(created.id)).toThrow(/caso inexistente/i);
+  });
+});
+
+describe("createCaseUseCases — audit recording (PRD §16)", () => {
+  function makeCases(audit: AuditSink): CaseUseCases {
+    return createCaseUseCases({
+      repository: new FakeRepository<TestCase>(),
+      suiteExists: () => true,
+      userContext: USER,
+      newId: nextId,
+      clock: () => now,
+      audit,
+    });
+  }
+
+  it("records a test.change event for each case mutation", () => {
+    const events: AuditEvent[] = [];
+    const cases = makeCases({ record: (event) => events.push(event) });
+
+    const created = cases.create({ suiteId: "suite-1", name: "Login" });
+    cases.rename(created.id, "Acesso");
+    cases.updateDescription(created.id, "desc");
+    cases.setStatus(created.id, "ready");
+
+    expect(events.map((event) => [event.type, event.details.action])).toEqual([
+      ["test.change", "create"],
+      ["test.change", "rename"],
+      ["test.change", "updateDescription"],
+      ["test.change", "setStatus"],
+    ]);
+    expect(events[0]).toMatchObject({
+      user: "jdoe",
+      details: { caseId: created.id, suiteId: "suite-1", action: "create" },
+    });
   });
 });

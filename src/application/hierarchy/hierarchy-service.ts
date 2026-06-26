@@ -1,4 +1,5 @@
 import { createAuditFields, type AuditFields } from "../../domain/audit/audit-fields.js";
+import { recordAuditEvent, type AuditSink } from "../audit/audit-service.js";
 import {
   auditedUpdate,
   openOrThrow,
@@ -150,14 +151,31 @@ export interface CaseUseCaseDeps extends AuditContext {
   readonly repository: EntityRepository<TestCase>;
   /** Existence check for the parent Suite (hierarchy integrity). */
   readonly suiteExists: ParentCheck;
+  /** Optional audit trail; case mutations record a `test.change` event. */
+  readonly audit?: AuditSink;
 }
 
 export function createCaseUseCases(deps: CaseUseCaseDeps): CaseUseCases {
-  const { repository, suiteExists, userContext, newId, clock } = deps;
+  const { repository, suiteExists, userContext, newId, clock, audit } = deps;
+
+  // Records a `test.change` audit event for a case mutation, when a trail is
+  // wired (PRD §16). Returns the case unchanged so it can wrap a result inline.
+  const recordChange = (testCase: TestCase, action: string): TestCase => {
+    if (audit) {
+      recordAuditEvent(audit, {
+        type: "test.change",
+        user: userContext.username,
+        now: clock(),
+        details: { caseId: testCase.id, suiteId: testCase.suiteId, action },
+      });
+    }
+    return testCase;
+  };
+
   return {
     create(input) {
       requireParentExists(suiteExists, input.suiteId, "Suíte");
-      return repository.create({
+      const created = repository.create({
         id: newId(),
         suiteId: input.suiteId,
         name: requireText(input.name, "O nome do caso"),
@@ -165,14 +183,22 @@ export function createCaseUseCases(deps: CaseUseCaseDeps): CaseUseCases {
         status: "draft",
         ...createAuditFields(userContext.username, clock()),
       });
+      return recordChange(created, "create");
     },
     listBySuite: (suiteId) => repository.list().filter((testCase) => testCase.suiteId === suiteId),
     open: (id) => openOrThrow(repository, id, "Caso"),
     rename: (id, name) =>
-      auditedUpdate(repository, deps, id, { name: requireText(name, "O nome do caso") }, "Caso"),
+      recordChange(
+        auditedUpdate(repository, deps, id, { name: requireText(name, "O nome do caso") }, "Caso"),
+        "rename",
+      ),
     updateDescription: (id, description) =>
-      auditedUpdate(repository, deps, id, { description: description.trim() }, "Caso"),
-    setStatus: (id, status) => auditedUpdate(repository, deps, id, { status }, "Caso"),
+      recordChange(
+        auditedUpdate(repository, deps, id, { description: description.trim() }, "Caso"),
+        "updateDescription",
+      ),
+    setStatus: (id, status) =>
+      recordChange(auditedUpdate(repository, deps, id, { status }, "Caso"), "setStatus"),
     remove: (id) => removeOrThrow(repository, id, "Caso"),
   };
 }

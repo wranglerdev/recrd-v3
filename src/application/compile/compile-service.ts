@@ -1,12 +1,9 @@
 import { createAuditFields, type AuditFields } from "../../domain/audit/audit-fields.js";
+import { recordAuditEvent, type AuditSink } from "../audit/audit-service.js";
 import type { ManualScript } from "../../domain/scripts/script-action.js";
 import type { AuditContext } from "../crud/audited-crud.js";
 import type { ProjectUseCases } from "../project/project-service.js";
-import {
-  compileScript,
-  type CompileFailure,
-  type SelectorWarning,
-} from "./compile-pipeline.js";
+import { compileScript, type CompileFailure, type SelectorWarning } from "./compile-pipeline.js";
 
 // Compile-and-persist use case (PRD §13, §14). Wraps the pure compile pipeline
 // with its side effects: on success it persists the compiled script
@@ -59,6 +56,8 @@ export interface CompileUseCaseDeps extends AuditContext {
   readonly robotFiles: RobotFileWriter;
   /** Only the project operations this use case needs. */
   readonly projects: Pick<ProjectUseCases, "open">;
+  /** Optional audit trail; a successful compile records a `compile` event. */
+  readonly audit?: AuditSink;
 }
 
 export interface CompileUseCases {
@@ -78,7 +77,7 @@ export function robotFileName(name: string): string {
 }
 
 export function createCompileUseCases(deps: CompileUseCaseDeps): CompileUseCases {
-  const { scripts, robotFiles, projects, userContext, newId, clock } = deps;
+  const { scripts, robotFiles, projects, userContext, newId, clock, audit } = deps;
   return {
     compileAndPersist(input) {
       const result = compileScript(input.script);
@@ -93,18 +92,33 @@ export function createCompileUseCases(deps: CompileUseCaseDeps): CompileUseCases
         throw new Error("Projeto sem repositório Robot configurado");
       }
 
+      const now = clock();
       const stored = scripts.create({
         id: newId(),
         caseId: input.caseId,
         kind: "compiled",
         content: result.robot,
-        ...createAuditFields(userContext.username, clock()),
+        ...createAuditFields(userContext.username, now),
       });
       const robotFile = robotFiles.write(
         project.robotPath,
         robotFileName(input.script.name),
         result.robot,
       );
+
+      if (audit) {
+        recordAuditEvent(audit, {
+          type: "compile",
+          user: userContext.username,
+          now,
+          details: {
+            scriptId: stored.id,
+            caseId: input.caseId,
+            projectId: input.projectId,
+            robotFile,
+          },
+        });
+      }
 
       return {
         ok: true,

@@ -2,11 +2,12 @@ import { useState, type JSX } from "react";
 import type { AppInfo } from "../shared/ipc-contract.js";
 import { HomeScreen, type ExecutionSummary } from "./screens/HomeScreen.js";
 import { AutomationScreen } from "./screens/AutomationScreen.js";
-import { MassScreen, type MassView } from "./screens/MassScreen.js";
+import { MassWorkspace } from "./screens/MassWorkspace.js";
 import { NewProjectScreen } from "./screens/NewProjectScreen.js";
 import { AboutScreen } from "./screens/AboutScreen.js";
 import { SettingsScreen } from "./screens/SettingsScreen.js";
 import { GitPanel } from "./screens/GitPanel.js";
+import { AuditScreen } from "./screens/AuditScreen.js";
 import { ActiveProjectProvider, useBridge, useIpcQuery } from "./state/index.js";
 import "./styles/app-shell.css";
 
@@ -17,7 +18,7 @@ import "./styles/app-shell.css";
 // empty/placeholder inputs; as feature channels land the placeholders are swapped
 // for real IPC reads.
 
-type View = "home" | "new-project" | "automation" | "mass" | "git" | "about" | "settings";
+type View = "home" | "new-project" | "automation" | "mass" | "git" | "audit" | "about" | "settings";
 
 type NavItem = {
   readonly view: View;
@@ -32,17 +33,12 @@ const NAV_ITEMS: readonly NavItem[] = [
   { view: "automation", label: "Automação", icon: "⏺" },
   { view: "mass", label: "Massas", icon: "▦" },
   { view: "git", label: "Git", icon: "⎇" },
+  { view: "audit", label: "Auditoria", icon: "❑" },
   { view: "settings", label: "Configurações", icon: "⚙" },
   { view: "about", label: "Sobre", icon: "ⓘ" },
 ];
 
 const EMPTY_EXECUTIONS: readonly ExecutionSummary[] = [];
-
-const EMPTY_MASS: MassView = {
-  name: "Nova massa",
-  columns: [],
-  rows: [],
-};
 
 const NOOP = (): void => {
   /* placeholder until the feature channel is wired */
@@ -132,12 +128,14 @@ function renderView(view: View, setView: (view: View) => void): JSX.Element {
         />
       );
     case "mass":
-      return <MassScreen mass={EMPTY_MASS} onEditValue={NOOP} />;
+      return <MassWorkspace />;
     case "about":
       return <AboutScreen />;
     case "settings":
       return <SettingsScreen />;
     case "git":
       return <GitPanel />;
+    case "audit":
+      return <AuditScreen />;
   }
 }

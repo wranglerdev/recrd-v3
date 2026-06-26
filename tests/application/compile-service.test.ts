@@ -7,6 +7,7 @@ import {
   type RobotFileWriter,
 } from "../../src/application/compile/compile-service";
 import type { ProjectUseCases } from "../../src/application/project/project-service";
+import type { AuditEvent, AuditSink } from "../../src/application/audit/audit-service";
 import type { ManualScript } from "../../src/domain/scripts/script-action";
 
 const USER = { username: "jdoe", displayName: "J", domain: "CORP", sid: "S-1" };
@@ -45,7 +46,7 @@ const VALID_SCRIPT: ManualScript = {
   actions: [{ type: "navigate", url: "https://example.com" }],
 };
 
-function makeUseCases(robotPath: string | null) {
+function makeUseCases(robotPath: string | null, audit?: AuditSink) {
   const scripts = fakeScripts();
   const robotFiles = fakeWriter();
   const projects = fakeProjects(robotPath);
@@ -56,6 +57,7 @@ function makeUseCases(robotPath: string | null) {
     userContext: USER,
     newId: () => "script-1",
     clock: () => new Date("2026-06-26T09:00:00.000Z"),
+    ...(audit ? { audit } : {}),
   });
   return { scripts, robotFiles, projects, useCases };
 }
@@ -121,5 +123,40 @@ describe("createCompileUseCases.compileAndPersist (PRD §13, §14)", () => {
     // Nothing persisted or written when the precondition fails.
     expect(scripts.stored).toHaveLength(0);
     expect(robotFiles.calls).toHaveLength(0);
+  });
+
+  it("records a compile event when an audit sink is wired (PRD §16)", () => {
+    const events: AuditEvent[] = [];
+    const audit: AuditSink = { record: (event) => events.push(event) };
+    const { useCases } = makeUseCases("/repo", audit);
+
+    useCases.compileAndPersist({ caseId: "c1", projectId: "p1", script: VALID_SCRIPT });
+
+    expect(events).toEqual([
+      {
+        type: "compile",
+        user: "jdoe",
+        at: "2026-06-26T09:00:00.000Z",
+        details: {
+          scriptId: "script-1",
+          caseId: "c1",
+          projectId: "p1",
+          robotFile: "/repo/tests/login_banco.robot",
+        },
+      },
+    ]);
+  });
+
+  it("does not record when compilation fails", () => {
+    const events: AuditEvent[] = [];
+    const { useCases } = makeUseCases("/repo", { record: (event) => events.push(event) });
+
+    useCases.compileAndPersist({
+      caseId: "c1",
+      projectId: "p1",
+      script: { name: "x", actions: [] },
+    });
+
+    expect(events).toHaveLength(0);
   });
 });

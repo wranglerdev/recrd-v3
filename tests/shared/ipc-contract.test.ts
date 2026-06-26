@@ -39,12 +39,21 @@ const CASES: ReadonlyArray<readonly [method: string, channel: string, arg: unkno
   ["renameMass", "mass:rename", { id: "m", name: "N" }],
   ["editMassValue", "mass:editValue", { id: "m", rowIndex: 0, column: "a", value: "b" }],
   ["selectCsvFile", "mass:selectCsv", undefined],
-  ["compileScript", "compile:run", { caseId: "c", projectId: "p", script: { name: "n", actions: [] } }],
+  [
+    "compileScript",
+    "compile:run",
+    { caseId: "c", projectId: "p", script: { name: "n", actions: [] } },
+  ],
   ["selectDirectory", "dialog:selectDirectory", undefined],
   ["getSettings", "settings:getAll", undefined],
-  ["updateSettings", "settings:update", { recording: { captureScreenshots: false, defaultTimeoutMs: 1 } }],
+  [
+    "updateSettings",
+    "settings:update",
+    { recording: { captureScreenshots: false, defaultTimeoutMs: 1 } },
+  ],
   ["getGitStatus", "git:status", { cwd: "/repo" }],
   ["openGitExternal", "git:openExternal", { cwd: "/repo" }],
+  ["listAuditEvents", "audit:list", { limit: 50 }],
 ];
 
 describe("createRecrdApi", () => {

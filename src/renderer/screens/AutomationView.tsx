@@ -5,6 +5,7 @@ import { errorMessage } from "../state/useIpc.js";
 import { AutomationScreen } from "./AutomationScreen.js";
 import { CaseExecutionHistory } from "./CaseExecutionHistory.js";
 import { CompileResultView } from "./CompileResultView.js";
+import { MassesPanel } from "./MassesPanel.js";
 import { PropertiesPanel } from "./PropertiesPanel.js";
 import { RecordingControls, type RecordingState } from "./RecordingControls.js";
 import { SandboxNavBar } from "./SandboxNavBar.js";
@@ -178,6 +179,7 @@ export function AutomationView(): JSX.Element {
             onUpdate={recording.updateAction}
           />
         ),
+        masses: <MassesPanel />,
         properties: <PropertiesPanel />,
         toggles: <TogglesPanel />,
       }}

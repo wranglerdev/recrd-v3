@@ -28,6 +28,7 @@ function stubBridge(api: Partial<RecrdApi>): void {
     setSandboxVisible: vi.fn(),
     getSettings: vi.fn().mockResolvedValue(DEFAULT_SETTINGS),
     updateSettings: vi.fn().mockResolvedValue(DEFAULT_SETTINGS),
+    listMassesByProject: vi.fn().mockResolvedValue([]),
     ...api,
   };
   Object.defineProperty(window, "recrd", { value, configurable: true });

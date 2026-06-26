@@ -124,6 +124,7 @@ export type {
   RecentExecutionDto,
   ExecutionResultDto,
   ListRecentExecutionsRequest,
+  ListExecutionsByCaseRequest,
 } from "./ipc/execution.js";
 export type {
   EnvironmentReportDto,

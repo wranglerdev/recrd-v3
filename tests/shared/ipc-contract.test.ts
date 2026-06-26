@@ -56,6 +56,7 @@ const CASES: ReadonlyArray<readonly [method: string, channel: string, arg: unkno
   ["openGitExternal", "git:openExternal", { cwd: "/repo" }],
   ["listAuditEvents", "audit:list", { limit: 50 }],
   ["listRecentExecutions", "execution:listRecent", { limit: 10 }],
+  ["listExecutionsByCase", "execution:listByCase", { caseId: "c", limit: 20 }],
   ["checkEnvironment", "env:check", { root: "/repo" }],
   ["startEnvironmentInstall", "env:install", { root: "/repo" }],
   ["startRun", "run:start", { projectId: "p1" }],

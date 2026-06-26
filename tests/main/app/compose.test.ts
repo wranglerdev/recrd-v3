@@ -341,6 +341,7 @@ describe("buildIpcRegistry", () => {
         "git:openExternal",
         "audit:list",
         "execution:listRecent",
+        "execution:listByCase",
         "env:check",
         "env:install",
         "run:start",

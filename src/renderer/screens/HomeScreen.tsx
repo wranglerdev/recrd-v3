@@ -1,4 +1,6 @@
 import type { JSX } from "react";
+import type { ExecutionResultDto } from "../../shared/ipc-contract.js";
+import { EXECUTION_RESULT_ICON as RESULT_ICON } from "./execution-format.js";
 
 // Home screen (PRD §8): recent executions + quick actions, designed to reach an
 // automation in up to 3 clicks. Presentational — data and handlers are injected,
@@ -7,7 +9,7 @@ import type { JSX } from "react";
 export type ExecutionSummary = {
   readonly id: string;
   readonly name: string;
-  readonly result: "passed" | "failed" | "error";
+  readonly result: ExecutionResultDto;
   readonly when: string;
   readonly duration: string;
 };
@@ -18,12 +20,6 @@ export type HomeScreenProps = {
   onRecordTest: () => void;
   onImportMass: () => void;
   onOpenLastProject: () => void;
-};
-
-const RESULT_ICON: Record<ExecutionSummary["result"], string> = {
-  passed: "✔",
-  failed: "✘",
-  error: "⚠",
 };
 
 export function HomeScreen(props: HomeScreenProps): JSX.Element {

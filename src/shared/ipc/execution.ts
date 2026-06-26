@@ -21,26 +21,42 @@ export interface ListRecentExecutionsRequest {
   readonly limit?: number;
 }
 
+export interface ListExecutionsByCaseRequest {
+  /** The case whose execution history is listed. */
+  readonly caseId: string;
+  /** Caps the number of (newest-first) executions returned; default applies when omitted. */
+  readonly limit?: number;
+}
+
 export type ExecutionChannels = {
   "execution:listRecent": {
     request: ListRecentExecutionsRequest;
     response: readonly RecentExecutionDto[];
   };
+  "execution:listByCase": {
+    request: ListExecutionsByCaseRequest;
+    response: readonly RecentExecutionDto[];
+  };
 };
 
-export const EXECUTION_CHANNELS = defineChannelNames<ExecutionChannels, ["execution:listRecent"]>([
-  "execution:listRecent",
-]);
+export const EXECUTION_CHANNELS = defineChannelNames<
+  ExecutionChannels,
+  ["execution:listRecent", "execution:listByCase"]
+>(["execution:listRecent", "execution:listByCase"]);
 
 /** The slice of the renderer API served by the execution feature. */
 export interface ExecutionApi {
   listRecentExecutions(
     request: ListRecentExecutionsRequest,
   ): Promise<readonly RecentExecutionDto[]>;
+  listExecutionsByCase(
+    request: ListExecutionsByCaseRequest,
+  ): Promise<readonly RecentExecutionDto[]>;
 }
 
 export function createExecutionApi(invoke: Invoke<ExecutionChannels>): ExecutionApi {
   return {
     listRecentExecutions: (request) => invoke("execution:listRecent", request),
+    listExecutionsByCase: (request) => invoke("execution:listByCase", request),
   };
 }

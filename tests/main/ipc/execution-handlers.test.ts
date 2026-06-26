@@ -16,7 +16,7 @@ describe("registerExecutionHandlers (PRD §8, §15)", () => {
   it("lists recent executions, forwarding the limit", async () => {
     const listRecent = vi.fn().mockReturnValue([RECENT]);
     const registry = new IpcRegistry();
-    registerExecutionHandlers(registry, { listRecent, record: vi.fn() });
+    registerExecutionHandlers(registry, { listRecent, listByCase: vi.fn(), record: vi.fn() });
 
     await expect(registry.dispatch("execution:listRecent", { limit: 5 })).resolves.toEqual([
       RECENT,
@@ -27,9 +27,29 @@ describe("registerExecutionHandlers (PRD §8, §15)", () => {
   it("passes an undefined limit through when omitted", async () => {
     const listRecent = vi.fn().mockReturnValue([]);
     const registry = new IpcRegistry();
-    registerExecutionHandlers(registry, { listRecent, record: vi.fn() });
+    registerExecutionHandlers(registry, { listRecent, listByCase: vi.fn(), record: vi.fn() });
 
     await expect(registry.dispatch("execution:listRecent", {})).resolves.toEqual([]);
     expect(listRecent).toHaveBeenCalledWith(undefined);
+  });
+
+  it("lists a case's executions, forwarding the case id and limit", async () => {
+    const listByCase = vi.fn().mockReturnValue([RECENT]);
+    const registry = new IpcRegistry();
+    registerExecutionHandlers(registry, { listRecent: vi.fn(), listByCase, record: vi.fn() });
+
+    await expect(
+      registry.dispatch("execution:listByCase", { caseId: "c1", limit: 5 }),
+    ).resolves.toEqual([RECENT]);
+    expect(listByCase).toHaveBeenCalledWith("c1", 5);
+  });
+
+  it("passes an undefined case limit through when omitted", async () => {
+    const listByCase = vi.fn().mockReturnValue([]);
+    const registry = new IpcRegistry();
+    registerExecutionHandlers(registry, { listRecent: vi.fn(), listByCase, record: vi.fn() });
+
+    await expect(registry.dispatch("execution:listByCase", { caseId: "c1" })).resolves.toEqual([]);
+    expect(listByCase).toHaveBeenCalledWith("c1", undefined);
   });
 });

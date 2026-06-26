@@ -61,12 +61,31 @@ export interface ExecutionUseCaseDeps {
 export interface ExecutionUseCases {
   /** Returns executions newest-first, capped to `limit` (default 10). */
   listRecent(limit?: number): RecentExecution[];
+  /** Returns a single case's executions newest-first, capped to `limit` (default 20). */
+  listByCase(caseId: string, limit?: number): RecentExecution[];
   /** Records a finished run: persists the row (audited) and saves its log. */
   record(input: RecordExecutionInput): StoredExecution;
 }
 
 export function createExecutionUseCases(deps: ExecutionUseCaseDeps): ExecutionUseCases {
   const { repository, caseName, userContext, newId, saveLog } = deps;
+
+  /** Sorts newest-first, caps to `limit` and resolves each case name. */
+  function summarise(executions: StoredExecution[], limit: number): RecentExecution[] {
+    return executions
+      .slice()
+      .sort((a, b) => (a.startedAt < b.startedAt ? 1 : a.startedAt > b.startedAt ? -1 : 0))
+      .slice(0, limit)
+      .map((execution) => ({
+        id: execution.id,
+        caseId: execution.caseId,
+        caseName: caseName(execution.caseId) ?? "Caso removido",
+        result: execution.result,
+        startedAt: execution.startedAt,
+        durationMs: execution.durationMs,
+      }));
+  }
+
   return {
     record(input) {
       const id = newId();
@@ -84,19 +103,13 @@ export function createExecutionUseCases(deps: ExecutionUseCaseDeps): ExecutionUs
       return stored;
     },
     listRecent(limit = 10) {
-      return repository
-        .list()
-        .slice()
-        .sort((a, b) => (a.startedAt < b.startedAt ? 1 : a.startedAt > b.startedAt ? -1 : 0))
-        .slice(0, limit)
-        .map((execution) => ({
-          id: execution.id,
-          caseId: execution.caseId,
-          caseName: caseName(execution.caseId) ?? "Caso removido",
-          result: execution.result,
-          startedAt: execution.startedAt,
-          durationMs: execution.durationMs,
-        }));
+      return summarise(repository.list(), limit);
+    },
+    listByCase(caseId, limit = 20) {
+      return summarise(
+        repository.list().filter((execution) => execution.caseId === caseId),
+        limit,
+      );
     },
   };
 }

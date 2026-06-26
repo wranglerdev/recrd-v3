@@ -1,6 +1,7 @@
 import type { JSX } from "react";
 import type { ProjectDto, RecentExecutionDto } from "../../shared/ipc-contract.js";
 import { useActiveProject, useBridge, useIpcAction, useIpcQuery } from "../state/index.js";
+import { formatExecutionDuration, formatExecutionWhen } from "./execution-format.js";
 import { HomeScreen, type ExecutionSummary } from "./HomeScreen.js";
 
 // Home container (PRD §8): binds the presentational HomeScreen to real data —
@@ -17,23 +18,13 @@ export type HomeNavigation = {
   onOpenProject: () => void;
 };
 
-/** Formats an ISO timestamp as "YYYY-MM-DD HH:MM" for the recent-executions list. */
-function formatWhen(iso: string): string {
-  return iso.replace("T", " ").slice(0, 16);
-}
-
-/** Formats a duration in milliseconds as a compact seconds string. */
-function formatDuration(durationMs: number): string {
-  return `${(durationMs / 1000).toFixed(1)}s`;
-}
-
 function toSummary(execution: RecentExecutionDto): ExecutionSummary {
   return {
     id: execution.id,
     name: execution.caseName,
     result: execution.result,
-    when: formatWhen(execution.startedAt),
-    duration: formatDuration(execution.durationMs),
+    when: formatExecutionWhen(execution.startedAt),
+    duration: formatExecutionDuration(execution.durationMs),
   };
 }
 

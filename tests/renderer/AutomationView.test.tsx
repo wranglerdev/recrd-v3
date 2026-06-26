@@ -46,22 +46,28 @@ const PROJECT: ProjectDto = {
 
 function WithActiveProject({
   project,
+  testCase,
   children,
 }: {
   project: ProjectDto | null;
+  testCase?: { id: string; name: string } | null;
   children: ReactNode;
 }) {
-  const { setActiveProject } = useActiveProject();
+  const { setActiveProject, setActiveCase } = useActiveProject();
   useEffect(() => {
     setActiveProject(project);
-  }, [project, setActiveProject]);
+    setActiveCase(testCase ?? null);
+  }, [project, testCase, setActiveProject, setActiveCase]);
   return <>{children}</>;
 }
 
-function renderView(project: ProjectDto | null = null) {
+function renderView(
+  project: ProjectDto | null = null,
+  testCase: { id: string; name: string } | null = null,
+) {
   render(
     <ActiveProjectProvider>
-      <WithActiveProject project={project}>
+      <WithActiveProject project={project} testCase={testCase}>
         <AutomationView />
       </WithActiveProject>
     </ActiveProjectProvider>,
@@ -122,6 +128,38 @@ describe("AutomationView (PRD §9, §15)", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Play" }));
     await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent(/já em andamento/i));
+  });
+
+  it("shows the active case's execution history and refreshes it on exit", async () => {
+    const listExecutionsByCase = vi
+      .fn()
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([
+        {
+          id: "ex1",
+          caseId: "c1",
+          caseName: "Login",
+          result: "passed",
+          startedAt: "2026-06-26T10:00:00.000Z",
+          durationMs: 1500,
+        },
+      ]);
+    stubBridge({
+      startRun: vi.fn().mockResolvedValue({ started: true }),
+      stopRun: vi.fn(),
+      listExecutionsByCase,
+    });
+    const emit = stubEvents();
+    renderView(PROJECT, { id: "c1", name: "Login" });
+
+    // History loads for the active case (empty at first).
+    await waitFor(() => expect(listExecutionsByCase).toHaveBeenCalledWith({ caseId: "c1" }));
+    expect(screen.getByText(/nenhuma execução para este caso/i)).toBeInTheDocument();
+
+    // A finished run refreshes the history, surfacing the new row.
+    emit.emitExit(0);
+    await waitFor(() => expect(listExecutionsByCase).toHaveBeenCalledTimes(2));
+    expect(screen.getByText(/2026-06-26 10:00 \(1\.5s\)/)).toBeInTheDocument();
   });
 
   it("stops the run via Stop and Pause", async () => {

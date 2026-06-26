@@ -9,4 +9,7 @@ export function registerExecutionHandlers(
   useCases: ExecutionUseCases,
 ): void {
   registry.handle("execution:listRecent", (request) => useCases.listRecent(request.limit));
+  registry.handle("execution:listByCase", (request) =>
+    useCases.listByCase(request.caseId, request.limit),
+  );
 }

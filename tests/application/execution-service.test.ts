@@ -105,6 +105,38 @@ describe("createExecutionUseCases.listRecent (PRD §8, §15)", () => {
   });
 });
 
+describe("createExecutionUseCases.listByCase (PRD §8, §15)", () => {
+  it("returns only the given case's executions, newest-first", () => {
+    const repository = fakeRepository([
+      execution({ id: "e1", caseId: "c1", startedAt: "2026-06-26T09:00:00.000Z" }),
+      execution({ id: "e2", caseId: "c2", startedAt: "2026-06-26T11:00:00.000Z" }),
+      execution({ id: "e3", caseId: "c1", startedAt: "2026-06-26T10:00:00.000Z" }),
+    ]);
+    const useCases = make({ repository, caseName: () => "Login" });
+
+    expect(useCases.listByCase("c1").map((e) => e.id)).toEqual(["e3", "e1"]);
+  });
+
+  it("caps the result to the requested limit (default 20)", () => {
+    const rows = Array.from({ length: 25 }, (_, index) =>
+      execution({
+        id: `e${index}`,
+        caseId: "c1",
+        startedAt: `2026-06-26T${String(index).padStart(2, "0")}:00:00.000Z`,
+      }),
+    );
+    const useCases = make({ repository: fakeRepository(rows) });
+
+    expect(useCases.listByCase("c1")).toHaveLength(20);
+    expect(useCases.listByCase("c1", 2)).toHaveLength(2);
+  });
+
+  it("returns an empty list when the case has no executions", () => {
+    const useCases = make({ repository: fakeRepository([execution({ caseId: "other" })]) });
+    expect(useCases.listByCase("c1")).toEqual([]);
+  });
+});
+
 describe("createExecutionUseCases.record (PRD §15, §16)", () => {
   it("persists an audited execution from a finished run and saves its log", () => {
     const repository = fakeRepository();

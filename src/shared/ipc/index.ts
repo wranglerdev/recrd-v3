@@ -117,6 +117,7 @@ export {
   type RecentExecutionDto,
   type ExecutionResultDto,
   type ListRecentExecutionsRequest,
+  type ListExecutionsByCaseRequest,
 } from "./execution.js";
 export {
   ENVIRONMENT_CHANNELS,

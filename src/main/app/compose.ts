@@ -21,6 +21,7 @@ import {
   CsvFileDialogToken,
   DatabaseToken,
   DirectoryDialogToken,
+  ExternalOpenerToken,
   GitServiceFactoryToken,
   LoggerToken,
   MassUseCasesToken,
@@ -45,6 +46,7 @@ import { createCompiledScriptRepository } from "../infrastructure/db/script-repo
 import type { CsvFileDialog } from "../infrastructure/dialog/csv-file-dialog.js";
 import type { DirectoryDialog } from "../infrastructure/dialog/directory-dialog.js";
 import { createGitService } from "../infrastructure/git/git-service.js";
+import type { ExternalOpener } from "../infrastructure/shell/external-opener.js";
 import type { Logger } from "../infrastructure/logging/logger.js";
 import type { AppPaths } from "../infrastructure/paths/app-paths.js";
 import { nodeToolRunner } from "../infrastructure/python/environment.js";
@@ -57,6 +59,7 @@ import { registerCompileHandlers } from "../ipc/handlers/compile-handlers.js";
 import { registerDialogHandlers } from "../ipc/handlers/dialog-handlers.js";
 import { registerHierarchyHandlers } from "../ipc/handlers/hierarchy-handlers.js";
 import { registerMassHandlers } from "../ipc/handlers/mass-handlers.js";
+import { registerGitHandlers } from "../ipc/handlers/git-handlers.js";
 import { registerProjectHandlers } from "../ipc/handlers/project-handlers.js";
 import { registerRobotHandlers } from "../ipc/handlers/robot-handlers.js";
 import { registerSettingsHandlers } from "../ipc/handlers/settings-handlers.js";
@@ -98,6 +101,7 @@ export interface InfrastructureServices {
   readonly sandboxViewFactory: SandboxViewFactory;
   readonly csvFileDialog: CsvFileDialog;
   readonly directoryDialog: DirectoryDialog;
+  readonly externalOpener: ExternalOpener;
 }
 
 /**
@@ -123,6 +127,7 @@ export function registerInfrastructure(
   container.register(SandboxViewFactoryToken, { useValue: services.sandboxViewFactory });
   container.register(CsvFileDialogToken, { useValue: services.csvFileDialog });
   container.register(DirectoryDialogToken, { useValue: services.directoryDialog });
+  container.register(ExternalOpenerToken, { useValue: services.externalOpener });
   return container;
 }
 
@@ -235,5 +240,9 @@ export function buildIpcRegistry(container: Container): IpcRegistry {
   registerCompileHandlers(registry, container.resolve(CompileUseCasesToken));
   registerDialogHandlers(registry, container.resolve(DirectoryDialogToken));
   registerSettingsHandlers(registry, container.resolve(ConfigStoreToken));
+  registerGitHandlers(registry, {
+    gitFactory: container.resolve(GitServiceFactoryToken),
+    externalOpener: container.resolve(ExternalOpenerToken),
+  });
   return registry;
 }

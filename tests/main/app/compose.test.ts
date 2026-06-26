@@ -79,6 +79,7 @@ describe("registerInfrastructure", () => {
         sandboxViewFactory,
         csvFileDialog: { selectCsv: vi.fn(async () => null) },
         directoryDialog: { selectDirectory: vi.fn(async () => null) },
+        externalOpener: { openPath: vi.fn(async () => undefined) },
       });
 
       expect(container.resolve(DatabaseToken)).toBe(database);
@@ -118,6 +119,7 @@ describe("registerUseCases", () => {
         sandboxViewFactory: vi.fn(),
         csvFileDialog: { selectCsv: vi.fn(async () => null) },
         directoryDialog: { selectDirectory: vi.fn(async () => null) },
+        externalOpener: { openPath: vi.fn(async () => undefined) },
       });
       registerUseCases(container);
 
@@ -145,6 +147,7 @@ describe("registerUseCases", () => {
         sandboxViewFactory: vi.fn(),
         csvFileDialog: { selectCsv: vi.fn(async () => null) },
         directoryDialog: { selectDirectory: vi.fn(async () => null) },
+        externalOpener: { openPath: vi.fn(async () => undefined) },
       });
       registerUseCases(container);
 
@@ -202,6 +205,7 @@ describe("buildIpcRegistry", () => {
         sandboxViewFactory: vi.fn(),
         csvFileDialog: { selectCsv: vi.fn(async () => null) },
         directoryDialog: { selectDirectory: vi.fn(async () => null) },
+        externalOpener: { openPath: vi.fn(async () => undefined) },
       });
       registerUseCases(container);
       const registry = buildIpcRegistry(container);
@@ -225,6 +229,9 @@ describe("buildIpcRegistry", () => {
         "mass:selectCsv",
         "compile:run",
         "dialog:selectDirectory",
+        "settings:getAll",
+        "git:status",
+        "git:openExternal",
       ] as const) {
         expect(registry.has(channel)).toBe(true);
       }

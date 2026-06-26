@@ -93,3 +93,13 @@ export {
   type RecordingPreferencesDto,
   type WindowStateDto,
 } from "./settings.js";
+export {
+  GIT_CHANNELS,
+  createGitApi,
+  type GitApi,
+  type GitChannels,
+  type GitStatusResult,
+  type GitChangeDto,
+  type GitFileStatusDto,
+  type GitPathRequest,
+} from "./git.js";

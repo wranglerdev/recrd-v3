@@ -43,6 +43,8 @@ const CASES: ReadonlyArray<readonly [method: string, channel: string, arg: unkno
   ["selectDirectory", "dialog:selectDirectory", undefined],
   ["getSettings", "settings:getAll", undefined],
   ["updateSettings", "settings:update", { recording: { captureScreenshots: false, defaultTimeoutMs: 1 } }],
+  ["getGitStatus", "git:status", { cwd: "/repo" }],
+  ["openGitExternal", "git:openExternal", { cwd: "/repo" }],
 ];
 
 describe("createRecrdApi", () => {

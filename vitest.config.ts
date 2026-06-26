@@ -55,6 +55,7 @@ export default defineConfig({
         "src/main/infrastructure/robot/robot-runner.ts",
         "src/main/infrastructure/dialog/csv-file-dialog.ts",
         "src/main/infrastructure/dialog/directory-dialog.ts",
+        "src/main/infrastructure/shell/external-opener.ts",
         "src/main/sandbox/sandbox-view.ts",
       ],
       thresholds: {

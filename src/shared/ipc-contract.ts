@@ -42,6 +42,7 @@ import {
   type SettingsApi,
   type SettingsChannels,
 } from "./ipc/settings.js";
+import { GIT_CHANNELS, createGitApi, type GitApi, type GitChannels } from "./ipc/git.js";
 
 export type { ChannelDef, ChannelMap, Invoke, RequestOf, ResponseOf } from "./ipc/core.js";
 export type { AppInfo } from "./ipc/app.js";
@@ -92,6 +93,12 @@ export type {
   RecordingPreferencesDto,
   WindowStateDto,
 } from "./ipc/settings.js";
+export type {
+  GitStatusResult,
+  GitChangeDto,
+  GitFileStatusDto,
+  GitPathRequest,
+} from "./ipc/git.js";
 
 /**
  * Every IPC channel, composed from the feature channel maps by intersection
@@ -105,7 +112,8 @@ export type IpcChannelMap = AppChannels &
   MassChannels &
   CompileChannels &
   DialogChannels &
-  SettingsChannels;
+  SettingsChannels &
+  GitChannels;
 
 export type IpcChannel = keyof IpcChannelMap;
 export type IpcRequest<C extends IpcChannel> = IpcChannelMap[C]["request"];
@@ -127,6 +135,7 @@ export const IPC_CHANNELS = [
   ...COMPILE_CHANNELS,
   ...DIALOG_CHANNELS,
   ...SETTINGS_CHANNELS,
+  ...GIT_CHANNELS,
 ] as const satisfies readonly IpcChannel[];
 
 /**
@@ -142,7 +151,8 @@ export type RecrdApi = AppApi &
   MassApi &
   CompileApi &
   DialogApi &
-  SettingsApi;
+  SettingsApi &
+  GitApi;
 
 /**
  * Builds the renderer API from an `invoke` function by composing the per-feature
@@ -159,5 +169,6 @@ export function createRecrdApi(invoke: IpcInvoke): RecrdApi {
     ...createCompileApi(invoke),
     ...createDialogApi(invoke),
     ...createSettingsApi(invoke),
+    ...createGitApi(invoke),
   };
 }

@@ -6,6 +6,7 @@ import { AutomationScreen } from "./AutomationScreen.js";
 import { CaseExecutionHistory } from "./CaseExecutionHistory.js";
 import { CompileResultView } from "./CompileResultView.js";
 import { PropertiesPanel } from "./PropertiesPanel.js";
+import { RecordingControls, type RecordingState } from "./RecordingControls.js";
 import { SandboxNavBar } from "./SandboxNavBar.js";
 import { TimelinePanel } from "./TimelinePanel.js";
 import { TogglesPanel } from "./TogglesPanel.js";
@@ -38,12 +39,16 @@ export function AutomationView(): JSX.Element {
   const [compileMsg, setCompileMsg] = useState<string | null>(null);
   const [compileResult, setCompileResult] = useState<CompileResponse | null>(null);
 
+  // Recording lifecycle (PRD §10): capture is only recorded while in the
+  // "recording" state, driven by the explicit controls below.
+  const [recordingState, setRecordingState] = useState<RecordingState>("idle");
+
   // Record sandbox interactions into the active case's manual script, persisting
-  // incrementally (PRD §10). Recording runs while a case is selected.
+  // incrementally (PRD §10).
   const recording = useRecordingSession({
     caseId: activeCase?.id ?? null,
     caseName: activeCase?.name ?? "Gravação",
-    active: activeCase !== null,
+    active: recordingState === "recording" && activeCase !== null,
   });
 
   useIpcEvent("run:line", (payload) => setLog((lines) => [...lines, payload.line]));
@@ -111,6 +116,12 @@ export function AutomationView(): JSX.Element {
       .catch((cause: unknown) => setExportMsg(errorMessage(cause)));
   };
 
+  const handleStartRecording = (): void => {
+    recording.clear();
+    setRecordingState("recording");
+  };
+  const handleStopRecording = (): void => setRecordingState("idle");
+
   const handleCompile = (): void => {
     if (bridge === null || activeProject === null || activeCase === null) {
       setCompileMsg("Selecione um caso para compilar.");
@@ -173,6 +184,13 @@ export function AutomationView(): JSX.Element {
       onSandboxViewportChange={handleSandboxViewport}
       sidebar={
         <>
+          <RecordingControls
+            state={recordingState}
+            onStart={handleStartRecording}
+            onPause={() => setRecordingState("paused")}
+            onResume={() => setRecordingState("recording")}
+            onStop={handleStopRecording}
+          />
           <section aria-label="Log de execução">
             <p>{running ? "Executando…" : "Parado"}</p>
             {!running && exitCode !== null && (

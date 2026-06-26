@@ -277,7 +277,8 @@ describe("AutomationView (PRD §9, §15)", () => {
     const emit = stubEvents();
     renderView(PROJECT, { id: "c1", name: "Login" });
 
-    // Record one action so there is something to compile.
+    // Start recording, then capture one action so there is something to compile.
+    fireEvent.click(screen.getByRole("button", { name: "Gravar" }));
     emit.emitCapture({ type: "navigate", url: "https://e.com" });
     fireEvent.click(screen.getByRole("button", { name: "Compilar" }));
 
@@ -303,6 +304,33 @@ describe("AutomationView (PRD §9, §15)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Compilar" }));
     expect(screen.getByText(/nenhuma ação gravada para compilar/i)).toBeInTheDocument();
     expect(window.recrd?.compileScript).not.toHaveBeenCalled();
+  });
+
+  it("records capture only between Gravar and Pausar (PRD §10)", async () => {
+    const saveManualScript = vi.fn().mockResolvedValue(undefined);
+    stubBridge({
+      startRun: vi.fn(),
+      saveManualScript,
+      listExecutionsByCase: vi.fn().mockResolvedValue([]),
+    });
+    const emit = stubEvents();
+    renderView(PROJECT, { id: "c1", name: "Login" });
+
+    // Idle: capture is ignored.
+    emit.emitCapture({ type: "click", selector: "#a" });
+    expect(screen.getByText(/gravação: parada/i)).toBeInTheDocument();
+
+    // Recording: capture is accumulated into the timeline.
+    fireEvent.click(screen.getByRole("button", { name: "Gravar" }));
+    emit.emitCapture({ type: "click", selector: "#b" });
+    expect(screen.getByText(/Clicar em #b/)).toBeInTheDocument();
+
+    // Paused: further capture is ignored.
+    fireEvent.click(screen.getByRole("button", { name: "Pausar" }));
+    emit.emitCapture({ type: "click", selector: "#c" });
+    expect(screen.queryByText(/Clicar em #c/)).not.toBeInTheDocument();
+
+    await waitFor(() => expect(saveManualScript).toHaveBeenCalled());
   });
 
   it("stops the run via Stop and Pause", async () => {

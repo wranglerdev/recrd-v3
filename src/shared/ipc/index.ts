@@ -137,4 +137,13 @@ export {
   type IpcEventListener,
   type StreamLineEvent,
   type InstallDoneEvent,
+  type RunExitEvent,
 } from "./events.js";
+export {
+  RUN_CHANNELS,
+  createRunApi,
+  type RunApi,
+  type RunChannels,
+  type StartRunRequest,
+  type StartRunResult,
+} from "./run.js";

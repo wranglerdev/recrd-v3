@@ -17,9 +17,16 @@ export interface InstallDoneEvent {
   readonly failedCommand: string | null;
 }
 
+/** Exit of a streamed Robot run, with the process exit code (PRD §15). */
+export interface RunExitEvent {
+  readonly exitCode: number;
+}
+
 export type IpcEventMap = {
   "env:install:line": StreamLineEvent;
   "env:install:done": InstallDoneEvent;
+  "run:line": StreamLineEvent;
+  "run:exit": RunExitEvent;
 };
 
 export type IpcEventChannel = keyof IpcEventMap;
@@ -27,6 +34,8 @@ export type IpcEventChannel = keyof IpcEventMap;
 export const IPC_EVENT_CHANNELS = [
   "env:install:line",
   "env:install:done",
+  "run:line",
+  "run:exit",
 ] as const satisfies readonly IpcEventChannel[];
 
 export type IpcEventListener<C extends IpcEventChannel> = (payload: IpcEventMap[C]) => void;

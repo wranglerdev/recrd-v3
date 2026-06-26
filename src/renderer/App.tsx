@@ -1,7 +1,7 @@
 import { useState, type JSX } from "react";
 import type { AppInfo } from "../shared/ipc-contract.js";
 import { HomeView } from "./screens/HomeView.js";
-import { AutomationScreen } from "./screens/AutomationScreen.js";
+import { AutomationView } from "./screens/AutomationView.js";
 import { MassWorkspace } from "./screens/MassWorkspace.js";
 import { NewProjectScreen } from "./screens/NewProjectScreen.js";
 import { AboutScreen } from "./screens/AboutScreen.js";
@@ -51,10 +51,6 @@ const NAV_ITEMS: readonly NavItem[] = [
   { view: "settings", label: "Configurações", icon: "⚙" },
   { view: "about", label: "Sobre", icon: "ⓘ" },
 ];
-
-const NOOP = (): void => {
-  /* placeholder until the feature channel is wired */
-};
 
 function useAppInfo(): AppInfo | null {
   // The bridge is absent outside Electron (plain Vite/preview, tests); the query
@@ -127,19 +123,7 @@ function renderView(view: View, setView: (view: View) => void): JSX.Element {
     case "explorer":
       return <ProjectExplorer />;
     case "automation":
-      return (
-        <AutomationScreen
-          title="Nova automação"
-          toolbar={{
-            onPlay: NOOP,
-            onPause: NOOP,
-            onStop: NOOP,
-            onReload: NOOP,
-            onExport: NOOP,
-            onCompile: NOOP,
-          }}
-        />
-      );
+      return <AutomationView />;
     case "mass":
       return <MassWorkspace />;
     case "about":

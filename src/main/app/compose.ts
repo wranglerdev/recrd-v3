@@ -73,6 +73,7 @@ import { registerCompileHandlers } from "../ipc/handlers/compile-handlers.js";
 import { registerDialogHandlers } from "../ipc/handlers/dialog-handlers.js";
 import { registerExecutionHandlers } from "../ipc/handlers/execution-handlers.js";
 import { registerEnvironmentHandlers } from "../ipc/handlers/environment-handlers.js";
+import { registerRunHandlers } from "../ipc/handlers/run-handlers.js";
 import type { SettableIpcEventEmitter } from "../ipc/ipc-event-emitter.js";
 import { registerHierarchyHandlers } from "../ipc/handlers/hierarchy-handlers.js";
 import { registerMassHandlers } from "../ipc/handlers/mass-handlers.js";
@@ -301,6 +302,11 @@ export function buildIpcRegistry(container: Container): IpcRegistry {
     toolRunner: container.resolve(ToolRunnerToken),
     venvPresent: directoryHasVenv,
     install: container.resolve(InstallUseCasesToken),
+  });
+  registerRunHandlers(registry, {
+    runner: container.resolve(RobotRunnerToken),
+    emitter: container.resolve(EventEmitterToken),
+    projects: container.resolve(ProjectUseCasesToken),
   });
   return registry;
 }

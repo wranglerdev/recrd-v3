@@ -2,8 +2,13 @@ import { describe, expect, it } from "vitest";
 import { IPC_EVENT_CHANNELS } from "@shared/ipc";
 
 describe("IPC_EVENT_CHANNELS", () => {
-  it("lists the install streaming channels", () => {
-    expect(IPC_EVENT_CHANNELS).toEqual(["env:install:line", "env:install:done"]);
+  it("lists the install and run streaming channels", () => {
+    expect(IPC_EVENT_CHANNELS).toEqual([
+      "env:install:line",
+      "env:install:done",
+      "run:line",
+      "run:exit",
+    ]);
   });
 
   it("has no duplicates", () => {

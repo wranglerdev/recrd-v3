@@ -49,7 +49,7 @@ describe("App", () => {
     render(<App />);
 
     fireEvent.click(screen.getByRole("button", { name: /gravar novo teste/i }));
-    expect(screen.getByRole("heading", { name: /nova automação/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /^automação$/i })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /início/i }));
     fireEvent.click(screen.getByRole("button", { name: /importar massa/i }));
@@ -66,7 +66,7 @@ describe("App", () => {
     expect(screen.getByRole("button", { name: /início/i })).toHaveAttribute("aria-current", "page");
 
     fireEvent.click(screen.getByRole("button", { name: /automação/i }));
-    expect(screen.getByRole("heading", { name: /nova automação/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /^automação$/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /automação/i })).toHaveAttribute(
       "aria-current",
       "page",

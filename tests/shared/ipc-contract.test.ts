@@ -58,6 +58,8 @@ const CASES: ReadonlyArray<readonly [method: string, channel: string, arg: unkno
   ["listRecentExecutions", "execution:listRecent", { limit: 10 }],
   ["checkEnvironment", "env:check", { root: "/repo" }],
   ["startEnvironmentInstall", "env:install", { root: "/repo" }],
+  ["startRun", "run:start", { projectId: "p1" }],
+  ["stopRun", "run:stop", undefined],
 ];
 
 describe("createRecrdApi", () => {

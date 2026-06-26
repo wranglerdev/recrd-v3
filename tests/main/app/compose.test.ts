@@ -287,6 +287,8 @@ describe("buildIpcRegistry", () => {
         "execution:listRecent",
         "env:check",
         "env:install",
+        "run:start",
+        "run:stop",
       ] as const) {
         expect(registry.has(channel)).toBe(true);
       }

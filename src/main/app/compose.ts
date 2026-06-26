@@ -6,6 +6,11 @@ import {
 } from "../../application/hierarchy/hierarchy-service.js";
 import { createCompileUseCases } from "../../application/compile/compile-service.js";
 import { createExecutionUseCases } from "../../application/execution/execution-service.js";
+import {
+  createInstallUseCases,
+  type InstallProgress,
+  type StreamingCommandRunner,
+} from "../../application/environment/install-service.js";
 import { createMassUseCases } from "../../application/mass/mass-service.js";
 import { createProjectUseCases } from "../../application/project/project-service.js";
 import { createRobotProjectUseCases } from "../../application/robot/robot-project-service.js";
@@ -20,7 +25,10 @@ import {
   CaseUseCasesToken,
   CompileUseCasesToken,
   ConfigStoreToken,
+  EventEmitterToken,
   ExecutionUseCasesToken,
+  InstallCommandRunnerToken,
+  InstallUseCasesToken,
   CsvFileDialogToken,
   DatabaseToken,
   DirectoryDialogToken,
@@ -65,6 +73,7 @@ import { registerCompileHandlers } from "../ipc/handlers/compile-handlers.js";
 import { registerDialogHandlers } from "../ipc/handlers/dialog-handlers.js";
 import { registerExecutionHandlers } from "../ipc/handlers/execution-handlers.js";
 import { registerEnvironmentHandlers } from "../ipc/handlers/environment-handlers.js";
+import type { SettableIpcEventEmitter } from "../ipc/ipc-event-emitter.js";
 import { registerHierarchyHandlers } from "../ipc/handlers/hierarchy-handlers.js";
 import { registerMassHandlers } from "../ipc/handlers/mass-handlers.js";
 import { registerGitHandlers } from "../ipc/handlers/git-handlers.js";
@@ -110,6 +119,10 @@ export interface InfrastructureServices {
   readonly csvFileDialog: CsvFileDialog;
   readonly directoryDialog: DirectoryDialog;
   readonly externalOpener: ExternalOpener;
+  /** Pushes streamed events to the renderer; target attached after the window opens. */
+  readonly eventEmitter: SettableIpcEventEmitter;
+  /** Runs install-plan commands, streaming their output (spawn-backed). */
+  readonly installCommandRunner: StreamingCommandRunner;
 }
 
 /**
@@ -141,6 +154,8 @@ export function registerInfrastructure(
   container.register(CsvFileDialogToken, { useValue: services.csvFileDialog });
   container.register(DirectoryDialogToken, { useValue: services.directoryDialog });
   container.register(ExternalOpenerToken, { useValue: services.externalOpener });
+  container.register(EventEmitterToken, { useValue: services.eventEmitter });
+  container.register(InstallCommandRunnerToken, { useValue: services.installCommandRunner });
   return container;
 }
 
@@ -241,6 +256,16 @@ export function registerUseCases(container: Container): Container {
       });
     },
   });
+  container.register(InstallUseCasesToken, {
+    useFactory: (c) => {
+      const emitter = c.resolve(EventEmitterToken);
+      const progress: InstallProgress = {
+        line: (line) => emitter.emit("env:install:line", { line }),
+        done: (ok, failedCommand) => emitter.emit("env:install:done", { ok, failedCommand }),
+      };
+      return createInstallUseCases({ runner: c.resolve(InstallCommandRunnerToken), progress });
+    },
+  });
   return container;
 }
 
@@ -275,6 +300,7 @@ export function buildIpcRegistry(container: Container): IpcRegistry {
   registerEnvironmentHandlers(registry, {
     toolRunner: container.resolve(ToolRunnerToken),
     venvPresent: directoryHasVenv,
+    install: container.resolve(InstallUseCasesToken),
   });
   return registry;
 }

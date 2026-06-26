@@ -9,6 +9,10 @@ import type {
 } from "../../application/compile/compile-service.js";
 import type { AuditTrail } from "../../application/audit/audit-service.js";
 import type { ExecutionUseCases } from "../../application/execution/execution-service.js";
+import type {
+  InstallUseCases,
+  StreamingCommandRunner,
+} from "../../application/environment/install-service.js";
 import type { MassUseCases } from "../../application/mass/mass-service.js";
 import type { ProjectUseCases } from "../../application/project/project-service.js";
 import type { RobotProjectUseCases } from "../../application/robot/robot-project-service.js";
@@ -28,6 +32,7 @@ import type { ToolRunner } from "../infrastructure/python/environment.js";
 import type { RobotProjectService } from "../infrastructure/robot/robot-project.js";
 import type { RobotRunner } from "../infrastructure/robot/robot-runner.js";
 import type { SandboxViewFactory } from "../sandbox/sandbox-config.js";
+import type { SettableIpcEventEmitter } from "../ipc/ipc-event-emitter.js";
 import { Token } from "./container.js";
 
 // Injection tokens for the application's services (PRD §3, §31). Concrete
@@ -52,6 +57,8 @@ export const SandboxViewFactoryToken = new Token<SandboxViewFactory>("SandboxVie
 export const CsvFileDialogToken = new Token<CsvFileDialog>("CsvFileDialog");
 export const DirectoryDialogToken = new Token<DirectoryDialog>("DirectoryDialog");
 export const ExternalOpenerToken = new Token<ExternalOpener>("ExternalOpener");
+export const EventEmitterToken = new Token<SettableIpcEventEmitter>("EventEmitter");
+export const InstallCommandRunnerToken = new Token<StreamingCommandRunner>("InstallCommandRunner");
 export const RobotFileWriterToken = new Token<RobotFileWriter>("RobotFileWriter");
 export const AuditTrailToken = new Token<AuditTrail>("AuditTrail");
 
@@ -64,3 +71,4 @@ export const PlanUseCasesToken = new Token<PlanUseCases>("PlanUseCases");
 export const SuiteUseCasesToken = new Token<SuiteUseCases>("SuiteUseCases");
 export const CaseUseCasesToken = new Token<CaseUseCases>("CaseUseCases");
 export const ExecutionUseCasesToken = new Token<ExecutionUseCases>("ExecutionUseCases");
+export const InstallUseCasesToken = new Token<InstallUseCases>("InstallUseCases");

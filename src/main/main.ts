@@ -18,6 +18,8 @@ import { createElectronLogger } from "./infrastructure/logging/electron-logger.j
 import { createAppPaths, ensureAppDirectories } from "./infrastructure/paths/app-paths.js";
 import { resolveVersionInfo } from "./infrastructure/version/version-reader.js";
 import { bindIpcMain } from "./ipc/electron-ipc.js";
+import { createIpcEventEmitter, type SettableIpcEventEmitter } from "./ipc/ipc-event-emitter.js";
+import { spawnInstallCommandRunner } from "./infrastructure/python/install-command-runner.js";
 import { createSandboxView } from "./sandbox/sandbox-view.js";
 
 // Electron entry point (PRD §3, §18). Composes the core services, wires the typed
@@ -31,6 +33,10 @@ const RENDERER_HTML = join(here, "../renderer/index.html");
 
 // SQLite handle, opened once at bootstrap and closed on quit (PRD §4, §6).
 let database: DatabaseHandle | null = null;
+
+// Pushes streamed events (e.g. install progress) to the renderer. Created at
+// bootstrap; its target webContents is attached once the window exists.
+const eventEmitter: SettableIpcEventEmitter = createIpcEventEmitter();
 
 function bootstrap(): void {
   const paths = createAppPaths(app.getPath("userData"));
@@ -62,6 +68,8 @@ function bootstrap(): void {
     csvFileDialog: createCsvFileDialog(),
     directoryDialog: createDirectoryDialog(),
     externalOpener: createExternalOpener(),
+    eventEmitter,
+    installCommandRunner: spawnInstallCommandRunner,
   });
   registerUseCases(container);
   const registry = buildIpcRegistry(container);
@@ -92,6 +100,10 @@ async function createMainWindow(config: ElectronStoreConfig): Promise<void> {
   });
 
   window.once("ready-to-show", () => window.show());
+
+  // Route streamed events to this window; detach on close so emits are dropped.
+  eventEmitter.setTarget(window.webContents);
+  window.on("closed", () => eventEmitter.setTarget(null));
 
   const devServerUrl = process.env.VITE_DEV_SERVER_URL;
   if (devServerUrl !== undefined && devServerUrl !== "") {

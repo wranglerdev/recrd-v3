@@ -17,6 +17,7 @@ import {
   ConfigStoreToken,
   DatabaseToken,
   ExecutionUseCasesToken,
+  InstallUseCasesToken,
   GitServiceFactoryToken,
   LoggerToken,
   MassUseCasesToken,
@@ -82,6 +83,8 @@ describe("registerInfrastructure", () => {
         csvFileDialog: { selectCsv: vi.fn(async () => null) },
         directoryDialog: { selectDirectory: vi.fn(async () => null) },
         externalOpener: { openPath: vi.fn(async () => undefined) },
+        eventEmitter: { setTarget: vi.fn(), emit: vi.fn() },
+        installCommandRunner: vi.fn(async () => 0),
       });
 
       expect(container.resolve(DatabaseToken)).toBe(database);
@@ -122,6 +125,8 @@ describe("registerUseCases", () => {
         csvFileDialog: { selectCsv: vi.fn(async () => null) },
         directoryDialog: { selectDirectory: vi.fn(async () => null) },
         externalOpener: { openPath: vi.fn(async () => undefined) },
+        eventEmitter: { setTarget: vi.fn(), emit: vi.fn() },
+        installCommandRunner: vi.fn(async () => 0),
       });
       registerUseCases(container);
 
@@ -150,6 +155,8 @@ describe("registerUseCases", () => {
         csvFileDialog: { selectCsv: vi.fn(async () => null) },
         directoryDialog: { selectDirectory: vi.fn(async () => null) },
         externalOpener: { openPath: vi.fn(async () => undefined) },
+        eventEmitter: { setTarget: vi.fn(), emit: vi.fn() },
+        installCommandRunner: vi.fn(async () => 0),
       });
       registerUseCases(container);
 
@@ -237,12 +244,18 @@ describe("buildIpcRegistry", () => {
     const container = composeContainer(services);
     const database = createDatabase(":memory:");
     try {
+      const emit = vi.fn();
       registerInfrastructure(container, {
         database,
         sandboxViewFactory: vi.fn(),
         csvFileDialog: { selectCsv: vi.fn(async () => null) },
         directoryDialog: { selectDirectory: vi.fn(async () => null) },
         externalOpener: { openPath: vi.fn(async () => undefined) },
+        eventEmitter: { setTarget: vi.fn(), emit },
+        installCommandRunner: vi.fn(async (_cmd, _cwd, onLine) => {
+          onLine("output");
+          return 0;
+        }),
       });
       registerUseCases(container);
       const registry = buildIpcRegistry(container);
@@ -273,9 +286,16 @@ describe("buildIpcRegistry", () => {
         "audit:list",
         "execution:listRecent",
         "env:check",
+        "env:install",
       ] as const) {
         expect(registry.has(channel)).toBe(true);
       }
+
+      // The install use case forwards progress through the wired event emitter.
+      await container.resolve(InstallUseCasesToken).run(["echo hi"], "/tmp");
+      expect(emit).toHaveBeenCalledWith("env:install:line", { line: "$ echo hi" });
+      expect(emit).toHaveBeenCalledWith("env:install:line", { line: "output" });
+      expect(emit).toHaveBeenCalledWith("env:install:done", { ok: true, failedCommand: null });
     } finally {
       database.close();
     }

@@ -126,4 +126,15 @@ export {
   type EnvironmentReportDto,
   type EnvironmentStatusDto,
   type CheckEnvironmentRequest,
+  type StartInstallRequest,
+  type StartInstallResult,
 } from "./environment.js";
+export {
+  IPC_EVENT_CHANNELS,
+  type IpcEvents,
+  type IpcEventMap,
+  type IpcEventChannel,
+  type IpcEventListener,
+  type StreamLineEvent,
+  type InstallDoneEvent,
+} from "./events.js";

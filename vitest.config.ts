@@ -54,6 +54,7 @@ export default defineConfig({
         "src/main/infrastructure/auth/user-context-factory.ts",
         "src/main/infrastructure/robot/robot-runner.ts",
         "src/main/infrastructure/python/venv-probe.ts",
+        "src/main/infrastructure/python/install-command-runner.ts",
         "src/main/infrastructure/dialog/csv-file-dialog.ts",
         "src/main/infrastructure/dialog/directory-dialog.ts",
         "src/main/infrastructure/shell/external-opener.ts",

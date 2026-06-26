@@ -24,21 +24,36 @@ export interface EnvironmentStatusDto {
   readonly plan: readonly string[];
 }
 
+export interface StartInstallRequest {
+  /** The project's Robot path; the install runs (and creates `.venv`) here. */
+  readonly root: string;
+}
+
+/** Whether the install started; if not, why (already running, or already ready). */
+export type StartInstallResult =
+  | { readonly started: true }
+  | { readonly started: false; readonly reason: string };
+
 export type EnvironmentChannels = {
   "env:check": { request: CheckEnvironmentRequest; response: EnvironmentStatusDto };
+  "env:install": { request: StartInstallRequest; response: StartInstallResult };
 };
 
-export const ENVIRONMENT_CHANNELS = defineChannelNames<EnvironmentChannels, ["env:check"]>([
-  "env:check",
-]);
+export const ENVIRONMENT_CHANNELS = defineChannelNames<
+  EnvironmentChannels,
+  ["env:check", "env:install"]
+>(["env:check", "env:install"]);
 
 /** The slice of the renderer API served by the environment feature. */
 export interface EnvironmentApi {
   checkEnvironment(request: CheckEnvironmentRequest): Promise<EnvironmentStatusDto>;
+  /** Starts the install plan; progress streams over the `env:install:*` events. */
+  startEnvironmentInstall(request: StartInstallRequest): Promise<StartInstallResult>;
 }
 
 export function createEnvironmentApi(invoke: Invoke<EnvironmentChannels>): EnvironmentApi {
   return {
     checkEnvironment: (request) => invoke("env:check", request),
+    startEnvironmentInstall: (request) => invoke("env:install", request),
   };
 }

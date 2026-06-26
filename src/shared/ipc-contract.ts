@@ -122,7 +122,18 @@ export type {
   EnvironmentReportDto,
   EnvironmentStatusDto,
   CheckEnvironmentRequest,
+  StartInstallRequest,
+  StartInstallResult,
 } from "./ipc/environment.js";
+export type {
+  IpcEvents,
+  IpcEventMap,
+  IpcEventChannel,
+  IpcEventListener,
+  StreamLineEvent,
+  InstallDoneEvent,
+} from "./ipc/events.js";
+export { IPC_EVENT_CHANNELS } from "./ipc/events.js";
 
 /**
  * Every IPC channel, composed from the feature channel maps by intersection

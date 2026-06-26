@@ -57,6 +57,7 @@ const CASES: ReadonlyArray<readonly [method: string, channel: string, arg: unkno
   ["listAuditEvents", "audit:list", { limit: 50 }],
   ["listRecentExecutions", "execution:listRecent", { limit: 10 }],
   ["checkEnvironment", "env:check", { root: "/repo" }],
+  ["startEnvironmentInstall", "env:install", { root: "/repo" }],
 ];
 
 describe("createRecrdApi", () => {

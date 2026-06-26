@@ -45,6 +45,7 @@ import {
   RobotProjectServiceToken,
   RobotProjectUseCasesToken,
   RobotRunnerToken,
+  SandboxControllerToken,
   SandboxViewFactoryToken,
   SuiteUseCasesToken,
   ToolRunnerToken,
@@ -74,6 +75,7 @@ import { directoryHasVenv } from "../infrastructure/python/venv-probe.js";
 import { createRobotFileWriter } from "../infrastructure/robot/robot-file-writer.js";
 import { createRobotProjectService } from "../infrastructure/robot/robot-project.js";
 import { RobotRunner } from "../infrastructure/robot/robot-runner.js";
+import type { SandboxController } from "../../application/sandbox/sandbox-controller.js";
 import type { SandboxViewFactory } from "../sandbox/sandbox-config.js";
 import { registerAppHandlers } from "../ipc/handlers/app-handlers.js";
 import { registerAuditHandlers } from "../ipc/handlers/audit-handlers.js";
@@ -81,6 +83,7 @@ import { registerCompileHandlers } from "../ipc/handlers/compile-handlers.js";
 import { registerDialogHandlers } from "../ipc/handlers/dialog-handlers.js";
 import { registerExecutionHandlers } from "../ipc/handlers/execution-handlers.js";
 import { registerExportHandlers } from "../ipc/handlers/export-handlers.js";
+import { registerSandboxHandlers } from "../ipc/handlers/sandbox-handlers.js";
 import { registerEnvironmentHandlers } from "../ipc/handlers/environment-handlers.js";
 import { registerRunHandlers } from "../ipc/handlers/run-handlers.js";
 import type { SettableIpcEventEmitter } from "../ipc/ipc-event-emitter.js";
@@ -126,6 +129,8 @@ export function composeContainer(services: CoreServices): Container {
 export interface InfrastructureServices {
   readonly database: DatabaseHandle;
   readonly sandboxViewFactory: SandboxViewFactory;
+  /** Coordinates the embedded Browser Sandbox view; its view port is attached after the window opens. */
+  readonly sandboxController: SandboxController;
   readonly csvFileDialog: CsvFileDialog;
   readonly directoryDialog: DirectoryDialog;
   readonly externalOpener: ExternalOpener;
@@ -161,6 +166,7 @@ export function registerInfrastructure(
   });
   container.register(RobotRunnerToken, { useFactory: () => new RobotRunner() });
   container.register(SandboxViewFactoryToken, { useValue: services.sandboxViewFactory });
+  container.register(SandboxControllerToken, { useValue: services.sandboxController });
   container.register(CsvFileDialogToken, { useValue: services.csvFileDialog });
   container.register(DirectoryDialogToken, { useValue: services.directoryDialog });
   container.register(ExternalOpenerToken, { useValue: services.externalOpener });
@@ -324,6 +330,7 @@ export function buildIpcRegistry(container: Container): IpcRegistry {
   registerAuditHandlers(registry, container.resolve(AuditTrailToken));
   registerExecutionHandlers(registry, container.resolve(ExecutionUseCasesToken));
   registerExportHandlers(registry, container.resolve(ExportUseCasesToken));
+  registerSandboxHandlers(registry, container.resolve(SandboxControllerToken));
   registerEnvironmentHandlers(registry, {
     toolRunner: container.resolve(ToolRunnerToken),
     venvPresent: directoryHasVenv,

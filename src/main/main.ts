@@ -20,7 +20,8 @@ import { resolveVersionInfo } from "./infrastructure/version/version-reader.js";
 import { bindIpcMain } from "./ipc/electron-ipc.js";
 import { createIpcEventEmitter, type SettableIpcEventEmitter } from "./ipc/ipc-event-emitter.js";
 import { spawnInstallCommandRunner } from "./infrastructure/python/install-command-runner.js";
-import { createSandboxView } from "./sandbox/sandbox-view.js";
+import { createSandboxController } from "../application/sandbox/sandbox-controller.js";
+import { createSandboxView, createSandboxViewPort } from "./sandbox/sandbox-view.js";
 
 // Electron entry point (PRD §3, §18). Composes the core services, wires the typed
 // IPC layer onto ipcMain, then opens a hardened BrowserWindow: contextIsolation
@@ -29,6 +30,7 @@ import { createSandboxView } from "./sandbox/sandbox-view.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const PRELOAD = join(here, "../preload/preload.cjs");
+const SANDBOX_PRELOAD = join(here, "../preload/sandbox-preload.cjs");
 const RENDERER_HTML = join(here, "../renderer/index.html");
 
 // SQLite handle, opened once at bootstrap and closed on quit (PRD §4, §6).
@@ -37,6 +39,11 @@ let database: DatabaseHandle | null = null;
 // Pushes streamed events (e.g. install progress) to the renderer. Created at
 // bootstrap; its target webContents is attached once the window exists.
 const eventEmitter: SettableIpcEventEmitter = createIpcEventEmitter();
+
+// Coordinates the embedded Browser Sandbox view (PRD §10). Created at bootstrap
+// so the IPC handlers can drive it; its Electron view port is attached once the
+// main window exists.
+const sandboxController = createSandboxController();
 
 function bootstrap(): void {
   const paths = createAppPaths(app.getPath("userData"));
@@ -65,6 +72,7 @@ function bootstrap(): void {
   registerInfrastructure(container, {
     database,
     sandboxViewFactory: createSandboxView,
+    sandboxController,
     csvFileDialog: createCsvFileDialog(),
     directoryDialog: createDirectoryDialog(),
     externalOpener: createExternalOpener(),
@@ -104,6 +112,11 @@ async function createMainWindow(config: ElectronStoreConfig): Promise<void> {
   // Route streamed events to this window; detach on close so emits are dropped.
   eventEmitter.setTarget(window.webContents);
   window.on("closed", () => eventEmitter.setTarget(null));
+
+  // Embed the Browser Sandbox view and let the controller coordinate its
+  // bounds/visibility/navigation with the renderer layout (PRD §10).
+  const sandboxView = createSandboxView(SANDBOX_PRELOAD);
+  sandboxController.attach(createSandboxViewPort(window, sandboxView));
 
   const devServerUrl = process.env.VITE_DEV_SERVER_URL;
   if (devServerUrl !== undefined && devServerUrl !== "") {

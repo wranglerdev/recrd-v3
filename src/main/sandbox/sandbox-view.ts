@@ -1,4 +1,5 @@
-import { BrowserView } from "electron";
+import { BrowserView, type BrowserWindow } from "electron";
+import type { SandboxViewPort } from "../../application/sandbox/sandbox-controller.js";
 import { SANDBOX_WEB_PREFERENCES } from "./sandbox-config.js";
 
 // Creates the isolated Browser Sandbox view (PRD §10). The recording
@@ -8,4 +9,31 @@ export function createSandboxView(preloadPath: string): BrowserView {
   return new BrowserView({
     webPreferences: { ...SANDBOX_WEB_PREFERENCES, preload: preloadPath },
   });
+}
+
+/**
+ * Adapts a BrowserView + host window to the application's {@link SandboxViewPort}
+ * (PRD §10). `setVisible` adds/removes the view from the window so a hidden
+ * sandbox releases the layout; bounds and navigation forward straight to the
+ * view. Electron glue — exercised by E2E, excluded from the unit gate.
+ */
+export function createSandboxViewPort(window: BrowserWindow, view: BrowserView): SandboxViewPort {
+  let attached = false;
+  return {
+    setVisible(visible) {
+      if (visible && !attached) {
+        window.addBrowserView(view);
+        attached = true;
+      } else if (!visible && attached) {
+        window.removeBrowserView(view);
+        attached = false;
+      }
+    },
+    setBounds(rect) {
+      view.setBounds(rect);
+    },
+    loadUrl(url) {
+      void view.webContents.loadURL(url);
+    },
+  };
 }

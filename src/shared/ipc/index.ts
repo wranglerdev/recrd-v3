@@ -157,3 +157,12 @@ export {
   type ExportExecutionRequest,
   type ExportResult,
 } from "./export.js";
+export {
+  SANDBOX_CHANNELS,
+  createSandboxApi,
+  type SandboxApi,
+  type SandboxChannels,
+  type OpenSandboxRequest,
+  type SandboxBoundsRequest,
+  type SetSandboxVisibleRequest,
+} from "./sandbox.js";

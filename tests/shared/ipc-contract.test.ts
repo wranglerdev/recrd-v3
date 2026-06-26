@@ -64,6 +64,9 @@ const CASES: ReadonlyArray<readonly [method: string, channel: string, arg: unkno
   ["exportJson", "export:json", { caseId: "c" }],
   ["exportRobot", "export:robot", { caseId: "c" }],
   ["exportLog", "export:log", { executionId: "e" }],
+  ["openSandbox", "sandbox:open", { url: "https://example.com" }],
+  ["setSandboxBounds", "sandbox:setBounds", { x: 0, y: 0, width: 10, height: 10 }],
+  ["setSandboxVisible", "sandbox:setVisible", { visible: true }],
 ];
 
 describe("createRecrdApi", () => {

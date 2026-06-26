@@ -37,6 +37,7 @@ import {
   InMemoryConfigStore,
   type AppSettings,
 } from "@main/infrastructure/config/config-store";
+import { createSandboxController } from "@application/sandbox/sandbox-controller";
 import { MockUserContext } from "@main/infrastructure/auth/mock-user-context";
 import { SinkLogger } from "@main/infrastructure/logging/logger";
 import { createAppPaths } from "@main/infrastructure/paths/app-paths";
@@ -81,6 +82,7 @@ describe("registerInfrastructure", () => {
       registerInfrastructure(container, {
         database,
         sandboxViewFactory,
+        sandboxController: createSandboxController(),
         csvFileDialog: { selectCsv: vi.fn(async () => null) },
         directoryDialog: { selectDirectory: vi.fn(async () => null) },
         externalOpener: { openPath: vi.fn(async () => undefined) },
@@ -123,6 +125,7 @@ describe("registerUseCases", () => {
       registerInfrastructure(container, {
         database,
         sandboxViewFactory: vi.fn(),
+        sandboxController: createSandboxController(),
         csvFileDialog: { selectCsv: vi.fn(async () => null) },
         directoryDialog: { selectDirectory: vi.fn(async () => null) },
         externalOpener: { openPath: vi.fn(async () => undefined) },
@@ -153,6 +156,7 @@ describe("registerUseCases", () => {
       registerInfrastructure(container, {
         database,
         sandboxViewFactory: vi.fn(),
+        sandboxController: createSandboxController(),
         csvFileDialog: { selectCsv: vi.fn(async () => null) },
         directoryDialog: { selectDirectory: vi.fn(async () => null) },
         externalOpener: { openPath: vi.fn(async () => undefined) },
@@ -247,6 +251,7 @@ describe("registerUseCases", () => {
       registerInfrastructure(container, {
         database,
         sandboxViewFactory: vi.fn(),
+        sandboxController: createSandboxController(),
         csvFileDialog: { selectCsv: vi.fn(async () => null) },
         directoryDialog: { selectDirectory: vi.fn(async () => null) },
         externalOpener: { openPath: vi.fn(async () => undefined) },
@@ -304,6 +309,7 @@ describe("buildIpcRegistry", () => {
       registerInfrastructure(container, {
         database,
         sandboxViewFactory: vi.fn(),
+        sandboxController: createSandboxController(),
         csvFileDialog: { selectCsv: vi.fn(async () => null) },
         directoryDialog: { selectDirectory: vi.fn(async () => null) },
         externalOpener: { openPath: vi.fn(async () => undefined) },
@@ -349,6 +355,9 @@ describe("buildIpcRegistry", () => {
         "export:json",
         "export:robot",
         "export:log",
+        "sandbox:open",
+        "sandbox:setBounds",
+        "sandbox:setVisible",
       ] as const) {
         expect(registry.has(channel)).toBe(true);
       }

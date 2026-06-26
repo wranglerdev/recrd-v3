@@ -63,6 +63,12 @@ import {
   type ExportApi,
   type ExportChannels,
 } from "./ipc/export.js";
+import {
+  SANDBOX_CHANNELS,
+  createSandboxApi,
+  type SandboxApi,
+  type SandboxChannels,
+} from "./ipc/sandbox.js";
 
 export type { ChannelDef, ChannelMap, Invoke, RequestOf, ResponseOf } from "./ipc/core.js";
 export type { AppInfo } from "./ipc/app.js";
@@ -136,6 +142,11 @@ export type {
 export type { StartRunRequest, StartRunResult } from "./ipc/run.js";
 export type { ExportCaseRequest, ExportExecutionRequest, ExportResult } from "./ipc/export.js";
 export type {
+  OpenSandboxRequest,
+  SandboxBoundsRequest,
+  SetSandboxVisibleRequest,
+} from "./ipc/sandbox.js";
+export type {
   IpcEvents,
   IpcEventMap,
   IpcEventChannel,
@@ -163,7 +174,8 @@ export type IpcChannelMap = AppChannels &
   ExecutionChannels &
   EnvironmentChannels &
   RunChannels &
-  ExportChannels;
+  ExportChannels &
+  SandboxChannels;
 
 export type IpcChannel = keyof IpcChannelMap;
 export type IpcRequest<C extends IpcChannel> = IpcChannelMap[C]["request"];
@@ -191,6 +203,7 @@ export const IPC_CHANNELS = [
   ...ENVIRONMENT_CHANNELS,
   ...RUN_CHANNELS,
   ...EXPORT_CHANNELS,
+  ...SANDBOX_CHANNELS,
 ] as const satisfies readonly IpcChannel[];
 
 /**
@@ -212,7 +225,8 @@ export type RecrdApi = AppApi &
   ExecutionApi &
   EnvironmentApi &
   RunApi &
-  ExportApi;
+  ExportApi &
+  SandboxApi;
 
 /**
  * Builds the renderer API from an `invoke` function by composing the per-feature
@@ -235,5 +249,6 @@ export function createRecrdApi(invoke: IpcInvoke): RecrdApi {
     ...createEnvironmentApi(invoke),
     ...createRunApi(invoke),
     ...createExportApi(invoke),
+    ...createSandboxApi(invoke),
   };
 }

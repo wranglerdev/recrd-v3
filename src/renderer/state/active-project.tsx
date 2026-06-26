@@ -8,7 +8,7 @@ import type { ProjectDto } from "../../shared/ipc-contract.js";
 
 export interface ActiveProjectContextValue {
   readonly activeProject: ProjectDto | null;
-  setActiveProject(project: ProjectDto | null): void;
+  readonly setActiveProject: (project: ProjectDto | null) => void;
 }
 
 const ActiveProjectContext = createContext<ActiveProjectContextValue | null>(null);

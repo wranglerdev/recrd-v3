@@ -64,6 +64,7 @@ describe("registerInfrastructure", () => {
         database,
         sandboxViewFactory,
         csvFileDialog: { selectCsv: vi.fn(async () => null) },
+        directoryDialog: { selectDirectory: vi.fn(async () => null) },
       });
 
       expect(container.resolve(DatabaseToken)).toBe(database);
@@ -102,6 +103,7 @@ describe("registerUseCases", () => {
         database,
         sandboxViewFactory: vi.fn(),
         csvFileDialog: { selectCsv: vi.fn(async () => null) },
+        directoryDialog: { selectDirectory: vi.fn(async () => null) },
       });
       registerUseCases(container);
 
@@ -129,6 +131,7 @@ describe("buildIpcRegistry", () => {
         database,
         sandboxViewFactory: vi.fn(),
         csvFileDialog: { selectCsv: vi.fn(async () => null) },
+        directoryDialog: { selectDirectory: vi.fn(async () => null) },
       });
       registerUseCases(container);
       const registry = buildIpcRegistry(container);
@@ -151,6 +154,7 @@ describe("buildIpcRegistry", () => {
         "mass:listByProject",
         "mass:selectCsv",
         "compile:run",
+        "dialog:selectDirectory",
       ] as const) {
         expect(registry.has(channel)).toBe(true);
       }

@@ -3,8 +3,8 @@ import type { AppInfo } from "../shared/ipc-contract.js";
 import { HomeScreen, type ExecutionSummary } from "./screens/HomeScreen.js";
 import { AutomationScreen } from "./screens/AutomationScreen.js";
 import { MassScreen, type MassView } from "./screens/MassScreen.js";
-import { NewProjectForm, type NewProjectValues } from "./components/NewProjectForm.js";
-import { useBridge, useIpcQuery } from "./state/index.js";
+import { NewProjectScreen } from "./screens/NewProjectScreen.js";
+import { ActiveProjectProvider, useBridge, useIpcQuery } from "./state/index.js";
 import "./styles/app-shell.css";
 
 // Application shell (PRD §8, §9): a persistent navigation sidebar, a main content
@@ -57,39 +57,41 @@ export function App(): JSX.Element {
   const [view, setView] = useState<View>("home");
 
   return (
-    <div className="app-shell">
-      <aside className="app-shell__sidebar">
-        <h1 className="app-shell__brand">recrd-agile-testing</h1>
-        <nav className="app-shell__nav" aria-label="Navegação principal">
-          {NAV_ITEMS.map((item) => (
-            <button
-              key={item.view}
-              type="button"
-              className="app-shell__nav-item"
-              aria-current={view === item.view ? "page" : undefined}
-              onClick={() => setView(item.view)}
-            >
-              <span className="app-shell__nav-icon" aria-hidden="true">
-                {item.icon}
-              </span>
-              {item.label}
-            </button>
-          ))}
-        </nav>
-      </aside>
+    <ActiveProjectProvider>
+      <div className="app-shell">
+        <aside className="app-shell__sidebar">
+          <h1 className="app-shell__brand">recrd-agile-testing</h1>
+          <nav className="app-shell__nav" aria-label="Navegação principal">
+            {NAV_ITEMS.map((item) => (
+              <button
+                key={item.view}
+                type="button"
+                className="app-shell__nav-item"
+                aria-current={view === item.view ? "page" : undefined}
+                onClick={() => setView(item.view)}
+              >
+                <span className="app-shell__nav-icon" aria-hidden="true">
+                  {item.icon}
+                </span>
+                {item.label}
+              </button>
+            ))}
+          </nav>
+        </aside>
 
-      <main className="app-shell__main">{renderView(view, setView)}</main>
+        <main className="app-shell__main">{renderView(view, setView)}</main>
 
-      <footer className="app-shell__status" aria-label="Status">
-        {info === null ? (
-          <small>Conectando ao processo principal…</small>
-        ) : (
-          <small>
-            {info.name} v{info.version} ({info.platform})
-          </small>
-        )}
-      </footer>
-    </div>
+        <footer className="app-shell__status" aria-label="Status">
+          {info === null ? (
+            <small>Conectando ao processo principal…</small>
+          ) : (
+            <small>
+              {info.name} v{info.version} ({info.platform})
+            </small>
+          )}
+        </footer>
+      </div>
+    </ActiveProjectProvider>
   );
 }
 
@@ -106,14 +108,9 @@ function renderView(view: View, setView: (view: View) => void): JSX.Element {
         />
       );
     case "new-project":
-      return (
-        <NewProjectForm
-          onSubmit={(_values: NewProjectValues) => {
-            // Persistence channel not wired yet; return to home after creating.
-            setView("home");
-          }}
-        />
-      );
+      // Wired flow: persists via IPC (and scaffolds a Robot repo for "novo
+      // repo"), then returns home with the new project selected as active.
+      return <NewProjectScreen onCreated={() => setView("home")} />;
     case "automation":
       return (
         <AutomationScreen

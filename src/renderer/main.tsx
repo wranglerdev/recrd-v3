@@ -1,7 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App.js";
-import { ActiveProjectProvider } from "./state/index.js";
 // Design tokens first, then the global reset that consumes them (PRD §8).
 import "./styles/theme.css";
 import "./styles/reset.css";
@@ -15,8 +14,6 @@ if (container === null) {
 
 createRoot(container).render(
   <StrictMode>
-    <ActiveProjectProvider>
-      <App />
-    </ActiveProjectProvider>
+    <App />
   </StrictMode>,
 );

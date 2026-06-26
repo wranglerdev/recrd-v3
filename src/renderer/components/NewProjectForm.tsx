@@ -1,29 +1,37 @@
 import { useState, type FormEvent, type JSX } from "react";
 
 // Create/open a project with a Robot repository option (PRD §14). Presentational
-// and controlled; submission is delegated to the parent.
+// and controlled; submission (the IPC call) is delegated to the parent, which
+// also drives the pending/error feedback shown here.
 
 export type RepositoryOption = "new" | "existing";
 
 export type NewProjectValues = {
   readonly name: string;
+  readonly description: string;
   readonly repository: RepositoryOption;
 };
 
 export type NewProjectFormProps = {
   onSubmit: (values: NewProjectValues) => void;
+  /** True while the parent is persisting; disables the submit to avoid double-submit. */
+  readonly pending?: boolean;
+  /** A friendly error from the last submit, shown above the actions. */
+  readonly error?: string | null;
 };
 
 export function NewProjectForm(props: NewProjectFormProps): JSX.Element {
   const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
   const [repository, setRepository] = useState<RepositoryOption>("new");
+  const pending = props.pending ?? false;
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
-    if (name.trim().length === 0) {
+    if (name.trim().length === 0 || pending) {
       return;
     }
-    props.onSubmit({ name: name.trim(), repository });
+    props.onSubmit({ name: name.trim(), description: description.trim(), repository });
   };
 
   return (
@@ -31,6 +39,10 @@ export function NewProjectForm(props: NewProjectFormProps): JSX.Element {
       <label>
         Nome
         <input value={name} onChange={(event) => setName(event.target.value)} />
+      </label>
+      <label>
+        Descrição
+        <textarea value={description} onChange={(event) => setDescription(event.target.value)} />
       </label>
       <fieldset>
         <legend>Repositório Robot</legend>
@@ -55,7 +67,10 @@ export function NewProjectForm(props: NewProjectFormProps): JSX.Element {
           Utilizar repositório existente
         </label>
       </fieldset>
-      <button type="submit">Criar Projeto</button>
+      {props.error != null && props.error.length > 0 ? <p role="alert">{props.error}</p> : null}
+      <button type="submit" disabled={pending}>
+        {pending ? "Criando…" : "Criar Projeto"}
+      </button>
     </form>
   );
 }

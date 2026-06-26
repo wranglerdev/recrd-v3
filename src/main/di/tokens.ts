@@ -16,6 +16,7 @@ import type { AppSettings, ConfigStore } from "../infrastructure/config/config-s
 import type { DatabaseHandle } from "../infrastructure/db/connection.js";
 import type { Repositories } from "../infrastructure/db/repositories.js";
 import type { CsvFileDialog } from "../infrastructure/dialog/csv-file-dialog.js";
+import type { DirectoryDialog } from "../infrastructure/dialog/directory-dialog.js";
 import type { GitServiceFactory } from "../infrastructure/git/git-service.js";
 import type { Logger } from "../infrastructure/logging/logger.js";
 import type { AppPaths } from "../infrastructure/paths/app-paths.js";
@@ -44,6 +45,7 @@ export const RobotProjectServiceToken = new Token<RobotProjectService>("RobotPro
 export const RobotRunnerToken = new Token<RobotRunner>("RobotRunner");
 export const SandboxViewFactoryToken = new Token<SandboxViewFactory>("SandboxViewFactory");
 export const CsvFileDialogToken = new Token<CsvFileDialog>("CsvFileDialog");
+export const DirectoryDialogToken = new Token<DirectoryDialog>("DirectoryDialog");
 export const RobotFileWriterToken = new Token<RobotFileWriter>("RobotFileWriter");
 
 // Application use cases (wired from infrastructure + core at the composition root).

@@ -12,6 +12,7 @@ import { createUserContext } from "./infrastructure/auth/user-context-factory.js
 import { ElectronStoreConfig } from "./infrastructure/config/electron-store-config.js";
 import { createDatabase, type DatabaseHandle } from "./infrastructure/db/connection.js";
 import { createCsvFileDialog } from "./infrastructure/dialog/csv-file-dialog.js";
+import { createDirectoryDialog } from "./infrastructure/dialog/directory-dialog.js";
 import { createElectronLogger } from "./infrastructure/logging/electron-logger.js";
 import { createAppPaths, ensureAppDirectories } from "./infrastructure/paths/app-paths.js";
 import { bindIpcMain } from "./ipc/electron-ipc.js";
@@ -51,6 +52,7 @@ function bootstrap(): void {
     database,
     sandboxViewFactory: createSandboxView,
     csvFileDialog: createCsvFileDialog(),
+    directoryDialog: createDirectoryDialog(),
   });
   registerUseCases(container);
   const registry = buildIpcRegistry(container);

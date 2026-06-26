@@ -30,6 +30,12 @@ import {
   type CompileApi,
   type CompileChannels,
 } from "./ipc/compile.js";
+import {
+  DIALOG_CHANNELS,
+  createDialogApi,
+  type DialogApi,
+  type DialogChannels,
+} from "./ipc/dialog.js";
 
 export type { ChannelDef, ChannelMap, Invoke, RequestOf, ResponseOf } from "./ipc/core.js";
 export type { AppInfo } from "./ipc/app.js";
@@ -84,7 +90,8 @@ export type IpcChannelMap = AppChannels &
   ProjectChannels &
   HierarchyChannels &
   MassChannels &
-  CompileChannels;
+  CompileChannels &
+  DialogChannels;
 
 export type IpcChannel = keyof IpcChannelMap;
 export type IpcRequest<C extends IpcChannel> = IpcChannelMap[C]["request"];
@@ -104,6 +111,7 @@ export const IPC_CHANNELS = [
   ...HIERARCHY_CHANNELS,
   ...MASS_CHANNELS,
   ...COMPILE_CHANNELS,
+  ...DIALOG_CHANNELS,
 ] as const satisfies readonly IpcChannel[];
 
 /**
@@ -112,7 +120,13 @@ export const IPC_CHANNELS = [
  * these methods instead of touching Node, the filesystem or the database
  * directly (PRD §3, §18).
  */
-export type RecrdApi = AppApi & RobotApi & ProjectApi & HierarchyApi & MassApi & CompileApi;
+export type RecrdApi = AppApi &
+  RobotApi &
+  ProjectApi &
+  HierarchyApi &
+  MassApi &
+  CompileApi &
+  DialogApi;
 
 /**
  * Builds the renderer API from an `invoke` function by composing the per-feature
@@ -127,5 +141,6 @@ export function createRecrdApi(invoke: IpcInvoke): RecrdApi {
     ...createHierarchyApi(invoke),
     ...createMassApi(invoke),
     ...createCompileApi(invoke),
+    ...createDialogApi(invoke),
   };
 }

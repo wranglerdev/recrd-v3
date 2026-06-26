@@ -76,3 +76,9 @@ export {
   type CompileRequest,
   type CompileResponse,
 } from "./compile.js";
+export {
+  DIALOG_CHANNELS,
+  createDialogApi,
+  type DialogApi,
+  type DialogChannels,
+} from "./dialog.js";

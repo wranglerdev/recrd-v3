@@ -19,6 +19,7 @@ import {
   ConfigStoreToken,
   CsvFileDialogToken,
   DatabaseToken,
+  DirectoryDialogToken,
   GitServiceFactoryToken,
   LoggerToken,
   MassUseCasesToken,
@@ -40,6 +41,7 @@ import { createMassRepository } from "../infrastructure/db/mass-repository.js";
 import { createRepositories } from "../infrastructure/db/repositories.js";
 import { createCompiledScriptRepository } from "../infrastructure/db/script-repository.js";
 import type { CsvFileDialog } from "../infrastructure/dialog/csv-file-dialog.js";
+import type { DirectoryDialog } from "../infrastructure/dialog/directory-dialog.js";
 import { createGitService } from "../infrastructure/git/git-service.js";
 import type { Logger } from "../infrastructure/logging/logger.js";
 import type { AppPaths } from "../infrastructure/paths/app-paths.js";
@@ -50,6 +52,7 @@ import { RobotRunner } from "../infrastructure/robot/robot-runner.js";
 import type { SandboxViewFactory } from "../sandbox/sandbox-config.js";
 import { registerAppHandlers } from "../ipc/handlers/app-handlers.js";
 import { registerCompileHandlers } from "../ipc/handlers/compile-handlers.js";
+import { registerDialogHandlers } from "../ipc/handlers/dialog-handlers.js";
 import { registerHierarchyHandlers } from "../ipc/handlers/hierarchy-handlers.js";
 import { registerMassHandlers } from "../ipc/handlers/mass-handlers.js";
 import { registerProjectHandlers } from "../ipc/handlers/project-handlers.js";
@@ -89,6 +92,7 @@ export interface InfrastructureServices {
   readonly database: DatabaseHandle;
   readonly sandboxViewFactory: SandboxViewFactory;
   readonly csvFileDialog: CsvFileDialog;
+  readonly directoryDialog: DirectoryDialog;
 }
 
 /**
@@ -113,6 +117,7 @@ export function registerInfrastructure(
   container.register(RobotRunnerToken, { useFactory: () => new RobotRunner() });
   container.register(SandboxViewFactoryToken, { useValue: services.sandboxViewFactory });
   container.register(CsvFileDialogToken, { useValue: services.csvFileDialog });
+  container.register(DirectoryDialogToken, { useValue: services.directoryDialog });
   return container;
 }
 
@@ -219,5 +224,6 @@ export function buildIpcRegistry(container: Container): IpcRegistry {
     csvFileDialog: container.resolve(CsvFileDialogToken),
   });
   registerCompileHandlers(registry, container.resolve(CompileUseCasesToken));
+  registerDialogHandlers(registry, container.resolve(DirectoryDialogToken));
   return registry;
 }

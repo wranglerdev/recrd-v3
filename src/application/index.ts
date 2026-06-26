@@ -35,6 +35,13 @@ export {
   type ParentCheck,
 } from "./crud/audited-crud.js";
 export {
+  compileScript,
+  type CompileResult,
+  type CompileSuccess,
+  type CompileFailure,
+  type SelectorWarning,
+} from "./compile/compile-pipeline.js";
+export {
   createPlanUseCases,
   createSuiteUseCases,
   createCaseUseCases,

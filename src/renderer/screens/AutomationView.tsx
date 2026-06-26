@@ -19,10 +19,14 @@ export function AutomationView(): JSX.Element {
   const [running, setRunning] = useState(false);
   const [log, setLog] = useState<readonly string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  // The last run's exit code, or null before any run finishes — drives the
+  // final-result badge (PRD §15: 0 = aprovado, anything else = falhou).
+  const [exitCode, setExitCode] = useState<number | null>(null);
 
   useIpcEvent("run:line", (payload) => setLog((lines) => [...lines, payload.line]));
   useIpcEvent("run:exit", (payload) => {
     setRunning(false);
+    setExitCode(payload.exitCode);
     setLog((lines) => [...lines, `— processo encerrado (código ${payload.exitCode})`]);
   });
 
@@ -34,6 +38,7 @@ export function AutomationView(): JSX.Element {
     setRunning(true);
     setLog([]);
     setError(null);
+    setExitCode(null);
     void bridge.startRun({ projectId: activeProject.id }).then((result) => {
       if (!result.started) {
         setRunning(false);
@@ -62,6 +67,12 @@ export function AutomationView(): JSX.Element {
       sidebar={
         <section aria-label="Log de execução">
           <p>{running ? "Executando…" : "Parado"}</p>
+          {!running && exitCode !== null && (
+            <p>
+              Resultado:{" "}
+              <strong>{exitCode === 0 ? "Aprovado ✓" : `Falhou ✗ (código ${exitCode})`}</strong>
+            </p>
+          )}
           {error !== null && <p role="alert">{error}</p>}
           {log.length > 0 && <pre>{log.join("\n")}</pre>}
         </section>

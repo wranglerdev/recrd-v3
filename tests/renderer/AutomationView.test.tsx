@@ -87,6 +87,19 @@ describe("AutomationView (PRD §9, §15)", () => {
     emit.emitExit(0);
     expect(screen.getByText(/parado/i)).toBeInTheDocument();
     expect(screen.getByText(/processo encerrado \(código 0\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/aprovado/i)).toBeInTheDocument();
+  });
+
+  it("shows a failed result when the run exits non-zero", async () => {
+    stubBridge({ startRun: vi.fn().mockResolvedValue({ started: true }), stopRun: vi.fn() });
+    const emit = stubEvents();
+    renderView(PROJECT);
+
+    fireEvent.click(screen.getByRole("button", { name: "Play" }));
+    await waitFor(() => expect(window.recrd?.startRun).toHaveBeenCalled());
+
+    emit.emitExit(1);
+    expect(screen.getByText(/falhou ✗ \(código 1\)/i)).toBeInTheDocument();
   });
 
   it("warns when there is no active project to run", () => {

@@ -140,6 +140,7 @@ export {
   type InstallDoneEvent,
   type RunExitEvent,
   type CapturedActionEvent,
+  type SelectorCandidateDto,
 } from "./events.js";
 export {
   RUN_CHANNELS,

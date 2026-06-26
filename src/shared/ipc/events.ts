@@ -13,13 +13,24 @@ export interface StreamLineEvent {
   readonly line: string;
 }
 
+/** A candidate selector for a captured element (PRD §11), ranked by the generator. */
+export interface SelectorCandidateDto {
+  readonly strategy: string;
+  readonly value: string;
+  readonly confidence: "high" | "low";
+  readonly stable: boolean;
+}
+
 /**
  * An action captured in the Browser Sandbox (PRD §10). The sandbox content-script
  * maps a DOM interaction to a script action and the main process forwards it to
- * the renderer's recording session.
+ * the renderer's recording session. For element-based actions it also carries the
+ * ranked selector candidates (PRD §11) so the renderer can warn about a
+ * low-confidence pick and let the user choose an alternative.
  */
 export interface CapturedActionEvent {
   readonly action: ScriptActionDto;
+  readonly selectors?: readonly SelectorCandidateDto[];
 }
 
 /** Completion of a streamed install: ok, or the command that failed. */

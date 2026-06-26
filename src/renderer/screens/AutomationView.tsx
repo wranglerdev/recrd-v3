@@ -172,7 +172,7 @@ export function AutomationView(): JSX.Element {
       panels={{
         timeline: (
           <TimelinePanel
-            actions={recording.actions}
+            steps={recording.steps}
             onRemove={recording.removeAction}
             onMove={recording.moveAction}
             onUpdate={recording.updateAction}

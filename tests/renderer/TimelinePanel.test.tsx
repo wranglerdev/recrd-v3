@@ -2,41 +2,45 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { TimelinePanel } from "@renderer/screens/TimelinePanel";
-import type { ScriptActionDto } from "@shared/ipc-contract";
+import type { RecordedStep } from "@renderer/state/useRecordingSession";
 
-const ACTIONS: ScriptActionDto[] = [
-  { type: "navigate", url: "https://example.com" },
-  { type: "input", selector: "#u", value: "ana" },
-  { type: "click", selector: "#go" },
+function step(overrides: Partial<RecordedStep> & Pick<RecordedStep, "action">): RecordedStep {
+  return { selectors: [], ...overrides };
+}
+
+const STEPS: RecordedStep[] = [
+  step({ action: { type: "navigate", url: "https://example.com" } }),
+  step({ action: { type: "input", selector: "#u", value: "ana" } }),
+  step({ action: { type: "click", selector: "#go" } }),
 ];
 
 function handlers() {
   return { onRemove: vi.fn(), onMove: vi.fn(), onUpdate: vi.fn() };
 }
 
-describe("TimelinePanel (PRD §9, §13)", () => {
+describe("TimelinePanel (PRD §9, §11, §13)", () => {
   it("shows a placeholder when empty", () => {
-    render(<TimelinePanel actions={[]} {...handlers()} />);
+    render(<TimelinePanel steps={[]} {...handlers()} />);
     expect(screen.getByText(/nenhuma ação gravada/i)).toBeInTheDocument();
   });
 
-  it("lists the actions in order with human labels", () => {
-    render(<TimelinePanel actions={ACTIONS} {...handlers()} />);
+  it("lists the steps in order with human labels", () => {
+    render(<TimelinePanel steps={STEPS} {...handlers()} />);
     expect(screen.getByText(/Navegar → https:\/\/example\.com/)).toBeInTheDocument();
     expect(screen.getByText(/Preencher #u com "ana"/)).toBeInTheDocument();
     expect(screen.getByText(/Clicar em #go/)).toBeInTheDocument();
   });
 
-  it("removes an action", () => {
+  it("removes a step", () => {
     const h = handlers();
-    render(<TimelinePanel actions={ACTIONS} {...h} />);
+    render(<TimelinePanel steps={STEPS} {...h} />);
     fireEvent.click(screen.getByRole("button", { name: "Remover ação 2" }));
     expect(h.onRemove).toHaveBeenCalledWith(1);
   });
 
-  it("reorders actions with the up/down controls, disabling the ends", () => {
+  it("reorders steps with the up/down controls, disabling the ends", () => {
     const h = handlers();
-    render(<TimelinePanel actions={ACTIONS} {...h} />);
+    render(<TimelinePanel steps={STEPS} {...h} />);
     expect(screen.getByRole("button", { name: "Mover ação 1 para cima" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Mover ação 3 para baixo" })).toBeDisabled();
 
@@ -46,15 +50,41 @@ describe("TimelinePanel (PRD §9, §13)", () => {
     expect(h.onMove).toHaveBeenCalledWith(0, 1);
   });
 
-  it("edits an action's primary field", () => {
+  it("edits a step's primary field", () => {
     const h = handlers();
-    render(<TimelinePanel actions={ACTIONS} {...h} />);
+    render(<TimelinePanel steps={STEPS} {...h} />);
     fireEvent.change(screen.getByLabelText("Valor da ação 2"), { target: { value: "bob" } });
     expect(h.onUpdate).toHaveBeenCalledWith(1, { type: "input", selector: "#u", value: "bob" });
   });
 
-  it("omits the edit field for actions with no primary text (click)", () => {
-    render(<TimelinePanel actions={[{ type: "click", selector: "#go" }]} {...handlers()} />);
-    expect(screen.queryByLabelText(/da ação 1/)).not.toBeInTheDocument();
+  it("warns about a low-confidence selector and offers alternatives (PRD §11)", () => {
+    const h = handlers();
+    const unstable: RecordedStep = step({
+      action: { type: "click", selector: "div:nth-of-type(2)" },
+      selectors: [
+        { strategy: "css", value: "div:nth-of-type(2)", confidence: "low", stable: false },
+        { strategy: "data-testid", value: '[data-testid="go"]', confidence: "high", stable: true },
+      ],
+    });
+    render(<TimelinePanel steps={[unstable]} {...h} />);
+
+    expect(screen.getByRole("alert")).toHaveTextContent(/instável/i);
+    fireEvent.change(screen.getByLabelText("Seletor da ação 1"), {
+      target: { value: '[data-testid="go"]' },
+    });
+    expect(h.onUpdate).toHaveBeenCalledWith(0, {
+      type: "click",
+      selector: '[data-testid="go"]',
+    });
+  });
+
+  it("omits the selector picker when there is a single candidate", () => {
+    const single: RecordedStep = step({
+      action: { type: "click", selector: "#go" },
+      selectors: [{ strategy: "id", value: "#go", confidence: "high", stable: true }],
+    });
+    render(<TimelinePanel steps={[single]} {...handlers()} />);
+    expect(screen.queryByLabelText("Seletor da ação 1")).not.toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 });

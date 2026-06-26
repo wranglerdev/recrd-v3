@@ -5,6 +5,8 @@ import {
   captureKeyPress,
   captureNavigate,
 } from "../domain/capture/capture.js";
+import type { ElementDescriptor } from "../domain/selectors/element-descriptor.js";
+import { generateSelectors } from "../domain/selectors/selector-generator.js";
 import type { ScriptAction } from "../domain/scripts/script-action.js";
 import { describeElement, isSignificantKey, keyName } from "./sandbox/dom-descriptor.js";
 
@@ -15,8 +17,9 @@ import { describeElement, isSignificantKey, keyName } from "./sandbox/dom-descri
 // recording session). Electron + DOM glue — exercised by E2E, excluded from the
 // unit gate; its pure pieces live in ./sandbox/dom-descriptor (unit-tested).
 
-function send(action: ScriptAction): void {
-  ipcRenderer.send("capture:action", { action });
+function send(action: ScriptAction, descriptor?: ElementDescriptor): void {
+  const selectors = descriptor === undefined ? undefined : generateSelectors(descriptor);
+  ipcRenderer.send("capture:action", { action, selectors });
 }
 
 function targetElement(event: Event): Element | null {
@@ -29,7 +32,8 @@ window.addEventListener(
   (event) => {
     const element = targetElement(event);
     if (element !== null) {
-      send(captureClick(describeElement(element)));
+      const descriptor = describeElement(element);
+      send(captureClick(descriptor), descriptor);
     }
   },
   true,
@@ -40,7 +44,8 @@ window.addEventListener(
   (event) => {
     const element = targetElement(event);
     if (element !== null && "value" in element) {
-      send(captureInput(describeElement(element), String((element as HTMLInputElement).value)));
+      const descriptor = describeElement(element);
+      send(captureInput(descriptor, String((element as HTMLInputElement).value)), descriptor);
     }
   },
   true,
@@ -51,7 +56,8 @@ window.addEventListener(
   (event) => {
     const element = targetElement(event);
     if (element !== null && isSignificantKey(event)) {
-      send(captureKeyPress(describeElement(element), keyName(event)));
+      const descriptor = describeElement(element);
+      send(captureKeyPress(descriptor, keyName(event)), descriptor);
     }
   },
   true,

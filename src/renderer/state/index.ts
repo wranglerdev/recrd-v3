@@ -5,6 +5,7 @@ export {
   useRecordingSession,
   type RecordingSession,
   type RecordingSessionOptions,
+  type RecordedStep,
 } from "./useRecordingSession.js";
 export {
   useIpcQuery,

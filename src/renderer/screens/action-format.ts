@@ -42,6 +42,16 @@ export function editableField(
   }
 }
 
+/** The element selector an action targets, or null for selector-less actions. */
+export function actionSelector(action: ScriptActionDto): string | null {
+  return action.type === "navigate" ? null : action.selector;
+}
+
+/** Returns a copy of `action` with its element selector set to `selector`. */
+export function withSelector(action: ScriptActionDto, selector: string): ScriptActionDto {
+  return action.type === "navigate" ? action : { ...action, selector };
+}
+
 /** Returns a copy of `action` with its primary editable field set to `value`. */
 export function withEditableValue(action: ScriptActionDto, value: string): ScriptActionDto {
   switch (action.type) {

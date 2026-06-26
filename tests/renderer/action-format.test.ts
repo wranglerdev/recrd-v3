@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { describeAction, editableField, withEditableValue } from "@renderer/screens/action-format";
+import {
+  actionSelector,
+  describeAction,
+  editableField,
+  withEditableValue,
+  withSelector,
+} from "@renderer/screens/action-format";
 import type { ScriptActionDto } from "@shared/ipc-contract";
 
 const ALL: ScriptActionDto[] = [
@@ -55,5 +61,24 @@ describe("editableField / withEditableValue", () => {
     expect(editableField(wait)).toBeNull();
     expect(withEditableValue(click, "x")).toBe(click);
     expect(withEditableValue(wait, "x")).toBe(wait);
+  });
+});
+
+describe("actionSelector / withSelector", () => {
+  it("reads and replaces the element selector for selector-based actions", () => {
+    const click: ScriptActionDto = { type: "click", selector: "#a" };
+    expect(actionSelector(click)).toBe("#a");
+    expect(withSelector(click, "#b")).toEqual({ type: "click", selector: "#b" });
+    expect(withSelector({ type: "input", selector: "#u", value: "v" }, "#x")).toEqual({
+      type: "input",
+      selector: "#x",
+      value: "v",
+    });
+  });
+
+  it("returns null / is a no-op for navigate (no element selector)", () => {
+    const navigate: ScriptActionDto = { type: "navigate", url: "https://e.com" };
+    expect(actionSelector(navigate)).toBeNull();
+    expect(withSelector(navigate, "#x")).toBe(navigate);
   });
 });

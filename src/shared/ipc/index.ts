@@ -17,6 +17,8 @@ export {
   type RobotChannels,
   type ScaffoldRobotRequest,
   type ScaffoldRobotResponse,
+  type LinkRobotRequest,
+  type LinkRobotResponse,
 } from "./robot.js";
 export {
   PROJECT_CHANNELS,

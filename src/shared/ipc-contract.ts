@@ -47,7 +47,12 @@ import { AUDIT_CHANNELS, createAuditApi, type AuditApi, type AuditChannels } fro
 
 export type { ChannelDef, ChannelMap, Invoke, RequestOf, ResponseOf } from "./ipc/core.js";
 export type { AppInfo } from "./ipc/app.js";
-export type { ScaffoldRobotRequest, ScaffoldRobotResponse } from "./ipc/robot.js";
+export type {
+  ScaffoldRobotRequest,
+  ScaffoldRobotResponse,
+  LinkRobotRequest,
+  LinkRobotResponse,
+} from "./ipc/robot.js";
 export type {
   ProjectDto,
   CreateProjectRequest,

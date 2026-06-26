@@ -223,8 +223,9 @@ describe("buildIpcRegistry", () => {
       expect(registry.has("app:getInfo")).toBe(true);
       await expect(registry.dispatch("app:getInfo", undefined)).resolves.toEqual(services.appInfo);
 
-      // The robot scaffolding handler is wired from the use case container.
+      // The robot scaffolding + linking handlers are wired from the container.
       expect(registry.has("robot:scaffold")).toBe(true);
+      expect(registry.has("robot:linkExisting")).toBe(true);
 
       // Project + hierarchy (plan/suite/case) channels are wired too.
       for (const channel of [

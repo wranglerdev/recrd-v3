@@ -159,6 +159,7 @@ export function registerUseCases(container: Container): Container {
     useFactory: (c) =>
       createRobotProjectUseCases({
         scaffolder: c.resolve(RobotProjectServiceToken),
+        inspector: c.resolve(RobotProjectServiceToken),
         projects: c.resolve(ProjectUseCasesToken),
       }),
   });

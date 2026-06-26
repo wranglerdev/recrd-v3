@@ -10,6 +10,7 @@ const CASES: ReadonlyArray<readonly [method: string, channel: string, arg: unkno
   ["getAppInfo", "app:getInfo", undefined],
   ["getVersionInfo", "app:getVersionInfo", undefined],
   ["scaffoldRobotProject", "robot:scaffold", { projectId: "p", root: "/r" }],
+  ["linkRobotProject", "robot:linkExisting", { projectId: "p", root: "/r" }],
   ["createProject", "project:create", { name: "P" }],
   ["listProjects", "project:list", undefined],
   ["openProject", "project:open", SAMPLE],

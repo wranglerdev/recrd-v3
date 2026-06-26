@@ -36,6 +36,19 @@ export function NewProjectScreen({ onCreated }: NewProjectScreenProps): JSX.Elem
           return { ...project, robotPath: scaffolded.robotPath };
         }
       }
+
+      // "Repositório existente" validates the chosen folder against the Robot
+      // layout and links it; an invalid folder surfaces what is missing.
+      if (values.repository === "existing") {
+        const root = await bridge.selectDirectory();
+        if (root !== null) {
+          const linked = await bridge.linkRobotProject({ projectId: project.id, root });
+          if (!linked.ok) {
+            throw new Error(`Repositório Robot inválido. Faltando: ${linked.missing.join(", ")}`);
+          }
+          return { ...project, robotPath: linked.robotPath };
+        }
+      }
       return project;
     },
   );

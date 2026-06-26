@@ -44,16 +44,17 @@ function fillAndSubmit(name: string, repository: "new" | "existing"): void {
 describe("NewProjectScreen (PRD §6, §14)", () => {
   it("creates an existing-repo project via IPC and notifies the caller", async () => {
     const createProject = vi.fn().mockResolvedValue(PROJECT);
-    const selectDirectory = vi.fn();
-    stubBridge({ createProject, selectDirectory });
+    const selectDirectory = vi.fn().mockResolvedValue(null);
+    const scaffoldRobotProject = vi.fn();
+    stubBridge({ createProject, selectDirectory, scaffoldRobotProject });
     const onCreated = renderScreen();
 
     fillAndSubmit("Banco", "existing");
 
     await waitFor(() => expect(onCreated).toHaveBeenCalled());
     expect(createProject).toHaveBeenCalledWith({ name: "Banco", description: "" });
-    // "Existing repo" must not trigger the new-repo folder pick/scaffold.
-    expect(selectDirectory).not.toHaveBeenCalled();
+    // "Existing repo" must not scaffold a brand-new tree (that is the new-repo path).
+    expect(scaffoldRobotProject).not.toHaveBeenCalled();
   });
 
   it("scaffolds a new repo: picks a folder and links the Robot path", async () => {
@@ -70,6 +71,48 @@ describe("NewProjectScreen (PRD §6, §14)", () => {
     await waitFor(() => expect(onCreated).toHaveBeenCalled());
     expect(selectDirectory).toHaveBeenCalled();
     expect(scaffoldRobotProject).toHaveBeenCalledWith({ projectId: "p1", root: "/repos/banco" });
+  });
+
+  it("links an existing repo: picks a folder and validates it via the bridge", async () => {
+    const createProject = vi.fn().mockResolvedValue(PROJECT);
+    const selectDirectory = vi.fn().mockResolvedValue("/repos/banco");
+    const linkRobotProject = vi.fn().mockResolvedValue({ ok: true, robotPath: "/repos/banco" });
+    stubBridge({ createProject, selectDirectory, linkRobotProject });
+    const onCreated = renderScreen();
+
+    fillAndSubmit("Banco", "existing");
+
+    await waitFor(() => expect(onCreated).toHaveBeenCalled());
+    expect(selectDirectory).toHaveBeenCalled();
+    expect(linkRobotProject).toHaveBeenCalledWith({ projectId: "p1", root: "/repos/banco" });
+  });
+
+  it("surfaces a validation error when the existing repo is invalid", async () => {
+    const createProject = vi.fn().mockResolvedValue(PROJECT);
+    const selectDirectory = vi.fn().mockResolvedValue("/repos/banco");
+    const linkRobotProject = vi.fn().mockResolvedValue({ ok: false, missing: ["tests"] });
+    stubBridge({ createProject, selectDirectory, linkRobotProject });
+    const onCreated = renderScreen();
+
+    fillAndSubmit("Banco", "existing");
+
+    await waitFor(() =>
+      expect(screen.getByRole("alert")).toHaveTextContent(/repositório robot inválido/i),
+    );
+    expect(onCreated).not.toHaveBeenCalled();
+  });
+
+  it("leaves the project unlinked when the existing-repo folder pick is cancelled", async () => {
+    const createProject = vi.fn().mockResolvedValue(PROJECT);
+    const selectDirectory = vi.fn().mockResolvedValue(null);
+    const linkRobotProject = vi.fn();
+    stubBridge({ createProject, selectDirectory, linkRobotProject });
+    const onCreated = renderScreen();
+
+    fillAndSubmit("Banco", "existing");
+
+    await waitFor(() => expect(onCreated).toHaveBeenCalled());
+    expect(linkRobotProject).not.toHaveBeenCalled();
   });
 
   it("shows the error and does not notify the caller when creation fails", async () => {

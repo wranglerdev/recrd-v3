@@ -1,25 +1,23 @@
 import { useCallback, useState, type JSX } from "react";
+import type { CompileResponse } from "../../shared/ipc-contract.js";
 import { useActiveProject, useBridge, useIpcEvent, useRecordingSession } from "../state/index.js";
 import { errorMessage } from "../state/useIpc.js";
 import { AutomationScreen } from "./AutomationScreen.js";
 import { CaseExecutionHistory } from "./CaseExecutionHistory.js";
+import { CompileResultView } from "./CompileResultView.js";
 import { PropertiesPanel } from "./PropertiesPanel.js";
 import { SandboxNavBar } from "./SandboxNavBar.js";
 import { TogglesPanel } from "./TogglesPanel.js";
 import type { ViewportRect } from "./use-resize-rect.js";
 
-// Automation container (PRD §9, §15, §17): wires the presentational
-// AutomationScreen toolbar to the Robot run + export IPC. Play starts a run of
-// the active project's Robot tree; the run's stdout streams into the log panel
-// via the `run:*` events; Stop (and Pause — Robot has no pause) stops it. When a
-// case is selected its past runs are listed in the sidebar (PRD §8), refreshed
-// when a run finishes, and each can have its log exported; Export writes the
-// case's manual-script JSON and compiled .robot to the exports dir (PRD §17).
-// Compile is a separate feature and stays inert here.
-
-const NOOP = (): void => {
-  /* compile is wired by its own feature */
-};
+// Automation container (PRD §9, §13, §15, §17): wires the presentational
+// AutomationScreen toolbar to the Robot run + compile + export IPC. Play starts a
+// run of the active project's Robot tree; the run's stdout streams into the log
+// panel via the `run:*` events; Stop (and Pause — Robot has no pause) stops it.
+// When a case is selected its past runs are listed in the sidebar (PRD §8),
+// refreshed when a run finishes, and each can have its log exported; Export
+// writes the case's manual-script JSON and compiled .robot to the exports dir
+// (PRD §17); Compile compiles the recorded actions and previews the .robot.
 
 export function AutomationView(): JSX.Element {
   const bridge = useBridge();
@@ -35,6 +33,9 @@ export function AutomationView(): JSX.Element {
   const [historyKey, setHistoryKey] = useState(0);
   // Feedback for the export actions (written paths, or a failure message).
   const [exportMsg, setExportMsg] = useState<string | null>(null);
+  // Compilation status line and the latest result (preview / validation errors).
+  const [compileMsg, setCompileMsg] = useState<string | null>(null);
+  const [compileResult, setCompileResult] = useState<CompileResponse | null>(null);
 
   // Record sandbox interactions into the active case's manual script, persisting
   // incrementally (PRD §10). Recording runs while a case is selected.
@@ -109,6 +110,30 @@ export function AutomationView(): JSX.Element {
       .catch((cause: unknown) => setExportMsg(errorMessage(cause)));
   };
 
+  const handleCompile = (): void => {
+    if (bridge === null || activeProject === null || activeCase === null) {
+      setCompileMsg("Selecione um caso para compilar.");
+      return;
+    }
+    if (recording.actions.length === 0) {
+      setCompileMsg("Nenhuma ação gravada para compilar.");
+      return;
+    }
+    setCompileMsg("Compilando…");
+    setCompileResult(null);
+    void bridge
+      .compileScript({
+        caseId: activeCase.id,
+        projectId: activeProject.id,
+        script: { name: activeCase.name, actions: recording.actions },
+      })
+      .then((result) => {
+        setCompileResult(result);
+        setCompileMsg(result.ok ? "Compilado com sucesso." : "Falha de validação.");
+      })
+      .catch((cause: unknown) => setCompileMsg(errorMessage(cause)));
+  };
+
   const handleExportLog = (executionId: string): void => {
     if (bridge === null) {
       return;
@@ -129,7 +154,7 @@ export function AutomationView(): JSX.Element {
         onStop: handleStop,
         onReload: handlePlay,
         onExport: handleExport,
-        onCompile: NOOP,
+        onCompile: handleCompile,
       }}
       navBar={<SandboxNavBar />}
       panels={{
@@ -152,6 +177,9 @@ export function AutomationView(): JSX.Element {
             {exportMsg !== null && <p aria-label="Status da exportação">{exportMsg}</p>}
             {log.length > 0 && <pre>{log.join("\n")}</pre>}
           </section>
+          {(compileMsg !== null || compileResult !== null) && (
+            <CompileResultView status={compileMsg} result={compileResult} />
+          )}
           {activeCase !== null && (
             <CaseExecutionHistory
               caseId={activeCase.id}

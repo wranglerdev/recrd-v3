@@ -36,6 +36,7 @@ function stubBridge(api: Partial<RecrdApi>): void {
 function stubEvents(): {
   emitLine: (line: string) => void;
   emitExit: (exitCode: number) => void;
+  emitCapture: (action: unknown) => void;
 } {
   const listeners = new Map<string, (payload: unknown) => void>();
   const events: IpcEvents = {
@@ -48,6 +49,7 @@ function stubEvents(): {
   return {
     emitLine: (line) => act(() => listeners.get("run:line")?.({ line })),
     emitExit: (exitCode) => act(() => listeners.get("run:exit")?.({ exitCode })),
+    emitCapture: (action) => act(() => listeners.get("capture:action")?.({ action })),
   };
 }
 
@@ -256,6 +258,51 @@ describe("AutomationView (PRD §9, §15)", () => {
     expect(screen.getByLabelText("Status da exportação")).toHaveTextContent(
       "/exports/execution-2026-06-26.log",
     );
+  });
+
+  it("compiles the recorded actions and previews the .robot", async () => {
+    const compileScript = vi.fn().mockResolvedValue({
+      ok: true,
+      scriptId: "s1",
+      robot: "*** Settings ***\nLibrary Browser",
+      robotFile: "/r/tests/login.robot",
+      warnings: [],
+    });
+    stubBridge({
+      startRun: vi.fn(),
+      saveManualScript: vi.fn().mockResolvedValue(undefined),
+      listExecutionsByCase: vi.fn().mockResolvedValue([]),
+      compileScript,
+    });
+    const emit = stubEvents();
+    renderView(PROJECT, { id: "c1", name: "Login" });
+
+    // Record one action so there is something to compile.
+    emit.emitCapture({ type: "navigate", url: "https://e.com" });
+    fireEvent.click(screen.getByRole("button", { name: "Compilar" }));
+
+    await waitFor(() =>
+      expect(compileScript).toHaveBeenCalledWith({
+        caseId: "c1",
+        projectId: "p1",
+        script: { name: "Login", actions: [{ type: "navigate", url: "https://e.com" }] },
+      }),
+    );
+    expect(await screen.findByLabelText("Preview do .robot")).toHaveTextContent("Library Browser");
+  });
+
+  it("warns when compiling without recorded actions", () => {
+    stubBridge({
+      startRun: vi.fn(),
+      compileScript: vi.fn(),
+      listExecutionsByCase: vi.fn().mockResolvedValue([]),
+    });
+    stubEvents();
+    renderView(PROJECT, { id: "c1", name: "Login" });
+
+    fireEvent.click(screen.getByRole("button", { name: "Compilar" }));
+    expect(screen.getByText(/nenhuma ação gravada/i)).toBeInTheDocument();
+    expect(window.recrd?.compileScript).not.toHaveBeenCalled();
   });
 
   it("stops the run via Stop and Pause", async () => {

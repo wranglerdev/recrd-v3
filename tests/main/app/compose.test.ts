@@ -1,3 +1,6 @@
+import { existsSync, mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import {
   buildIpcRegistry,
@@ -8,15 +11,20 @@ import {
 } from "@main/app/compose";
 import {
   AppInfoToken,
+  CaseUseCasesToken,
+  CompileUseCasesToken,
   ConfigStoreToken,
   DatabaseToken,
   GitServiceFactoryToken,
   LoggerToken,
+  MassUseCasesToken,
+  PlanUseCasesToken,
   ProjectUseCasesToken,
   RepositoriesToken,
   RobotProjectServiceToken,
   RobotRunnerToken,
   SandboxViewFactoryToken,
+  SuiteUseCasesToken,
   ToolRunnerToken,
   UserContextToken,
 } from "@main/di/tokens";
@@ -123,6 +131,62 @@ describe("registerUseCases", () => {
       expect(projects.open(created.id)).toEqual(created);
     } finally {
       database.close();
+    }
+  });
+
+  it("wires the hierarchy, mass and compile use cases end to end", () => {
+    const services = fakeServices();
+    const container = composeContainer(services);
+    const database = createDatabase(":memory:");
+    const robotRoot = mkdtempSync(join(tmpdir(), "recrd-compose-"));
+    try {
+      registerInfrastructure(container, {
+        database,
+        sandboxViewFactory: vi.fn(),
+        csvFileDialog: { selectCsv: vi.fn(async () => null) },
+        directoryDialog: { selectDirectory: vi.fn(async () => null) },
+      });
+      registerUseCases(container);
+
+      // A project whose Robot tree lives in a real temp dir (compile writes there).
+      const project = container.resolve(ProjectUseCasesToken).create({
+        name: "Banco",
+        robotPath: robotRoot,
+      });
+
+      // Plan > Suite > Case exercise each factory's parent-existence + clock closures.
+      const plan = container.resolve(PlanUseCasesToken).create({
+        projectId: project.id,
+        name: "Plano",
+      });
+      const suite = container
+        .resolve(SuiteUseCasesToken)
+        .create({ planId: plan.id, name: "Suíte" });
+      const testCase = container
+        .resolve(CaseUseCasesToken)
+        .create({ suiteId: suite.id, name: "Caso" });
+      expect(testCase.suiteId).toBe(suite.id);
+
+      const importResult = container.resolve(MassUseCasesToken).importCsv({
+        projectId: project.id,
+        name: "Massa",
+        csv: "usuario,senha\nadmin,123",
+        source: "x",
+      });
+      expect(importResult.ok).toBe(true);
+
+      const compiled = container.resolve(CompileUseCasesToken).compileAndPersist({
+        caseId: testCase.id,
+        projectId: project.id,
+        script: { name: "Login", actions: [{ type: "navigate", url: "https://example.com" }] },
+      });
+      expect(compiled.ok).toBe(true);
+      if (compiled.ok) {
+        expect(existsSync(compiled.robotFile)).toBe(true);
+      }
+    } finally {
+      database.close();
+      rmSync(robotRoot, { recursive: true, force: true });
     }
   });
 });

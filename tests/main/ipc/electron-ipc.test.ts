@@ -79,4 +79,25 @@ describe("bindIpcMain", () => {
     expect(meta.channel).toBe("project:create");
     expect(meta.request.password).toBe("[REDACTED]");
   });
+
+  it("normalises a non-Error throw to a generic message and logs it as a string", async () => {
+    const writes: Array<{ meta?: unknown }> = [];
+    const sink: LogSink = { write: (_level, _message, meta) => writes.push({ meta }) };
+    const logger = new SinkLogger({ level: "debug", sink });
+
+    const registry = new IpcRegistry();
+    registry.handle("project:remove", () => {
+      // A non-Error throw (string) exercises the String(error) log branch.
+      throw "kaboom";
+    });
+    const ipcMain = fakeIpcMain();
+    bindIpcMain(registry, ipcMain, logger);
+
+    const listener = ipcMain.listeners.get("project:remove");
+    await expect(listener?.({}, { id: "p1" })).rejects.toMatchObject({
+      name: "IpcHandlerError",
+      message: "Ocorreu um erro ao processar a solicitação.",
+    });
+    expect((writes[0]?.meta as { error: unknown }).error).toBe("kaboom");
+  });
 });

@@ -11,12 +11,23 @@ afterEach(() => {
   Reflect.deleteProperty(window, "recrdEvents");
 });
 
+const DEFAULT_SETTINGS = {
+  lastOpenedProjectId: null,
+  recentProjects: [],
+  window: { width: 1280, height: 800 },
+  toolPaths: { python: null, robot: null },
+  recording: { captureScreenshots: false, defaultTimeoutMs: 30000 },
+} as const;
+
 function stubBridge(api: Partial<RecrdApi>): void {
-  // The Automation screen reports the sandbox viewport on mount, so every stub
-  // needs the sandbox layout methods; specific tests override the rest.
+  // The Automation screen reports the sandbox viewport and renders the toggles
+  // panel on mount, so every stub needs the sandbox + settings methods; specific
+  // tests override the rest.
   const value: Partial<RecrdApi> = {
     setSandboxBounds: vi.fn(),
     setSandboxVisible: vi.fn(),
+    getSettings: vi.fn().mockResolvedValue(DEFAULT_SETTINGS),
+    updateSettings: vi.fn().mockResolvedValue(DEFAULT_SETTINGS),
     ...api,
   };
   Object.defineProperty(window, "recrd", { value, configurable: true });

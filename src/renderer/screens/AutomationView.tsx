@@ -3,7 +3,9 @@ import { useActiveProject, useBridge, useIpcEvent } from "../state/index.js";
 import { errorMessage } from "../state/useIpc.js";
 import { AutomationScreen } from "./AutomationScreen.js";
 import { CaseExecutionHistory } from "./CaseExecutionHistory.js";
+import { PropertiesPanel } from "./PropertiesPanel.js";
 import { SandboxNavBar } from "./SandboxNavBar.js";
+import { TogglesPanel } from "./TogglesPanel.js";
 import type { ViewportRect } from "./use-resize-rect.js";
 
 // Automation container (PRD §9, §15, §17): wires the presentational
@@ -122,6 +124,7 @@ export function AutomationView(): JSX.Element {
         onCompile: NOOP,
       }}
       navBar={<SandboxNavBar />}
+      panels={{ properties: <PropertiesPanel />, toggles: <TogglesPanel /> }}
       onSandboxViewportChange={handleSandboxViewport}
       sidebar={
         <>

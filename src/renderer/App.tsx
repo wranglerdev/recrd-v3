@@ -8,6 +8,7 @@ import { AboutScreen } from "./screens/AboutScreen.js";
 import { SettingsScreen } from "./screens/SettingsScreen.js";
 import { GitPanel } from "./screens/GitPanel.js";
 import { AuditScreen } from "./screens/AuditScreen.js";
+import { ProjectExplorer } from "./screens/ProjectExplorer.js";
 import { ActiveProjectProvider, useBridge, useIpcQuery } from "./state/index.js";
 import "./styles/app-shell.css";
 
@@ -18,7 +19,16 @@ import "./styles/app-shell.css";
 // empty/placeholder inputs; as feature channels land the placeholders are swapped
 // for real IPC reads.
 
-type View = "home" | "new-project" | "automation" | "mass" | "git" | "audit" | "about" | "settings";
+type View =
+  | "home"
+  | "new-project"
+  | "explorer"
+  | "automation"
+  | "mass"
+  | "git"
+  | "audit"
+  | "about"
+  | "settings";
 
 type NavItem = {
   readonly view: View;
@@ -30,6 +40,7 @@ type NavItem = {
 // reached from the Home quick actions, so it is intentionally not a nav item.
 const NAV_ITEMS: readonly NavItem[] = [
   { view: "home", label: "Início", icon: "⌂" },
+  { view: "explorer", label: "Projetos", icon: "🗂" },
   { view: "automation", label: "Automação", icon: "⏺" },
   { view: "mass", label: "Massas", icon: "▦" },
   { view: "git", label: "Git", icon: "⎇" },
@@ -113,6 +124,8 @@ function renderView(view: View, setView: (view: View) => void): JSX.Element {
       // Wired flow: persists via IPC (and scaffolds a Robot repo for "novo
       // repo"), then returns home with the new project selected as active.
       return <NewProjectScreen onCreated={() => setView("home")} />;
+    case "explorer":
+      return <ProjectExplorer />;
     case "automation":
       return (
         <AutomationScreen

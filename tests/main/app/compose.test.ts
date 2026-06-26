@@ -16,6 +16,7 @@ import {
   CompileUseCasesToken,
   ConfigStoreToken,
   DatabaseToken,
+  ExecutionUseCasesToken,
   GitServiceFactoryToken,
   LoggerToken,
   MassUseCasesToken,
@@ -197,6 +198,32 @@ describe("registerUseCases", () => {
         "mass.import",
         "test.change",
       ]);
+
+      // The execution use case reads persisted rows and resolves the case name.
+      const repos = container.resolve(RepositoriesToken);
+      repos.executions.create({
+        id: "ex1",
+        caseId: testCase.id,
+        startedAt: "2026-06-26T10:00:00.000Z",
+        result: "passed",
+        durationMs: 1500,
+        log: "",
+        createdBy: "dev",
+        createdAt: "2026-06-26T10:00:00.000Z",
+        updatedBy: "dev",
+        updatedAt: "2026-06-26T10:00:00.000Z",
+      });
+      const recent = container.resolve(ExecutionUseCasesToken).listRecent();
+      expect(recent).toEqual([
+        {
+          id: "ex1",
+          caseId: testCase.id,
+          caseName: "Caso",
+          result: "passed",
+          startedAt: "2026-06-26T10:00:00.000Z",
+          durationMs: 1500,
+        },
+      ]);
     } finally {
       database.close();
       rmSync(robotRoot, { recursive: true, force: true });
@@ -244,6 +271,7 @@ describe("buildIpcRegistry", () => {
         "git:status",
         "git:openExternal",
         "audit:list",
+        "execution:listRecent",
       ] as const) {
         expect(registry.has(channel)).toBe(true);
       }

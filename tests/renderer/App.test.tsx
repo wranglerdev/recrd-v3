@@ -25,6 +25,7 @@ describe("App", () => {
   it("shows app info returned by the bridge in the status bar", async () => {
     stubBridge({
       getAppInfo: vi.fn().mockResolvedValue({ name: "recrd", version: "1.4.2", platform: "win32" }),
+      listRecentExecutions: vi.fn().mockResolvedValue([]),
     });
 
     render(<App />);

@@ -109,3 +109,12 @@ export {
   type AuditEventTypeDto,
   type ListAuditEventsRequest,
 } from "./audit.js";
+export {
+  EXECUTION_CHANNELS,
+  createExecutionApi,
+  type ExecutionApi,
+  type ExecutionChannels,
+  type RecentExecutionDto,
+  type ExecutionResultDto,
+  type ListRecentExecutionsRequest,
+} from "./execution.js";

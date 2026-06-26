@@ -8,6 +8,7 @@ import type {
   RobotFileWriter,
 } from "../../application/compile/compile-service.js";
 import type { AuditTrail } from "../../application/audit/audit-service.js";
+import type { ExecutionUseCases } from "../../application/execution/execution-service.js";
 import type { MassUseCases } from "../../application/mass/mass-service.js";
 import type { ProjectUseCases } from "../../application/project/project-service.js";
 import type { RobotProjectUseCases } from "../../application/robot/robot-project-service.js";
@@ -62,3 +63,4 @@ export const CompileUseCasesToken = new Token<CompileUseCases>("CompileUseCases"
 export const PlanUseCasesToken = new Token<PlanUseCases>("PlanUseCases");
 export const SuiteUseCasesToken = new Token<SuiteUseCases>("SuiteUseCases");
 export const CaseUseCasesToken = new Token<CaseUseCases>("CaseUseCases");
+export const ExecutionUseCasesToken = new Token<ExecutionUseCases>("ExecutionUseCases");

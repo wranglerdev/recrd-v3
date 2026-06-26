@@ -1,6 +1,6 @@
 import { useState, type JSX } from "react";
 import type { AppInfo } from "../shared/ipc-contract.js";
-import { HomeScreen, type ExecutionSummary } from "./screens/HomeScreen.js";
+import { HomeView } from "./screens/HomeView.js";
 import { AutomationScreen } from "./screens/AutomationScreen.js";
 import { MassWorkspace } from "./screens/MassWorkspace.js";
 import { NewProjectScreen } from "./screens/NewProjectScreen.js";
@@ -48,8 +48,6 @@ const NAV_ITEMS: readonly NavItem[] = [
   { view: "settings", label: "Configurações", icon: "⚙" },
   { view: "about", label: "Sobre", icon: "ⓘ" },
 ];
-
-const EMPTY_EXECUTIONS: readonly ExecutionSummary[] = [];
 
 const NOOP = (): void => {
   /* placeholder until the feature channel is wired */
@@ -112,12 +110,11 @@ function renderView(view: View, setView: (view: View) => void): JSX.Element {
   switch (view) {
     case "home":
       return (
-        <HomeScreen
-          recentExecutions={EMPTY_EXECUTIONS}
+        <HomeView
           onNewProject={() => setView("new-project")}
           onRecordTest={() => setView("automation")}
           onImportMass={() => setView("mass")}
-          onOpenLastProject={() => setView("automation")}
+          onOpenProject={() => setView("explorer")}
         />
       );
     case "new-project":

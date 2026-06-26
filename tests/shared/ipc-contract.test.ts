@@ -55,6 +55,7 @@ const CASES: ReadonlyArray<readonly [method: string, channel: string, arg: unkno
   ["getGitStatus", "git:status", { cwd: "/repo" }],
   ["openGitExternal", "git:openExternal", { cwd: "/repo" }],
   ["listAuditEvents", "audit:list", { limit: 50 }],
+  ["listRecentExecutions", "execution:listRecent", { limit: 10 }],
 ];
 
 describe("createRecrdApi", () => {

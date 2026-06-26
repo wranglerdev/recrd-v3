@@ -55,7 +55,7 @@ export const executions = sqliteTable("executions", {
   id: text("id").primaryKey(),
   caseId: text("case_id").notNull(),
   startedAt: text("started_at").notNull(),
-  result: text("result").notNull(), // "passed" | "failed" | "error"
+  result: text("result").$type<"passed" | "failed" | "error">().notNull(),
   durationMs: integer("duration_ms").notNull().default(0),
   log: text("log").notNull().default(""),
   ...auditColumns,

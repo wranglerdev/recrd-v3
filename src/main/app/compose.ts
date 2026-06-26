@@ -5,6 +5,7 @@ import {
   createSuiteUseCases,
 } from "../../application/hierarchy/hierarchy-service.js";
 import { createCompileUseCases } from "../../application/compile/compile-service.js";
+import { createExecutionUseCases } from "../../application/execution/execution-service.js";
 import { createMassUseCases } from "../../application/mass/mass-service.js";
 import { createProjectUseCases } from "../../application/project/project-service.js";
 import { createRobotProjectUseCases } from "../../application/robot/robot-project-service.js";
@@ -19,6 +20,7 @@ import {
   CaseUseCasesToken,
   CompileUseCasesToken,
   ConfigStoreToken,
+  ExecutionUseCasesToken,
   CsvFileDialogToken,
   DatabaseToken,
   DirectoryDialogToken,
@@ -60,6 +62,7 @@ import { registerAppHandlers } from "../ipc/handlers/app-handlers.js";
 import { registerAuditHandlers } from "../ipc/handlers/audit-handlers.js";
 import { registerCompileHandlers } from "../ipc/handlers/compile-handlers.js";
 import { registerDialogHandlers } from "../ipc/handlers/dialog-handlers.js";
+import { registerExecutionHandlers } from "../ipc/handlers/execution-handlers.js";
 import { registerHierarchyHandlers } from "../ipc/handlers/hierarchy-handlers.js";
 import { registerMassHandlers } from "../ipc/handlers/mass-handlers.js";
 import { registerGitHandlers } from "../ipc/handlers/git-handlers.js";
@@ -227,6 +230,15 @@ export function registerUseCases(container: Container): Container {
         audit: c.resolve(AuditTrailToken),
       }),
   });
+  container.register(ExecutionUseCasesToken, {
+    useFactory: (c) => {
+      const repos = c.resolve(RepositoriesToken);
+      return createExecutionUseCases({
+        repository: repos.executions,
+        caseName: (caseId) => repos.cases.findById(caseId)?.name,
+      });
+    },
+  });
   return container;
 }
 
@@ -257,5 +269,6 @@ export function buildIpcRegistry(container: Container): IpcRegistry {
     externalOpener: container.resolve(ExternalOpenerToken),
   });
   registerAuditHandlers(registry, container.resolve(AuditTrailToken));
+  registerExecutionHandlers(registry, container.resolve(ExecutionUseCasesToken));
   return registry;
 }

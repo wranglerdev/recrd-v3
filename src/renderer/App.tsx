@@ -1,9 +1,10 @@
-import { useEffect, useState, type JSX } from "react";
+import { useState, type JSX } from "react";
 import type { AppInfo } from "../shared/ipc-contract.js";
 import { HomeScreen, type ExecutionSummary } from "./screens/HomeScreen.js";
 import { AutomationScreen } from "./screens/AutomationScreen.js";
 import { MassScreen, type MassView } from "./screens/MassScreen.js";
 import { NewProjectForm, type NewProjectValues } from "./components/NewProjectForm.js";
+import { useBridge, useIpcQuery } from "./state/index.js";
 import "./styles/app-shell.css";
 
 // Application shell (PRD §8, §9): a persistent navigation sidebar, a main content
@@ -42,30 +43,13 @@ const NOOP = (): void => {
 };
 
 function useAppInfo(): AppInfo | null {
-  const [info, setInfo] = useState<AppInfo | null>(null);
-
-  useEffect(() => {
-    // The bridge is absent outside Electron (e.g. plain Vite/preview, tests).
-    if (typeof window.recrd === "undefined") {
-      return;
-    }
-    let active = true;
-    window.recrd
-      .getAppInfo()
-      .then((value) => {
-        if (active) {
-          setInfo(value);
-        }
-      })
-      .catch(() => {
-        /* main process unavailable — leave the status placeholder */
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  return info;
+  // The bridge is absent outside Electron (plain Vite/preview, tests); the query
+  // stays idle and the status bar keeps its "connecting" placeholder.
+  const bridge = useBridge();
+  const { data } = useIpcQuery<AppInfo>(bridge === null ? null : () => bridge.getAppInfo(), [
+    bridge,
+  ]);
+  return data;
 }
 
 export function App(): JSX.Element {

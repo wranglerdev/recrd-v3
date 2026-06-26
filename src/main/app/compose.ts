@@ -6,6 +6,7 @@ import {
 } from "../../application/hierarchy/hierarchy-service.js";
 import { createCompileUseCases } from "../../application/compile/compile-service.js";
 import { createExecutionUseCases } from "../../application/execution/execution-service.js";
+import { createExportUseCases } from "../../application/export/export-service.js";
 import {
   createInstallUseCases,
   type InstallProgress,
@@ -27,6 +28,7 @@ import {
   ConfigStoreToken,
   EventEmitterToken,
   ExecutionUseCasesToken,
+  ExportUseCasesToken,
   InstallCommandRunnerToken,
   InstallUseCasesToken,
   CsvFileDialogToken,
@@ -53,6 +55,11 @@ import type { AppSettings, ConfigStore } from "../infrastructure/config/config-s
 import type { DatabaseHandle } from "../infrastructure/db/connection.js";
 import { createAuditTrail } from "../infrastructure/db/audit-event-repository.js";
 import { createExecutionLogWriter } from "../infrastructure/execution/execution-log-writer.js";
+import {
+  createExecutionLogSource,
+  createManualScriptSource,
+} from "../infrastructure/db/export-sources.js";
+import { createExportEnvironment } from "../infrastructure/fs/node-export-environment.js";
 import { createMassRepository } from "../infrastructure/db/mass-repository.js";
 import { createRepositories } from "../infrastructure/db/repositories.js";
 import { createCompiledScriptRepository } from "../infrastructure/db/script-repository.js";
@@ -73,6 +80,7 @@ import { registerAuditHandlers } from "../ipc/handlers/audit-handlers.js";
 import { registerCompileHandlers } from "../ipc/handlers/compile-handlers.js";
 import { registerDialogHandlers } from "../ipc/handlers/dialog-handlers.js";
 import { registerExecutionHandlers } from "../ipc/handlers/execution-handlers.js";
+import { registerExportHandlers } from "../ipc/handlers/export-handlers.js";
 import { registerEnvironmentHandlers } from "../ipc/handlers/environment-handlers.js";
 import { registerRunHandlers } from "../ipc/handlers/run-handlers.js";
 import type { SettableIpcEventEmitter } from "../ipc/ipc-event-emitter.js";
@@ -261,6 +269,19 @@ export function registerUseCases(container: Container): Container {
       });
     },
   });
+  container.register(ExportUseCasesToken, {
+    useFactory: (c) => {
+      const repos = c.resolve(RepositoriesToken);
+      return createExportUseCases({
+        manualScript: createManualScriptSource(repos),
+        executionLog: createExecutionLogSource(repos),
+        env: createExportEnvironment(c.resolve(AppPathsToken)),
+        userContext: c.resolve(UserContextToken),
+        clock: () => new Date(),
+        audit: c.resolve(AuditTrailToken),
+      });
+    },
+  });
   container.register(InstallUseCasesToken, {
     useFactory: (c) => {
       const emitter = c.resolve(EventEmitterToken);
@@ -302,6 +323,7 @@ export function buildIpcRegistry(container: Container): IpcRegistry {
   });
   registerAuditHandlers(registry, container.resolve(AuditTrailToken));
   registerExecutionHandlers(registry, container.resolve(ExecutionUseCasesToken));
+  registerExportHandlers(registry, container.resolve(ExportUseCasesToken));
   registerEnvironmentHandlers(registry, {
     toolRunner: container.resolve(ToolRunnerToken),
     venvPresent: directoryHasVenv,

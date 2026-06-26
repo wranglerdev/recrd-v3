@@ -9,6 +9,7 @@ import type {
 } from "../../application/compile/compile-service.js";
 import type { AuditTrail } from "../../application/audit/audit-service.js";
 import type { ExecutionUseCases } from "../../application/execution/execution-service.js";
+import type { ExportUseCases } from "../../application/export/export-service.js";
 import type {
   InstallUseCases,
   StreamingCommandRunner,
@@ -71,4 +72,5 @@ export const PlanUseCasesToken = new Token<PlanUseCases>("PlanUseCases");
 export const SuiteUseCasesToken = new Token<SuiteUseCases>("SuiteUseCases");
 export const CaseUseCasesToken = new Token<CaseUseCases>("CaseUseCases");
 export const ExecutionUseCasesToken = new Token<ExecutionUseCases>("ExecutionUseCases");
+export const ExportUseCasesToken = new Token<ExportUseCases>("ExportUseCases");
 export const InstallUseCasesToken = new Token<InstallUseCases>("InstallUseCases");

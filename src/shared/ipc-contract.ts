@@ -57,6 +57,12 @@ import {
   type EnvironmentChannels,
 } from "./ipc/environment.js";
 import { RUN_CHANNELS, createRunApi, type RunApi, type RunChannels } from "./ipc/run.js";
+import {
+  EXPORT_CHANNELS,
+  createExportApi,
+  type ExportApi,
+  type ExportChannels,
+} from "./ipc/export.js";
 
 export type { ChannelDef, ChannelMap, Invoke, RequestOf, ResponseOf } from "./ipc/core.js";
 export type { AppInfo } from "./ipc/app.js";
@@ -127,6 +133,7 @@ export type {
   StartInstallResult,
 } from "./ipc/environment.js";
 export type { StartRunRequest, StartRunResult } from "./ipc/run.js";
+export type { ExportCaseRequest, ExportExecutionRequest, ExportResult } from "./ipc/export.js";
 export type {
   IpcEvents,
   IpcEventMap,
@@ -154,7 +161,8 @@ export type IpcChannelMap = AppChannels &
   AuditChannels &
   ExecutionChannels &
   EnvironmentChannels &
-  RunChannels;
+  RunChannels &
+  ExportChannels;
 
 export type IpcChannel = keyof IpcChannelMap;
 export type IpcRequest<C extends IpcChannel> = IpcChannelMap[C]["request"];
@@ -181,6 +189,7 @@ export const IPC_CHANNELS = [
   ...EXECUTION_CHANNELS,
   ...ENVIRONMENT_CHANNELS,
   ...RUN_CHANNELS,
+  ...EXPORT_CHANNELS,
 ] as const satisfies readonly IpcChannel[];
 
 /**
@@ -201,7 +210,8 @@ export type RecrdApi = AppApi &
   AuditApi &
   ExecutionApi &
   EnvironmentApi &
-  RunApi;
+  RunApi &
+  ExportApi;
 
 /**
  * Builds the renderer API from an `invoke` function by composing the per-feature
@@ -223,5 +233,6 @@ export function createRecrdApi(invoke: IpcInvoke): RecrdApi {
     ...createExecutionApi(invoke),
     ...createEnvironmentApi(invoke),
     ...createRunApi(invoke),
+    ...createExportApi(invoke),
   };
 }

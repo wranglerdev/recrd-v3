@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
@@ -17,6 +17,7 @@ import {
   ConfigStoreToken,
   DatabaseToken,
   ExecutionUseCasesToken,
+  ExportUseCasesToken,
   InstallUseCasesToken,
   GitServiceFactoryToken,
   LoggerToken,
@@ -236,6 +237,61 @@ describe("registerUseCases", () => {
       rmSync(robotRoot, { recursive: true, force: true });
     }
   });
+
+  it("wires the export use cases to write real artifacts", async () => {
+    const base = mkdtempSync(join(tmpdir(), "recrd-export-"));
+    const services: CoreServices = { ...fakeServices(), paths: createAppPaths(base) };
+    const container = composeContainer(services);
+    const database = createDatabase(":memory:");
+    try {
+      registerInfrastructure(container, {
+        database,
+        sandboxViewFactory: vi.fn(),
+        csvFileDialog: { selectCsv: vi.fn(async () => null) },
+        directoryDialog: { selectDirectory: vi.fn(async () => null) },
+        externalOpener: { openPath: vi.fn(async () => undefined) },
+        eventEmitter: { setTarget: vi.fn(), emit: vi.fn() },
+        installCommandRunner: vi.fn(async () => 0),
+      });
+      registerUseCases(container);
+      mkdirSync(services.paths.exportsDir, { recursive: true });
+
+      // Seed a case with a manual script captured for it.
+      const repos = container.resolve(RepositoriesToken);
+      const project = container.resolve(ProjectUseCasesToken).create({ name: "Banco" });
+      const plan = container.resolve(PlanUseCasesToken).create({
+        projectId: project.id,
+        name: "Plano",
+      });
+      const suite = container
+        .resolve(SuiteUseCasesToken)
+        .create({ planId: plan.id, name: "Suíte" });
+      const testCase = container
+        .resolve(CaseUseCasesToken)
+        .create({ suiteId: suite.id, name: "Caso" });
+      repos.scripts.create({
+        id: "scr1",
+        caseId: testCase.id,
+        kind: "manual",
+        content: JSON.stringify({ name: "Login", actions: [] }),
+        createdBy: "dev",
+        createdAt: "2026-06-26T10:00:00.000Z",
+        updatedBy: "dev",
+        updatedAt: "2026-06-26T10:00:00.000Z",
+      });
+
+      const exporter = container.resolve(ExportUseCasesToken);
+      const jsonPath = await exporter.exportJson(testCase.id);
+      expect(existsSync(jsonPath)).toBe(true);
+
+      // The export is recorded into the shared audit trail.
+      const events = container.resolve(AuditTrailToken).list();
+      expect(events.some((event) => event.type === "export")).toBe(true);
+    } finally {
+      database.close();
+      rmSync(base, { recursive: true, force: true });
+    }
+  });
 });
 
 describe("buildIpcRegistry", () => {
@@ -289,6 +345,9 @@ describe("buildIpcRegistry", () => {
         "env:install",
         "run:start",
         "run:stop",
+        "export:json",
+        "export:robot",
+        "export:log",
       ] as const) {
         expect(registry.has(channel)).toBe(true);
       }

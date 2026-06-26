@@ -60,6 +60,9 @@ const CASES: ReadonlyArray<readonly [method: string, channel: string, arg: unkno
   ["startEnvironmentInstall", "env:install", { root: "/repo" }],
   ["startRun", "run:start", { projectId: "p1" }],
   ["stopRun", "run:stop", undefined],
+  ["exportJson", "export:json", { caseId: "c" }],
+  ["exportRobot", "export:robot", { caseId: "c" }],
+  ["exportLog", "export:log", { executionId: "e" }],
 ];
 
 describe("createRecrdApi", () => {

@@ -147,3 +147,12 @@ export {
   type StartRunRequest,
   type StartRunResult,
 } from "./run.js";
+export {
+  EXPORT_CHANNELS,
+  createExportApi,
+  type ExportApi,
+  type ExportChannels,
+  type ExportCaseRequest,
+  type ExportExecutionRequest,
+  type ExportResult,
+} from "./export.js";

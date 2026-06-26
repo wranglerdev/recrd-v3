@@ -38,6 +38,12 @@ function fakeServices(): CoreServices {
     logger: new SinkLogger({ sink: { write: () => undefined } }),
     config: new InMemoryConfigStore<AppSettings>(DEFAULT_SETTINGS),
     appInfo: { name: "recrd", version: "0.1.0", platform: "linux" },
+    versionInfo: {
+      version: "0.1.0",
+      gitCommit: "abc1234",
+      buildDate: "2026-06-26T00:00:00.000Z",
+      target: "linux-x64",
+    },
     userContext: new MockUserContext(),
   };
 }

@@ -12,6 +12,7 @@ import type { ProjectUseCases } from "../../application/project/project-service.
 import type { RobotProjectUseCases } from "../../application/robot/robot-project-service.js";
 import type { UserContext } from "../../domain/auth/user-context.js";
 import type { AppInfo } from "../../shared/ipc-contract.js";
+import type { VersionInfo } from "../../shared/version-info.js";
 import type { AppSettings, ConfigStore } from "../infrastructure/config/config-store.js";
 import type { DatabaseHandle } from "../infrastructure/db/connection.js";
 import type { Repositories } from "../infrastructure/db/repositories.js";
@@ -34,6 +35,7 @@ export const AppPathsToken = new Token<AppPaths>("AppPaths");
 export const LoggerToken = new Token<Logger>("Logger");
 export const ConfigStoreToken = new Token<ConfigStore<AppSettings>>("ConfigStore");
 export const AppInfoToken = new Token<AppInfo>("AppInfo");
+export const VersionInfoToken = new Token<VersionInfo>("VersionInfo");
 export const UserContextToken = new Token<UserContext>("UserContext");
 
 // Infrastructure services (registered by registerInfrastructure).

@@ -10,6 +10,7 @@ import { createProjectUseCases } from "../../application/project/project-service
 import { createRobotProjectUseCases } from "../../application/robot/robot-project-service.js";
 import type { UserContext } from "../../domain/auth/user-context.js";
 import type { AppInfo } from "../../shared/ipc-contract.js";
+import type { VersionInfo } from "../../shared/version-info.js";
 import { Container } from "../di/container.js";
 import {
   AppInfoToken,
@@ -34,6 +35,7 @@ import {
   SuiteUseCasesToken,
   ToolRunnerToken,
   UserContextToken,
+  VersionInfoToken,
 } from "../di/tokens.js";
 import type { AppSettings, ConfigStore } from "../infrastructure/config/config-store.js";
 import type { DatabaseHandle } from "../infrastructure/db/connection.js";
@@ -68,6 +70,7 @@ export interface CoreServices {
   readonly logger: Logger;
   readonly config: ConfigStore<AppSettings>;
   readonly appInfo: AppInfo;
+  readonly versionInfo: VersionInfo;
   readonly userContext: UserContext;
 }
 
@@ -78,6 +81,7 @@ export function composeContainer(services: CoreServices): Container {
   container.register(LoggerToken, { useValue: services.logger });
   container.register(ConfigStoreToken, { useValue: services.config });
   container.register(AppInfoToken, { useValue: services.appInfo });
+  container.register(VersionInfoToken, { useValue: services.versionInfo });
   container.register(UserContextToken, { useValue: services.userContext });
   return container;
 }
@@ -211,7 +215,11 @@ export function registerUseCases(container: Container): Container {
 /** Builds the typed IPC registry, resolving handler dependencies from the container. */
 export function buildIpcRegistry(container: Container): IpcRegistry {
   const registry = new IpcRegistry();
-  registerAppHandlers(registry, container.resolve(AppInfoToken));
+  registerAppHandlers(
+    registry,
+    container.resolve(AppInfoToken),
+    container.resolve(VersionInfoToken),
+  );
   registerRobotHandlers(registry, container.resolve(RobotProjectUseCasesToken));
   registerProjectHandlers(registry, container.resolve(ProjectUseCasesToken));
   registerHierarchyHandlers(registry, {

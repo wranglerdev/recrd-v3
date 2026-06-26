@@ -15,6 +15,7 @@ import { createCsvFileDialog } from "./infrastructure/dialog/csv-file-dialog.js"
 import { createDirectoryDialog } from "./infrastructure/dialog/directory-dialog.js";
 import { createElectronLogger } from "./infrastructure/logging/electron-logger.js";
 import { createAppPaths, ensureAppDirectories } from "./infrastructure/paths/app-paths.js";
+import { resolveVersionInfo } from "./infrastructure/version/version-reader.js";
 import { bindIpcMain } from "./ipc/electron-ipc.js";
 import { createSandboxView } from "./sandbox/sandbox-view.js";
 
@@ -41,13 +42,19 @@ function bootstrap(): void {
     version: app.getVersion(),
     platform: process.platform,
   };
+  // version.json is emitted next to the main bundle at build time (PRD §30);
+  // absent in dev, where we fall back to the running app's version + platform.
+  const versionInfo = resolveVersionInfo(join(here, "../version.json"), {
+    version: app.getVersion(),
+    target: `${process.platform}-${process.arch}`,
+  });
 
   // Open the database at bootstrap (runs migrations) so use cases resolve a
   // ready connection from the container.
   database = createDatabase(paths.database);
 
   const userContext = createUserContext();
-  const container = composeContainer({ paths, logger, config, appInfo, userContext });
+  const container = composeContainer({ paths, logger, config, appInfo, versionInfo, userContext });
   registerInfrastructure(container, {
     database,
     sandboxViewFactory: createSandboxView,

@@ -59,6 +59,7 @@ import { registerHierarchyHandlers } from "../ipc/handlers/hierarchy-handlers.js
 import { registerMassHandlers } from "../ipc/handlers/mass-handlers.js";
 import { registerProjectHandlers } from "../ipc/handlers/project-handlers.js";
 import { registerRobotHandlers } from "../ipc/handlers/robot-handlers.js";
+import { registerSettingsHandlers } from "../ipc/handlers/settings-handlers.js";
 import { IpcRegistry } from "../ipc/typed-ipc.js";
 
 // Composition root wiring (PRD §3, §31). Kept free of Electron lifecycle code so
@@ -233,5 +234,6 @@ export function buildIpcRegistry(container: Container): IpcRegistry {
   });
   registerCompileHandlers(registry, container.resolve(CompileUseCasesToken));
   registerDialogHandlers(registry, container.resolve(DirectoryDialogToken));
+  registerSettingsHandlers(registry, container.resolve(ConfigStoreToken));
   return registry;
 }

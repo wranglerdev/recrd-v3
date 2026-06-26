@@ -7,6 +7,18 @@ export type WindowState = {
   readonly height: number;
 };
 
+/** Filesystem paths to the external toolchain (PRD §14); null = use PATH. */
+export type ToolPaths = {
+  readonly python: string | null;
+  readonly robot: string | null;
+};
+
+/** Recording/capture preferences for the automation screen (PRD §9, §11). */
+export type RecordingPreferences = {
+  readonly captureScreenshots: boolean;
+  readonly defaultTimeoutMs: number;
+};
+
 // Declared as a type alias (not an interface) so it satisfies the
 // `Record<string, unknown>` constraint on ConfigStore<T> / electron-store.
 export type AppSettings = {
@@ -16,12 +28,18 @@ export type AppSettings = {
   readonly recentProjects: readonly string[];
   /** Last main-window size, restored on launch. */
   readonly window: WindowState;
+  /** Configurable python/robot executable paths (Settings screen). */
+  readonly toolPaths: ToolPaths;
+  /** Recording preferences edited in the Settings screen. */
+  readonly recording: RecordingPreferences;
 };
 
 export const DEFAULT_SETTINGS: AppSettings = {
   lastOpenedProjectId: null,
   recentProjects: [],
   window: { width: 1280, height: 800 },
+  toolPaths: { python: null, robot: null },
+  recording: { captureScreenshots: true, defaultTimeoutMs: 5000 },
 };
 
 /** Minimal typed key/value access over a persisted settings object. */

@@ -82,3 +82,14 @@ export {
   type DialogApi,
   type DialogChannels,
 } from "./dialog.js";
+export {
+  SETTINGS_CHANNELS,
+  createSettingsApi,
+  type SettingsApi,
+  type SettingsChannels,
+  type SettingsDto,
+  type SettingsPatch,
+  type ToolPathsDto,
+  type RecordingPreferencesDto,
+  type WindowStateDto,
+} from "./settings.js";

@@ -36,6 +36,12 @@ import {
   type DialogApi,
   type DialogChannels,
 } from "./ipc/dialog.js";
+import {
+  SETTINGS_CHANNELS,
+  createSettingsApi,
+  type SettingsApi,
+  type SettingsChannels,
+} from "./ipc/settings.js";
 
 export type { ChannelDef, ChannelMap, Invoke, RequestOf, ResponseOf } from "./ipc/core.js";
 export type { AppInfo } from "./ipc/app.js";
@@ -79,6 +85,13 @@ export type {
   CompileRequest,
   CompileResponse,
 } from "./ipc/compile.js";
+export type {
+  SettingsDto,
+  SettingsPatch,
+  ToolPathsDto,
+  RecordingPreferencesDto,
+  WindowStateDto,
+} from "./ipc/settings.js";
 
 /**
  * Every IPC channel, composed from the feature channel maps by intersection
@@ -91,7 +104,8 @@ export type IpcChannelMap = AppChannels &
   HierarchyChannels &
   MassChannels &
   CompileChannels &
-  DialogChannels;
+  DialogChannels &
+  SettingsChannels;
 
 export type IpcChannel = keyof IpcChannelMap;
 export type IpcRequest<C extends IpcChannel> = IpcChannelMap[C]["request"];
@@ -112,6 +126,7 @@ export const IPC_CHANNELS = [
   ...MASS_CHANNELS,
   ...COMPILE_CHANNELS,
   ...DIALOG_CHANNELS,
+  ...SETTINGS_CHANNELS,
 ] as const satisfies readonly IpcChannel[];
 
 /**
@@ -126,7 +141,8 @@ export type RecrdApi = AppApi &
   HierarchyApi &
   MassApi &
   CompileApi &
-  DialogApi;
+  DialogApi &
+  SettingsApi;
 
 /**
  * Builds the renderer API from an `invoke` function by composing the per-feature
@@ -142,5 +158,6 @@ export function createRecrdApi(invoke: IpcInvoke): RecrdApi {
     ...createMassApi(invoke),
     ...createCompileApi(invoke),
     ...createDialogApi(invoke),
+    ...createSettingsApi(invoke),
   };
 }

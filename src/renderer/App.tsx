@@ -5,6 +5,7 @@ import { AutomationScreen } from "./screens/AutomationScreen.js";
 import { MassScreen, type MassView } from "./screens/MassScreen.js";
 import { NewProjectScreen } from "./screens/NewProjectScreen.js";
 import { AboutScreen } from "./screens/AboutScreen.js";
+import { SettingsScreen } from "./screens/SettingsScreen.js";
 import { ActiveProjectProvider, useBridge, useIpcQuery } from "./state/index.js";
 import "./styles/app-shell.css";
 
@@ -15,7 +16,7 @@ import "./styles/app-shell.css";
 // empty/placeholder inputs; as feature channels land the placeholders are swapped
 // for real IPC reads.
 
-type View = "home" | "new-project" | "automation" | "mass" | "about";
+type View = "home" | "new-project" | "automation" | "mass" | "about" | "settings";
 
 type NavItem = {
   readonly view: View;
@@ -29,6 +30,7 @@ const NAV_ITEMS: readonly NavItem[] = [
   { view: "home", label: "Início", icon: "⌂" },
   { view: "automation", label: "Automação", icon: "⏺" },
   { view: "mass", label: "Massas", icon: "▦" },
+  { view: "settings", label: "Configurações", icon: "⚙" },
   { view: "about", label: "Sobre", icon: "ⓘ" },
 ];
 
@@ -131,5 +133,7 @@ function renderView(view: View, setView: (view: View) => void): JSX.Element {
       return <MassScreen mass={EMPTY_MASS} onEditValue={NOOP} />;
     case "about":
       return <AboutScreen />;
+    case "settings":
+      return <SettingsScreen />;
   }
 }

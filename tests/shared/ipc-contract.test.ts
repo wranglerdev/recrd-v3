@@ -41,6 +41,8 @@ const CASES: ReadonlyArray<readonly [method: string, channel: string, arg: unkno
   ["selectCsvFile", "mass:selectCsv", undefined],
   ["compileScript", "compile:run", { caseId: "c", projectId: "p", script: { name: "n", actions: [] } }],
   ["selectDirectory", "dialog:selectDirectory", undefined],
+  ["getSettings", "settings:getAll", undefined],
+  ["updateSettings", "settings:update", { recording: { captureScreenshots: false, defaultTimeoutMs: 1 } }],
 ];
 
 describe("createRecrdApi", () => {

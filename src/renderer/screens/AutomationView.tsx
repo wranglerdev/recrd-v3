@@ -1,9 +1,10 @@
-import { useState, type JSX } from "react";
+import { useCallback, useState, type JSX } from "react";
 import { useActiveProject, useBridge, useIpcEvent } from "../state/index.js";
 import { errorMessage } from "../state/useIpc.js";
 import { AutomationScreen } from "./AutomationScreen.js";
 import { CaseExecutionHistory } from "./CaseExecutionHistory.js";
 import { SandboxNavBar } from "./SandboxNavBar.js";
+import type { ViewportRect } from "./use-resize-rect.js";
 
 // Automation container (PRD §9, §15, §17): wires the presentational
 // AutomationScreen toolbar to the Robot run + export IPC. Play starts a run of
@@ -69,6 +70,23 @@ export function AutomationView(): JSX.Element {
     }
   };
 
+  // Keep the embedded BrowserView aligned with the sandbox region: push its rect
+  // and show it; hide it when the region unmounts (PRD §9, §10).
+  const handleSandboxViewport = useCallback(
+    (rect: ViewportRect | null): void => {
+      if (bridge === null) {
+        return;
+      }
+      if (rect === null) {
+        void bridge.setSandboxVisible({ visible: false });
+        return;
+      }
+      void bridge.setSandboxBounds(rect);
+      void bridge.setSandboxVisible({ visible: true });
+    },
+    [bridge],
+  );
+
   const handleExport = (): void => {
     if (bridge === null || activeCase === null) {
       setExportMsg("Selecione um caso para exportar.");
@@ -103,9 +121,10 @@ export function AutomationView(): JSX.Element {
         onExport: handleExport,
         onCompile: NOOP,
       }}
+      navBar={<SandboxNavBar />}
+      onSandboxViewportChange={handleSandboxViewport}
       sidebar={
         <>
-          <SandboxNavBar />
           <section aria-label="Log de execução">
             <p>{running ? "Executando…" : "Parado"}</p>
             {!running && exitCode !== null && (

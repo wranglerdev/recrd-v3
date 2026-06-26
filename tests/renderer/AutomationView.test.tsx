@@ -12,7 +12,14 @@ afterEach(() => {
 });
 
 function stubBridge(api: Partial<RecrdApi>): void {
-  Object.defineProperty(window, "recrd", { value: api, configurable: true });
+  // The Automation screen reports the sandbox viewport on mount, so every stub
+  // needs the sandbox layout methods; specific tests override the rest.
+  const value: Partial<RecrdApi> = {
+    setSandboxBounds: vi.fn(),
+    setSandboxVisible: vi.fn(),
+    ...api,
+  };
+  Object.defineProperty(window, "recrd", { value, configurable: true });
 }
 
 function stubEvents(): {

@@ -7,6 +7,7 @@ import {
 import { createCompileUseCases } from "../../application/compile/compile-service.js";
 import { createExecutionUseCases } from "../../application/execution/execution-service.js";
 import { createExportUseCases } from "../../application/export/export-service.js";
+import { createScriptUseCases } from "../../application/scripts/script-service.js";
 import {
   createInstallUseCases,
   type InstallProgress,
@@ -45,6 +46,7 @@ import {
   RobotProjectServiceToken,
   RobotProjectUseCasesToken,
   RobotRunnerToken,
+  ScriptUseCasesToken,
   SandboxControllerToken,
   SandboxViewFactoryToken,
   SuiteUseCasesToken,
@@ -61,6 +63,7 @@ import {
   createManualScriptSource,
 } from "../infrastructure/db/export-sources.js";
 import { createExportEnvironment } from "../infrastructure/fs/node-export-environment.js";
+import { createManualScriptStore } from "../infrastructure/db/manual-script-repository.js";
 import { createMassRepository } from "../infrastructure/db/mass-repository.js";
 import { createRepositories } from "../infrastructure/db/repositories.js";
 import { createCompiledScriptRepository } from "../infrastructure/db/script-repository.js";
@@ -84,6 +87,7 @@ import { registerDialogHandlers } from "../ipc/handlers/dialog-handlers.js";
 import { registerExecutionHandlers } from "../ipc/handlers/execution-handlers.js";
 import { registerExportHandlers } from "../ipc/handlers/export-handlers.js";
 import { registerSandboxHandlers } from "../ipc/handlers/sandbox-handlers.js";
+import { registerScriptHandlers } from "../ipc/handlers/script-handlers.js";
 import { registerEnvironmentHandlers } from "../ipc/handlers/environment-handlers.js";
 import { registerRunHandlers } from "../ipc/handlers/run-handlers.js";
 import type { SettableIpcEventEmitter } from "../ipc/ipc-event-emitter.js";
@@ -288,6 +292,16 @@ export function registerUseCases(container: Container): Container {
       });
     },
   });
+  container.register(ScriptUseCasesToken, {
+    useFactory: (c) =>
+      createScriptUseCases({
+        store: createManualScriptStore(c.resolve(RepositoriesToken).scripts),
+        userContext: c.resolve(UserContextToken),
+        newId: randomUUID,
+        clock: () => new Date(),
+        audit: c.resolve(AuditTrailToken),
+      }),
+  });
   container.register(InstallUseCasesToken, {
     useFactory: (c) => {
       const emitter = c.resolve(EventEmitterToken);
@@ -331,6 +345,7 @@ export function buildIpcRegistry(container: Container): IpcRegistry {
   registerExecutionHandlers(registry, container.resolve(ExecutionUseCasesToken));
   registerExportHandlers(registry, container.resolve(ExportUseCasesToken));
   registerSandboxHandlers(registry, container.resolve(SandboxControllerToken));
+  registerScriptHandlers(registry, container.resolve(ScriptUseCasesToken));
   registerEnvironmentHandlers(registry, {
     toolRunner: container.resolve(ToolRunnerToken),
     venvPresent: directoryHasVenv,

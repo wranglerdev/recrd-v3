@@ -69,6 +69,12 @@ import {
   type SandboxApi,
   type SandboxChannels,
 } from "./ipc/sandbox.js";
+import {
+  SCRIPT_CHANNELS,
+  createScriptApi,
+  type ScriptApi,
+  type ScriptChannels,
+} from "./ipc/script.js";
 
 export type { ChannelDef, ChannelMap, Invoke, RequestOf, ResponseOf } from "./ipc/core.js";
 export type { AppInfo } from "./ipc/app.js";
@@ -146,6 +152,7 @@ export type {
   SandboxBoundsRequest,
   SetSandboxVisibleRequest,
 } from "./ipc/sandbox.js";
+export type { SaveManualScriptRequest, GetManualScriptRequest } from "./ipc/script.js";
 export type {
   IpcEvents,
   IpcEventMap,
@@ -176,7 +183,8 @@ export type IpcChannelMap = AppChannels &
   EnvironmentChannels &
   RunChannels &
   ExportChannels &
-  SandboxChannels;
+  SandboxChannels &
+  ScriptChannels;
 
 export type IpcChannel = keyof IpcChannelMap;
 export type IpcRequest<C extends IpcChannel> = IpcChannelMap[C]["request"];
@@ -205,6 +213,7 @@ export const IPC_CHANNELS = [
   ...RUN_CHANNELS,
   ...EXPORT_CHANNELS,
   ...SANDBOX_CHANNELS,
+  ...SCRIPT_CHANNELS,
 ] as const satisfies readonly IpcChannel[];
 
 /**
@@ -227,7 +236,8 @@ export type RecrdApi = AppApi &
   EnvironmentApi &
   RunApi &
   ExportApi &
-  SandboxApi;
+  SandboxApi &
+  ScriptApi;
 
 /**
  * Builds the renderer API from an `invoke` function by composing the per-feature
@@ -251,5 +261,6 @@ export function createRecrdApi(invoke: IpcInvoke): RecrdApi {
     ...createRunApi(invoke),
     ...createExportApi(invoke),
     ...createSandboxApi(invoke),
+    ...createScriptApi(invoke),
   };
 }

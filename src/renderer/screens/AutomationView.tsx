@@ -1,5 +1,5 @@
 import { useCallback, useState, type JSX } from "react";
-import { useActiveProject, useBridge, useIpcEvent } from "../state/index.js";
+import { useActiveProject, useBridge, useIpcEvent, useRecordingSession } from "../state/index.js";
 import { errorMessage } from "../state/useIpc.js";
 import { AutomationScreen } from "./AutomationScreen.js";
 import { CaseExecutionHistory } from "./CaseExecutionHistory.js";
@@ -35,6 +35,14 @@ export function AutomationView(): JSX.Element {
   const [historyKey, setHistoryKey] = useState(0);
   // Feedback for the export actions (written paths, or a failure message).
   const [exportMsg, setExportMsg] = useState<string | null>(null);
+
+  // Record sandbox interactions into the active case's manual script, persisting
+  // incrementally (PRD §10). Recording runs while a case is selected.
+  const recording = useRecordingSession({
+    caseId: activeCase?.id ?? null,
+    caseName: activeCase?.name ?? "Gravação",
+    active: activeCase !== null,
+  });
 
   useIpcEvent("run:line", (payload) => setLog((lines) => [...lines, payload.line]));
   useIpcEvent("run:exit", (payload) => {
@@ -124,7 +132,11 @@ export function AutomationView(): JSX.Element {
         onCompile: NOOP,
       }}
       navBar={<SandboxNavBar />}
-      panels={{ properties: <PropertiesPanel />, toggles: <TogglesPanel /> }}
+      panels={{
+        timeline: <p>Ações capturadas: {recording.actions.length}</p>,
+        properties: <PropertiesPanel />,
+        toggles: <TogglesPanel />,
+      }}
       onSandboxViewportChange={handleSandboxViewport}
       sidebar={
         <>

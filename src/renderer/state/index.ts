@@ -2,6 +2,11 @@
 export { getBridge, useBridge } from "./bridge.js";
 export { getEventBridge, useIpcEvent } from "./events.js";
 export {
+  useRecordingSession,
+  type RecordingSession,
+  type RecordingSessionOptions,
+} from "./useRecordingSession.js";
+export {
   useIpcQuery,
   useIpcAction,
   errorMessage,

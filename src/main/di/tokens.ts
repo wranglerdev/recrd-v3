@@ -17,6 +17,7 @@ import type {
 import type { MassUseCases } from "../../application/mass/mass-service.js";
 import type { ProjectUseCases } from "../../application/project/project-service.js";
 import type { RobotProjectUseCases } from "../../application/robot/robot-project-service.js";
+import type { ScriptUseCases } from "../../application/scripts/script-service.js";
 import type { UserContext } from "../../domain/auth/user-context.js";
 import type { AppInfo } from "../../shared/ipc-contract.js";
 import type { VersionInfo } from "../../shared/version-info.js";
@@ -75,4 +76,5 @@ export const SuiteUseCasesToken = new Token<SuiteUseCases>("SuiteUseCases");
 export const CaseUseCasesToken = new Token<CaseUseCases>("CaseUseCases");
 export const ExecutionUseCasesToken = new Token<ExecutionUseCases>("ExecutionUseCases");
 export const ExportUseCasesToken = new Token<ExportUseCases>("ExportUseCases");
+export const ScriptUseCasesToken = new Token<ScriptUseCases>("ScriptUseCases");
 export const InstallUseCasesToken = new Token<InstallUseCases>("InstallUseCases");

@@ -70,6 +70,8 @@ const CASES: ReadonlyArray<readonly [method: string, channel: string, arg: unkno
   ["sandboxBack", "sandbox:back", undefined],
   ["sandboxForward", "sandbox:forward", undefined],
   ["sandboxReload", "sandbox:reload", undefined],
+  ["saveManualScript", "script:saveManual", { caseId: "c", script: { name: "n", actions: [] } }],
+  ["getManualScript", "script:getManual", { caseId: "c" }],
 ];
 
 describe("createRecrdApi", () => {

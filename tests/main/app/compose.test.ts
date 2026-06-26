@@ -28,6 +28,7 @@ import {
   RobotProjectServiceToken,
   RobotRunnerToken,
   SandboxViewFactoryToken,
+  ScriptUseCasesToken,
   SuiteUseCasesToken,
   ToolRunnerToken,
   UserContextToken,
@@ -289,6 +290,14 @@ describe("registerUseCases", () => {
       const jsonPath = await exporter.exportJson(testCase.id);
       expect(existsSync(jsonPath)).toBe(true);
 
+      // The script use cases upsert and read back the case's manual script.
+      const scripts = container.resolve(ScriptUseCasesToken);
+      scripts.saveManual({
+        caseId: testCase.id,
+        script: { name: "Login", actions: [{ type: "navigate", url: "https://e.com" }] },
+      });
+      expect(scripts.getManual(testCase.id)?.actions).toHaveLength(1);
+
       // The export is recorded into the shared audit trail.
       const events = container.resolve(AuditTrailToken).list();
       expect(events.some((event) => event.type === "export")).toBe(true);
@@ -361,6 +370,8 @@ describe("buildIpcRegistry", () => {
         "sandbox:back",
         "sandbox:forward",
         "sandbox:reload",
+        "script:saveManual",
+        "script:getManual",
       ] as const) {
         expect(registry.has(channel)).toBe(true);
       }

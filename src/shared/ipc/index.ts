@@ -167,3 +167,11 @@ export {
   type SandboxBoundsRequest,
   type SetSandboxVisibleRequest,
 } from "./sandbox.js";
+export {
+  SCRIPT_CHANNELS,
+  createScriptApi,
+  type ScriptApi,
+  type ScriptChannels,
+  type SaveManualScriptRequest,
+  type GetManualScriptRequest,
+} from "./script.js";

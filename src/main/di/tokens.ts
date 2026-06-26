@@ -1,3 +1,8 @@
+import type {
+  CaseUseCases,
+  PlanUseCases,
+  SuiteUseCases,
+} from "../../application/hierarchy/hierarchy-service.js";
 import type { ProjectUseCases } from "../../application/project/project-service.js";
 import type { RobotProjectUseCases } from "../../application/robot/robot-project-service.js";
 import type { UserContext } from "../../domain/auth/user-context.js";
@@ -36,3 +41,6 @@ export const SandboxViewFactoryToken = new Token<SandboxViewFactory>("SandboxVie
 // Application use cases (wired from infrastructure + core at the composition root).
 export const ProjectUseCasesToken = new Token<ProjectUseCases>("ProjectUseCases");
 export const RobotProjectUseCasesToken = new Token<RobotProjectUseCases>("RobotProjectUseCases");
+export const PlanUseCasesToken = new Token<PlanUseCases>("PlanUseCases");
+export const SuiteUseCasesToken = new Token<SuiteUseCases>("SuiteUseCases");
+export const CaseUseCasesToken = new Token<CaseUseCases>("CaseUseCases");

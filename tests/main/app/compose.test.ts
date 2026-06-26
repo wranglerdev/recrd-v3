@@ -126,6 +126,18 @@ describe("buildIpcRegistry", () => {
 
       // The robot scaffolding handler is wired from the use case container.
       expect(registry.has("robot:scaffold")).toBe(true);
+
+      // Project + hierarchy (plan/suite/case) channels are wired too.
+      for (const channel of [
+        "project:create",
+        "project:list",
+        "plan:create",
+        "suite:create",
+        "case:create",
+        "case:setStatus",
+      ] as const) {
+        expect(registry.has(channel)).toBe(true);
+      }
     } finally {
       database.close();
     }

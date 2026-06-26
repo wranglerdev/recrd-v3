@@ -39,7 +39,7 @@ export const cases = sqliteTable("cases", {
   suiteId: text("suite_id").notNull(),
   name: text("name").notNull(),
   description: text("description").notNull().default(""),
-  status: text("status").notNull().default("draft"),
+  status: text("status").$type<"draft" | "ready" | "deprecated">().notNull().default("draft"),
   ...auditColumns,
 });
 

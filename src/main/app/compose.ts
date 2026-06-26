@@ -1,4 +1,9 @@
 import { randomUUID } from "node:crypto";
+import {
+  createCaseUseCases,
+  createPlanUseCases,
+  createSuiteUseCases,
+} from "../../application/hierarchy/hierarchy-service.js";
 import { createProjectUseCases } from "../../application/project/project-service.js";
 import { createRobotProjectUseCases } from "../../application/robot/robot-project-service.js";
 import type { UserContext } from "../../domain/auth/user-context.js";
@@ -7,16 +12,19 @@ import { Container } from "../di/container.js";
 import {
   AppInfoToken,
   AppPathsToken,
+  CaseUseCasesToken,
   ConfigStoreToken,
   DatabaseToken,
   GitServiceFactoryToken,
   LoggerToken,
+  PlanUseCasesToken,
   ProjectUseCasesToken,
   RepositoriesToken,
   RobotProjectServiceToken,
   RobotProjectUseCasesToken,
   RobotRunnerToken,
   SandboxViewFactoryToken,
+  SuiteUseCasesToken,
   ToolRunnerToken,
   UserContextToken,
 } from "../di/tokens.js";
@@ -31,6 +39,8 @@ import { createRobotProjectService } from "../infrastructure/robot/robot-project
 import { RobotRunner } from "../infrastructure/robot/robot-runner.js";
 import type { SandboxViewFactory } from "../sandbox/sandbox-config.js";
 import { registerAppHandlers } from "../ipc/handlers/app-handlers.js";
+import { registerHierarchyHandlers } from "../ipc/handlers/hierarchy-handlers.js";
+import { registerProjectHandlers } from "../ipc/handlers/project-handlers.js";
 import { registerRobotHandlers } from "../ipc/handlers/robot-handlers.js";
 import { IpcRegistry } from "../ipc/typed-ipc.js";
 
@@ -114,6 +124,44 @@ export function registerUseCases(container: Container): Container {
         projects: c.resolve(ProjectUseCasesToken),
       }),
   });
+  // Hierarchy use cases (Plan > Suite > Case). Each guards parent existence via a
+  // ParentCheck backed by the parent repository's findById (hierarchy integrity).
+  container.register(PlanUseCasesToken, {
+    useFactory: (c) => {
+      const repos = c.resolve(RepositoriesToken);
+      return createPlanUseCases({
+        repository: repos.plans,
+        projectExists: (id) => repos.projects.findById(id) !== undefined,
+        userContext: c.resolve(UserContextToken),
+        newId: randomUUID,
+        clock: () => new Date(),
+      });
+    },
+  });
+  container.register(SuiteUseCasesToken, {
+    useFactory: (c) => {
+      const repos = c.resolve(RepositoriesToken);
+      return createSuiteUseCases({
+        repository: repos.suites,
+        planExists: (id) => repos.plans.findById(id) !== undefined,
+        userContext: c.resolve(UserContextToken),
+        newId: randomUUID,
+        clock: () => new Date(),
+      });
+    },
+  });
+  container.register(CaseUseCasesToken, {
+    useFactory: (c) => {
+      const repos = c.resolve(RepositoriesToken);
+      return createCaseUseCases({
+        repository: repos.cases,
+        suiteExists: (id) => repos.suites.findById(id) !== undefined,
+        userContext: c.resolve(UserContextToken),
+        newId: randomUUID,
+        clock: () => new Date(),
+      });
+    },
+  });
   return container;
 }
 
@@ -122,5 +170,11 @@ export function buildIpcRegistry(container: Container): IpcRegistry {
   const registry = new IpcRegistry();
   registerAppHandlers(registry, container.resolve(AppInfoToken));
   registerRobotHandlers(registry, container.resolve(RobotProjectUseCasesToken));
+  registerProjectHandlers(registry, container.resolve(ProjectUseCasesToken));
+  registerHierarchyHandlers(registry, {
+    plans: container.resolve(PlanUseCasesToken),
+    suites: container.resolve(SuiteUseCasesToken),
+    cases: container.resolve(CaseUseCasesToken),
+  });
   return registry;
 }

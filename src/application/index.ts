@@ -23,3 +23,32 @@ export {
   type ProjectUseCases,
   type UpdateProjectDetailsInput,
 } from "./project/project-service.js";
+export {
+  openOrThrow,
+  auditedUpdate,
+  removeOrThrow,
+  requireParentExists,
+  requireText,
+  type AuditContext,
+  type EntityRepository,
+  type Identified,
+  type ParentCheck,
+} from "./crud/audited-crud.js";
+export {
+  createPlanUseCases,
+  createSuiteUseCases,
+  createCaseUseCases,
+  type CaseStatus,
+  type CaseUseCaseDeps,
+  type CaseUseCases,
+  type CreateCaseInput,
+  type CreatePlanInput,
+  type CreateSuiteInput,
+  type Plan,
+  type PlanUseCaseDeps,
+  type PlanUseCases,
+  type Suite,
+  type SuiteUseCaseDeps,
+  type SuiteUseCases,
+  type TestCase,
+} from "./hierarchy/hierarchy-service.js";

@@ -358,6 +358,9 @@ describe("buildIpcRegistry", () => {
         "sandbox:open",
         "sandbox:setBounds",
         "sandbox:setVisible",
+        "sandbox:back",
+        "sandbox:forward",
+        "sandbox:reload",
       ] as const) {
         expect(registry.has(channel)).toBe(true);
       }

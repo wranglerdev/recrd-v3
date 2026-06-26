@@ -8,8 +8,18 @@ function fakePort(): SandboxViewPort & {
   setBounds: ReturnType<typeof vi.fn>;
   setVisible: ReturnType<typeof vi.fn>;
   loadUrl: ReturnType<typeof vi.fn>;
+  goBack: ReturnType<typeof vi.fn>;
+  goForward: ReturnType<typeof vi.fn>;
+  reload: ReturnType<typeof vi.fn>;
 } {
-  return { setBounds: vi.fn(), setVisible: vi.fn(), loadUrl: vi.fn() };
+  return {
+    setBounds: vi.fn(),
+    setVisible: vi.fn(),
+    loadUrl: vi.fn(),
+    goBack: vi.fn(),
+    goForward: vi.fn(),
+    reload: vi.fn(),
+  };
 }
 
 const RECT = { x: 10, y: 20, width: 800, height: 600 };
@@ -92,5 +102,27 @@ describe("createSandboxController (PRD §10)", () => {
     controller.attach(port);
     expect(port.setVisible).toHaveBeenCalledWith(false);
     expect(port.setBounds).not.toHaveBeenCalled();
+  });
+
+  it("forwards back/forward/reload to the port", () => {
+    const port = fakePort();
+    const controller = createSandboxController();
+    controller.attach(port);
+
+    controller.goBack();
+    controller.goForward();
+    controller.reload();
+    expect(port.goBack).toHaveBeenCalledOnce();
+    expect(port.goForward).toHaveBeenCalledOnce();
+    expect(port.reload).toHaveBeenCalledOnce();
+  });
+
+  it("ignores back/forward/reload before a port is attached", () => {
+    const controller = createSandboxController();
+    expect(() => {
+      controller.goBack();
+      controller.goForward();
+      controller.reload();
+    }).not.toThrow();
   });
 });

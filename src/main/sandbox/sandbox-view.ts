@@ -35,5 +35,14 @@ export function createSandboxViewPort(window: BrowserWindow, view: BrowserView):
     loadUrl(url) {
       void view.webContents.loadURL(url);
     },
+    goBack() {
+      view.webContents.navigationHistory.goBack();
+    },
+    goForward() {
+      view.webContents.navigationHistory.goForward();
+    },
+    reload() {
+      view.webContents.reload();
+    },
   };
 }

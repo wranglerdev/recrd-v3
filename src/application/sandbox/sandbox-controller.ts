@@ -22,6 +22,12 @@ export interface SandboxViewPort {
   setVisible(visible: boolean): void;
   /** Navigates the view to an absolute URL. */
   loadUrl(url: string): void;
+  /** Navigates back in the view's history, if possible. */
+  goBack(): void;
+  /** Navigates forward in the view's history, if possible. */
+  goForward(): void;
+  /** Reloads the current page, preserving the session when possible. */
+  reload(): void;
 }
 
 export interface SandboxController {
@@ -31,6 +37,12 @@ export interface SandboxController {
   setBounds(rect: SandboxRect): void;
   /** Shows or hides the sandbox view. */
   setVisible(visible: boolean): void;
+  /** Navigates back in the sandbox history. */
+  goBack(): void;
+  /** Navigates forward in the sandbox history. */
+  goForward(): void;
+  /** Reloads the current sandbox page (keeps the session when possible). */
+  reload(): void;
   /**
    * Attaches the Electron-backed view port (once the window exists). The current
    * visibility/bounds are reflected onto the freshly-attached view immediately.
@@ -75,6 +87,15 @@ export function createSandboxController(): SandboxController {
     setVisible(next) {
       visible = next;
       apply();
+    },
+    goBack() {
+      port?.goBack();
+    },
+    goForward() {
+      port?.goForward();
+    },
+    reload() {
+      port?.reload();
     },
     attach(next) {
       port = next;

@@ -26,12 +26,29 @@ export type SandboxChannels = {
   "sandbox:open": { request: OpenSandboxRequest; response: void };
   "sandbox:setBounds": { request: SandboxBoundsRequest; response: void };
   "sandbox:setVisible": { request: SetSandboxVisibleRequest; response: void };
+  "sandbox:back": { request: void; response: void };
+  "sandbox:forward": { request: void; response: void };
+  "sandbox:reload": { request: void; response: void };
 };
 
 export const SANDBOX_CHANNELS = defineChannelNames<
   SandboxChannels,
-  ["sandbox:open", "sandbox:setBounds", "sandbox:setVisible"]
->(["sandbox:open", "sandbox:setBounds", "sandbox:setVisible"]);
+  [
+    "sandbox:open",
+    "sandbox:setBounds",
+    "sandbox:setVisible",
+    "sandbox:back",
+    "sandbox:forward",
+    "sandbox:reload",
+  ]
+>([
+  "sandbox:open",
+  "sandbox:setBounds",
+  "sandbox:setVisible",
+  "sandbox:back",
+  "sandbox:forward",
+  "sandbox:reload",
+]);
 
 /** The slice of the renderer API served by the sandbox feature. */
 export interface SandboxApi {
@@ -41,6 +58,12 @@ export interface SandboxApi {
   setSandboxBounds(request: SandboxBoundsRequest): Promise<void>;
   /** Shows or hides the sandbox view. */
   setSandboxVisible(request: SetSandboxVisibleRequest): Promise<void>;
+  /** Navigates the sandbox back in its history. */
+  sandboxBack(): Promise<void>;
+  /** Navigates the sandbox forward in its history. */
+  sandboxForward(): Promise<void>;
+  /** Reloads the current sandbox page. */
+  sandboxReload(): Promise<void>;
 }
 
 export function createSandboxApi(invoke: Invoke<SandboxChannels>): SandboxApi {
@@ -48,5 +71,8 @@ export function createSandboxApi(invoke: Invoke<SandboxChannels>): SandboxApi {
     openSandbox: (request) => invoke("sandbox:open", request),
     setSandboxBounds: (request) => invoke("sandbox:setBounds", request),
     setSandboxVisible: (request) => invoke("sandbox:setVisible", request),
+    sandboxBack: () => invoke("sandbox:back", undefined),
+    sandboxForward: () => invoke("sandbox:forward", undefined),
+    sandboxReload: () => invoke("sandbox:reload", undefined),
   };
 }

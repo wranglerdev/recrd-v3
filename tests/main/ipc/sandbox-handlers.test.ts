@@ -8,6 +8,9 @@ function controller(overrides?: Partial<SandboxController>): SandboxController {
     open: vi.fn(),
     setBounds: vi.fn(),
     setVisible: vi.fn(),
+    goBack: vi.fn(),
+    goForward: vi.fn(),
+    reload: vi.fn(),
     attach: vi.fn(),
     ...overrides,
   };
@@ -40,5 +43,18 @@ describe("registerSandboxHandlers (PRD §10)", () => {
 
     await registry.dispatch("sandbox:setVisible", { visible: false });
     expect(ctrl.setVisible).toHaveBeenCalledWith(false);
+  });
+
+  it("forwards back/forward/reload to the controller", async () => {
+    const ctrl = controller();
+    const registry = new IpcRegistry();
+    registerSandboxHandlers(registry, ctrl);
+
+    await registry.dispatch("sandbox:back", undefined);
+    await registry.dispatch("sandbox:forward", undefined);
+    await registry.dispatch("sandbox:reload", undefined);
+    expect(ctrl.goBack).toHaveBeenCalledOnce();
+    expect(ctrl.goForward).toHaveBeenCalledOnce();
+    expect(ctrl.reload).toHaveBeenCalledOnce();
   });
 });

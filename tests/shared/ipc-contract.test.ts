@@ -67,6 +67,9 @@ const CASES: ReadonlyArray<readonly [method: string, channel: string, arg: unkno
   ["openSandbox", "sandbox:open", { url: "https://example.com" }],
   ["setSandboxBounds", "sandbox:setBounds", { x: 0, y: 0, width: 10, height: 10 }],
   ["setSandboxVisible", "sandbox:setVisible", { visible: true }],
+  ["sandboxBack", "sandbox:back", undefined],
+  ["sandboxForward", "sandbox:forward", undefined],
+  ["sandboxReload", "sandbox:reload", undefined],
 ];
 
 describe("createRecrdApi", () => {

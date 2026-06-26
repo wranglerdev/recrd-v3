@@ -3,6 +3,7 @@ import { useActiveProject, useBridge, useIpcEvent } from "../state/index.js";
 import { errorMessage } from "../state/useIpc.js";
 import { AutomationScreen } from "./AutomationScreen.js";
 import { CaseExecutionHistory } from "./CaseExecutionHistory.js";
+import { SandboxNavBar } from "./SandboxNavBar.js";
 
 // Automation container (PRD §9, §15, §17): wires the presentational
 // AutomationScreen toolbar to the Robot run + export IPC. Play starts a run of
@@ -104,6 +105,7 @@ export function AutomationView(): JSX.Element {
       }}
       sidebar={
         <>
+          <SandboxNavBar />
           <section aria-label="Log de execução">
             <p>{running ? "Executando…" : "Parado"}</p>
             {!running && exitCode !== null && (

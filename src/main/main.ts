@@ -54,7 +54,7 @@ function bootstrap(): void {
   });
   registerUseCases(container);
   const registry = buildIpcRegistry(container);
-  bindIpcMain(registry, ipcMain);
+  bindIpcMain(registry, ipcMain, logger);
 
   logger.info("recrd starting", {
     version: appInfo.version,

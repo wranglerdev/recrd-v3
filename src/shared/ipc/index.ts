@@ -49,3 +49,18 @@ export {
   type SetCaseStatusRequest,
   type IdRequest,
 } from "./hierarchy.js";
+export {
+  MASS_CHANNELS,
+  createMassApi,
+  type MassApi,
+  type MassChannels,
+  type MassDto,
+  type MassRow,
+  type MassImportEntryDto,
+  type ImportMassRequest,
+  type ImportMassResponse,
+  type ListMassesRequest,
+  type RenameMassRequest,
+  type EditMassValueRequest,
+  type CsvSelectionDto,
+} from "./mass.js";

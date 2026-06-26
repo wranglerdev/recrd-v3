@@ -52,9 +52,34 @@ function fromRow(row: MassRow): StoredMass {
   };
 }
 
+/** Serialises the JSON aggregate fields present in a partial mass patch. */
+function toRowPatch(patch: Partial<StoredMass>): Partial<MassRow> {
+  return {
+    ...(patch.id !== undefined ? { id: patch.id } : {}),
+    ...(patch.projectId !== undefined ? { projectId: patch.projectId } : {}),
+    ...(patch.name !== undefined ? { name: patch.name } : {}),
+    ...(patch.columns !== undefined ? { columns: JSON.stringify(patch.columns) } : {}),
+    ...(patch.rows !== undefined ? { rows: JSON.stringify(patch.rows) } : {}),
+    ...(patch.history !== undefined ? { history: JSON.stringify(patch.history) } : {}),
+    ...(patch.createdBy !== undefined ? { createdBy: patch.createdBy } : {}),
+    ...(patch.createdAt !== undefined ? { createdAt: patch.createdAt } : {}),
+    ...(patch.updatedBy !== undefined ? { updatedBy: patch.updatedBy } : {}),
+    ...(patch.updatedAt !== undefined ? { updatedAt: patch.updatedAt } : {}),
+  };
+}
+
 /** Wraps the masses CrudRepository as a domain-typed MassRepository. */
 export function createMassRepository(repository: CrudRepository<typeof masses>): MassRepository {
   return {
     create: (mass) => fromRow(repository.create(toRow(mass))),
+    findById: (id) => {
+      const row = repository.findById(id) as MassRow | undefined;
+      return row === undefined ? undefined : fromRow(row);
+    },
+    list: () => (repository.list() as MassRow[]).map(fromRow),
+    update: (id, patch) => {
+      const row = repository.update(id, toRowPatch(patch)) as MassRow | undefined;
+      return row === undefined ? undefined : fromRow(row);
+    },
   };
 }

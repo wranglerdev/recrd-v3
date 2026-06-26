@@ -13,6 +13,19 @@ class FakeMassRepository implements MassRepository {
     this.store.push(mass);
     return mass;
   }
+  findById(id: string): StoredMass | undefined {
+    return this.store.find((mass) => mass.id === id);
+  }
+  list(): StoredMass[] {
+    return [...this.store];
+  }
+  update(id: string, patch: Partial<StoredMass>): StoredMass | undefined {
+    const index = this.store.findIndex((mass) => mass.id === id);
+    if (index === -1) return undefined;
+    const updated = { ...this.store[index], ...patch } as StoredMass;
+    this.store[index] = updated;
+    return updated;
+  }
 }
 
 const USER: UserContext = { username: "jdoe", displayName: "J", domain: "CORP", sid: "S-1" };
@@ -85,5 +98,57 @@ describe("createMassUseCases — importCsv (PRD §7, §16)", () => {
     expect(() =>
       masses.importCsv({ projectId: "proj-1", name: "  ", csv: "a\n1", source: "x" }),
     ).toThrow(/nome da massa/i);
+  });
+});
+
+describe("createMassUseCases — list/rename/editValue (PRD §7, §16)", () => {
+  function importSample(): StoredMass {
+    const result = masses.importCsv({
+      projectId: "proj-1",
+      name: "Usuários",
+      csv: "usuario,senha\nadmin,123\nuser,456",
+      source: "/tmp/u.csv",
+    });
+    if (!result.ok) throw new Error("setup import failed");
+    return result.mass;
+  }
+
+  it("lists only masses under the given project", () => {
+    importSample();
+    expect(masses.listByProject("proj-1")).toHaveLength(1);
+    expect(masses.listByProject("other")).toHaveLength(0);
+  });
+
+  it("renames a mass and refreshes its update-audit fields", () => {
+    const created = importSample();
+    const renamed = masses.rename(created.id, "Credenciais");
+
+    expect(renamed.name).toBe("Credenciais");
+    expect(renamed.updatedBy).toBe("jdoe");
+    expect(repository.findById(created.id)?.name).toBe("Credenciais");
+  });
+
+  it("rejects a blank rename", () => {
+    const created = importSample();
+    expect(() => masses.rename(created.id, "   ")).toThrow(/nome da massa/i);
+  });
+
+  it("edits a single cell value, leaving other rows untouched", () => {
+    const created = importSample();
+    const edited = masses.editValue({
+      id: created.id,
+      rowIndex: 0,
+      column: "senha",
+      value: "novaSenha",
+    });
+
+    expect(edited.rows[0]).toMatchObject({ usuario: "admin", senha: "novaSenha" });
+    expect(edited.rows[1]).toMatchObject({ usuario: "user", senha: "456" });
+  });
+
+  it("throws editing an unknown mass", () => {
+    expect(() =>
+      masses.editValue({ id: "ghost", rowIndex: 0, column: "x", value: "y" }),
+    ).toThrow(/massa inexistente/i);
   });
 });

@@ -1,6 +1,10 @@
-import { createAuditFields, type AuditFields } from "../../domain/audit/audit-fields.js";
+import {
+  createAuditFields,
+  touchAuditFields,
+  type AuditFields,
+} from "../../domain/audit/audit-fields.js";
 import { parseMassCsv } from "../../domain/mass/mass-csv.js";
-import { massFromCsv, type Mass } from "../../domain/mass/mass.js";
+import { editMassValue, massFromCsv, renameMass, type Mass } from "../../domain/mass/mass.js";
 import {
   requireParentExists,
   requireText,
@@ -23,6 +27,9 @@ export interface StoredMass extends Mass, AuditFields {
 /** Persistence port for masses, implemented by the infrastructure adapter. */
 export interface MassRepository {
   create(mass: StoredMass): StoredMass;
+  findById(id: string): StoredMass | undefined;
+  list(): StoredMass[];
+  update(id: string, patch: Partial<StoredMass>): StoredMass | undefined;
 }
 
 export interface ImportMassInput {
@@ -43,12 +50,43 @@ export interface MassUseCaseDeps extends AuditContext {
   readonly projectExists: ParentCheck;
 }
 
+export interface EditMassValueInput {
+  readonly id: string;
+  readonly rowIndex: number;
+  readonly column: string;
+  readonly value: string;
+}
+
 export interface MassUseCases {
   importCsv(input: ImportMassInput): ImportMassResult;
+  /** Lists every mass under a project (newest persistence order preserved). */
+  listByProject(projectId: string): StoredMass[];
+  /** Renames a mass, refreshing its update audit fields. */
+  rename(id: string, name: string): StoredMass;
+  /** Edits a single cell value, refreshing its update audit fields. */
+  editValue(input: EditMassValueInput): StoredMass;
 }
 
 export function createMassUseCases(deps: MassUseCaseDeps): MassUseCases {
   const { repository, projectExists, userContext, newId, clock } = deps;
+
+  // Reads the mass (asserting it exists), applies a pure domain transform, then
+  // persists it with refreshed update-audit fields. `findById` guarantees the row
+  // exists, so `update` returns it.
+  const auditedTransform = (id: string, transform: (mass: StoredMass) => Mass): StoredMass => {
+    const existing = repository.findById(id);
+    if (existing === undefined) {
+      throw new Error(`Massa inexistente: ${id}`);
+    }
+    const transformed = transform(existing);
+    const audit = touchAuditFields(existing, userContext.username, clock());
+    return repository.update(id, {
+      ...transformed,
+      updatedBy: audit.updatedBy,
+      updatedAt: audit.updatedAt,
+    }) as StoredMass;
+  };
+
   return {
     importCsv(input) {
       requireParentExists(projectExists, input.projectId, "Projeto");
@@ -68,5 +106,12 @@ export function createMassUseCases(deps: MassUseCaseDeps): MassUseCases {
       };
       return { ok: true, mass: repository.create(stored) };
     },
+    listByProject: (projectId) => repository.list().filter((mass) => mass.projectId === projectId),
+    rename: (id, name) =>
+      auditedTransform(id, (mass) => renameMass(mass, requireText(name, "O nome da massa"))),
+    editValue: (input) =>
+      auditedTransform(input.id, (mass) =>
+        editMassValue(mass, input.rowIndex, input.column, input.value),
+      ),
   };
 }

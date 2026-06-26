@@ -4,6 +4,7 @@ import {
   createPlanUseCases,
   createSuiteUseCases,
 } from "../../application/hierarchy/hierarchy-service.js";
+import { createMassUseCases } from "../../application/mass/mass-service.js";
 import { createProjectUseCases } from "../../application/project/project-service.js";
 import { createRobotProjectUseCases } from "../../application/robot/robot-project-service.js";
 import type { UserContext } from "../../domain/auth/user-context.js";
@@ -14,9 +15,11 @@ import {
   AppPathsToken,
   CaseUseCasesToken,
   ConfigStoreToken,
+  CsvFileDialogToken,
   DatabaseToken,
   GitServiceFactoryToken,
   LoggerToken,
+  MassUseCasesToken,
   PlanUseCasesToken,
   ProjectUseCasesToken,
   RepositoriesToken,
@@ -30,7 +33,9 @@ import {
 } from "../di/tokens.js";
 import type { AppSettings, ConfigStore } from "../infrastructure/config/config-store.js";
 import type { DatabaseHandle } from "../infrastructure/db/connection.js";
+import { createMassRepository } from "../infrastructure/db/mass-repository.js";
 import { createRepositories } from "../infrastructure/db/repositories.js";
+import type { CsvFileDialog } from "../infrastructure/dialog/csv-file-dialog.js";
 import { createGitService } from "../infrastructure/git/git-service.js";
 import type { Logger } from "../infrastructure/logging/logger.js";
 import type { AppPaths } from "../infrastructure/paths/app-paths.js";
@@ -40,6 +45,7 @@ import { RobotRunner } from "../infrastructure/robot/robot-runner.js";
 import type { SandboxViewFactory } from "../sandbox/sandbox-config.js";
 import { registerAppHandlers } from "../ipc/handlers/app-handlers.js";
 import { registerHierarchyHandlers } from "../ipc/handlers/hierarchy-handlers.js";
+import { registerMassHandlers } from "../ipc/handlers/mass-handlers.js";
 import { registerProjectHandlers } from "../ipc/handlers/project-handlers.js";
 import { registerRobotHandlers } from "../ipc/handlers/robot-handlers.js";
 import { IpcRegistry } from "../ipc/typed-ipc.js";
@@ -76,6 +82,7 @@ export function composeContainer(services: CoreServices): Container {
 export interface InfrastructureServices {
   readonly database: DatabaseHandle;
   readonly sandboxViewFactory: SandboxViewFactory;
+  readonly csvFileDialog: CsvFileDialog;
 }
 
 /**
@@ -98,6 +105,7 @@ export function registerInfrastructure(
   container.register(RobotProjectServiceToken, { useValue: createRobotProjectService() });
   container.register(RobotRunnerToken, { useFactory: () => new RobotRunner() });
   container.register(SandboxViewFactoryToken, { useValue: services.sandboxViewFactory });
+  container.register(CsvFileDialogToken, { useValue: services.csvFileDialog });
   return container;
 }
 
@@ -162,6 +170,18 @@ export function registerUseCases(container: Container): Container {
       });
     },
   });
+  container.register(MassUseCasesToken, {
+    useFactory: (c) => {
+      const repos = c.resolve(RepositoriesToken);
+      return createMassUseCases({
+        repository: createMassRepository(repos.masses),
+        projectExists: (id) => repos.projects.findById(id) !== undefined,
+        userContext: c.resolve(UserContextToken),
+        newId: randomUUID,
+        clock: () => new Date(),
+      });
+    },
+  });
   return container;
 }
 
@@ -175,6 +195,10 @@ export function buildIpcRegistry(container: Container): IpcRegistry {
     plans: container.resolve(PlanUseCasesToken),
     suites: container.resolve(SuiteUseCasesToken),
     cases: container.resolve(CaseUseCasesToken),
+  });
+  registerMassHandlers(registry, {
+    masses: container.resolve(MassUseCasesToken),
+    csvFileDialog: container.resolve(CsvFileDialogToken),
   });
   return registry;
 }

@@ -60,7 +60,11 @@ describe("registerInfrastructure", () => {
     const database = createDatabase(":memory:");
     const sandboxViewFactory = vi.fn();
     try {
-      registerInfrastructure(container, { database, sandboxViewFactory });
+      registerInfrastructure(container, {
+        database,
+        sandboxViewFactory,
+        csvFileDialog: { selectCsv: vi.fn(async () => null) },
+      });
 
       expect(container.resolve(DatabaseToken)).toBe(database);
 
@@ -94,7 +98,11 @@ describe("registerUseCases", () => {
     const container = composeContainer(services);
     const database = createDatabase(":memory:");
     try {
-      registerInfrastructure(container, { database, sandboxViewFactory: vi.fn() });
+      registerInfrastructure(container, {
+        database,
+        sandboxViewFactory: vi.fn(),
+        csvFileDialog: { selectCsv: vi.fn(async () => null) },
+      });
       registerUseCases(container);
 
       const projects = container.resolve(ProjectUseCasesToken);
@@ -117,7 +125,11 @@ describe("buildIpcRegistry", () => {
     const container = composeContainer(services);
     const database = createDatabase(":memory:");
     try {
-      registerInfrastructure(container, { database, sandboxViewFactory: vi.fn() });
+      registerInfrastructure(container, {
+        database,
+        sandboxViewFactory: vi.fn(),
+        csvFileDialog: { selectCsv: vi.fn(async () => null) },
+      });
       registerUseCases(container);
       const registry = buildIpcRegistry(container);
 
@@ -135,6 +147,9 @@ describe("buildIpcRegistry", () => {
         "suite:create",
         "case:create",
         "case:setStatus",
+        "mass:import",
+        "mass:listByProject",
+        "mass:selectCsv",
       ] as const) {
         expect(registry.has(channel)).toBe(true);
       }

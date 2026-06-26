@@ -23,6 +23,7 @@ import {
   type HierarchyApi,
   type HierarchyChannels,
 } from "./ipc/hierarchy.js";
+import { MASS_CHANNELS, createMassApi, type MassApi, type MassChannels } from "./ipc/mass.js";
 
 export type { ChannelDef, ChannelMap, Invoke, RequestOf, ResponseOf } from "./ipc/core.js";
 export type { AppInfo } from "./ipc/app.js";
@@ -47,13 +48,28 @@ export type {
   SetCaseStatusRequest,
   IdRequest,
 } from "./ipc/hierarchy.js";
+export type {
+  MassDto,
+  MassRow,
+  MassImportEntryDto,
+  ImportMassRequest,
+  ImportMassResponse,
+  ListMassesRequest,
+  RenameMassRequest,
+  EditMassValueRequest,
+  CsvSelectionDto,
+} from "./ipc/mass.js";
 
 /**
  * Every IPC channel, composed from the feature channel maps by intersection
  * (e.g. `AppChannels & ProjectChannels & MassChannels`). This is the only place
  * the full channel set is assembled; add a feature by `&`-ing in its map.
  */
-export type IpcChannelMap = AppChannels & RobotChannels & ProjectChannels & HierarchyChannels;
+export type IpcChannelMap = AppChannels &
+  RobotChannels &
+  ProjectChannels &
+  HierarchyChannels &
+  MassChannels;
 
 export type IpcChannel = keyof IpcChannelMap;
 export type IpcRequest<C extends IpcChannel> = IpcChannelMap[C]["request"];
@@ -71,6 +87,7 @@ export const IPC_CHANNELS = [
   ...ROBOT_CHANNELS,
   ...PROJECT_CHANNELS,
   ...HIERARCHY_CHANNELS,
+  ...MASS_CHANNELS,
 ] as const satisfies readonly IpcChannel[];
 
 /**
@@ -79,7 +96,7 @@ export const IPC_CHANNELS = [
  * these methods instead of touching Node, the filesystem or the database
  * directly (PRD §3, §18).
  */
-export type RecrdApi = AppApi & RobotApi & ProjectApi & HierarchyApi;
+export type RecrdApi = AppApi & RobotApi & ProjectApi & HierarchyApi & MassApi;
 
 /**
  * Builds the renderer API from an `invoke` function by composing the per-feature
@@ -92,5 +109,6 @@ export function createRecrdApi(invoke: IpcInvoke): RecrdApi {
     ...createRobotApi(invoke),
     ...createProjectApi(invoke),
     ...createHierarchyApi(invoke),
+    ...createMassApi(invoke),
   };
 }

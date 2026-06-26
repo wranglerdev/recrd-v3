@@ -3,6 +3,7 @@ import type {
   PlanUseCases,
   SuiteUseCases,
 } from "../../application/hierarchy/hierarchy-service.js";
+import type { MassUseCases } from "../../application/mass/mass-service.js";
 import type { ProjectUseCases } from "../../application/project/project-service.js";
 import type { RobotProjectUseCases } from "../../application/robot/robot-project-service.js";
 import type { UserContext } from "../../domain/auth/user-context.js";
@@ -10,6 +11,7 @@ import type { AppInfo } from "../../shared/ipc-contract.js";
 import type { AppSettings, ConfigStore } from "../infrastructure/config/config-store.js";
 import type { DatabaseHandle } from "../infrastructure/db/connection.js";
 import type { Repositories } from "../infrastructure/db/repositories.js";
+import type { CsvFileDialog } from "../infrastructure/dialog/csv-file-dialog.js";
 import type { GitServiceFactory } from "../infrastructure/git/git-service.js";
 import type { Logger } from "../infrastructure/logging/logger.js";
 import type { AppPaths } from "../infrastructure/paths/app-paths.js";
@@ -37,10 +39,12 @@ export const ToolRunnerToken = new Token<ToolRunner>("ToolRunner");
 export const RobotProjectServiceToken = new Token<RobotProjectService>("RobotProjectService");
 export const RobotRunnerToken = new Token<RobotRunner>("RobotRunner");
 export const SandboxViewFactoryToken = new Token<SandboxViewFactory>("SandboxViewFactory");
+export const CsvFileDialogToken = new Token<CsvFileDialog>("CsvFileDialog");
 
 // Application use cases (wired from infrastructure + core at the composition root).
 export const ProjectUseCasesToken = new Token<ProjectUseCases>("ProjectUseCases");
 export const RobotProjectUseCasesToken = new Token<RobotProjectUseCases>("RobotProjectUseCases");
+export const MassUseCasesToken = new Token<MassUseCases>("MassUseCases");
 export const PlanUseCasesToken = new Token<PlanUseCases>("PlanUseCases");
 export const SuiteUseCasesToken = new Token<SuiteUseCases>("SuiteUseCases");
 export const CaseUseCasesToken = new Token<CaseUseCases>("CaseUseCases");

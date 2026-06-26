@@ -17,6 +17,8 @@ export type CaseExecutionHistoryProps = {
   readonly caseId: string;
   /** Bumped by the caller to re-fetch (e.g. after a run finishes). */
   readonly reloadKey?: number;
+  /** When provided, each row gets an "Exportar log" action for its execution. */
+  readonly onExportLog?: (executionId: string) => void;
 };
 
 export function CaseExecutionHistory(props: CaseExecutionHistoryProps): JSX.Element {
@@ -39,6 +41,11 @@ export function CaseExecutionHistory(props: CaseExecutionHistoryProps): JSX.Elem
               <span aria-hidden>{EXECUTION_RESULT_ICON[execution.result]}</span>{" "}
               {formatExecutionWhen(execution.startedAt)} (
               {formatExecutionDuration(execution.durationMs)})
+              {props.onExportLog !== undefined && (
+                <button type="button" onClick={() => props.onExportLog?.(execution.id)}>
+                  Exportar log
+                </button>
+              )}
             </li>
           ))}
         </ul>

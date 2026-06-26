@@ -162,6 +162,84 @@ describe("AutomationView (PRD §9, §15)", () => {
     expect(screen.getByText(/2026-06-26 10:00 \(1\.5s\)/)).toBeInTheDocument();
   });
 
+  it("exports the active case's JSON + Robot, reporting the written paths", async () => {
+    const exportJson = vi.fn().mockResolvedValue({ path: "/exports/login.recrd.json" });
+    const exportRobot = vi.fn().mockResolvedValue({ path: "/exports/login.robot" });
+    stubBridge({
+      startRun: vi.fn(),
+      stopRun: vi.fn(),
+      listExecutionsByCase: vi.fn().mockResolvedValue([]),
+      exportJson,
+      exportRobot,
+    });
+    stubEvents();
+    renderView(PROJECT, { id: "c1", name: "Login" });
+
+    fireEvent.click(screen.getByRole("button", { name: "Exportar" }));
+    await waitFor(() => expect(exportJson).toHaveBeenCalledWith({ caseId: "c1" }));
+    expect(exportRobot).toHaveBeenCalledWith({ caseId: "c1" });
+    await waitFor(() =>
+      expect(screen.getByLabelText("Status da exportação")).toHaveTextContent(
+        "/exports/login.recrd.json, /exports/login.robot",
+      ),
+    );
+  });
+
+  it("warns when exporting without an active case", () => {
+    stubBridge({ startRun: vi.fn(), exportJson: vi.fn() });
+    stubEvents();
+    renderView(PROJECT);
+
+    fireEvent.click(screen.getByRole("button", { name: "Exportar" }));
+    expect(screen.getByLabelText("Status da exportação")).toHaveTextContent(/selecione um caso/i);
+    expect(window.recrd?.exportJson).not.toHaveBeenCalled();
+  });
+
+  it("surfaces an export failure message", async () => {
+    stubBridge({
+      startRun: vi.fn(),
+      listExecutionsByCase: vi.fn().mockResolvedValue([]),
+      exportJson: vi.fn().mockRejectedValue(new Error("Caso sem script para exportar")),
+      exportRobot: vi.fn().mockResolvedValue({ path: "/x.robot" }),
+    });
+    stubEvents();
+    renderView(PROJECT, { id: "c1", name: "Login" });
+
+    fireEvent.click(screen.getByRole("button", { name: "Exportar" }));
+    await waitFor(() =>
+      expect(screen.getByLabelText("Status da exportação")).toHaveTextContent(
+        /caso sem script para exportar/i,
+      ),
+    );
+  });
+
+  it("exports an execution's log from the history", async () => {
+    const exportLog = vi.fn().mockResolvedValue({ path: "/exports/execution-2026-06-26.log" });
+    stubBridge({
+      startRun: vi.fn(),
+      exportLog,
+      listExecutionsByCase: vi.fn().mockResolvedValue([
+        {
+          id: "ex1",
+          caseId: "c1",
+          caseName: "Login",
+          result: "passed",
+          startedAt: "2026-06-26T10:00:00.000Z",
+          durationMs: 1500,
+        },
+      ]),
+    });
+    stubEvents();
+    renderView(PROJECT, { id: "c1", name: "Login" });
+
+    await waitFor(() => expect(screen.getByRole("button", { name: "Exportar log" })).toBeEnabled());
+    fireEvent.click(screen.getByRole("button", { name: "Exportar log" }));
+    await waitFor(() => expect(exportLog).toHaveBeenCalledWith({ executionId: "ex1" }));
+    expect(screen.getByLabelText("Status da exportação")).toHaveTextContent(
+      "/exports/execution-2026-06-26.log",
+    );
+  });
+
   it("stops the run via Stop and Pause", async () => {
     const stopRun = vi.fn().mockResolvedValue(undefined);
     stubBridge({ startRun: vi.fn().mockResolvedValue({ started: true }), stopRun });

@@ -1,17 +1,20 @@
 import { useState, type JSX } from "react";
 import { useActiveProject, useBridge, useIpcEvent } from "../state/index.js";
+import { errorMessage } from "../state/useIpc.js";
 import { AutomationScreen } from "./AutomationScreen.js";
 import { CaseExecutionHistory } from "./CaseExecutionHistory.js";
 
-// Automation container (PRD §9, §15): wires the presentational AutomationScreen
-// toolbar to the Robot run IPC. Play starts a run of the active project's Robot
-// tree; the run's stdout streams into the log panel via the `run:*` events; Stop
-// (and Pause — Robot has no pause) stops it. When a case is selected its past
-// runs are listed in the sidebar (PRD §8), refreshed when a run finishes.
-// Export/Compile are separate features and stay inert here.
+// Automation container (PRD §9, §15, §17): wires the presentational
+// AutomationScreen toolbar to the Robot run + export IPC. Play starts a run of
+// the active project's Robot tree; the run's stdout streams into the log panel
+// via the `run:*` events; Stop (and Pause — Robot has no pause) stops it. When a
+// case is selected its past runs are listed in the sidebar (PRD §8), refreshed
+// when a run finishes, and each can have its log exported; Export writes the
+// case's manual-script JSON and compiled .robot to the exports dir (PRD §17).
+// Compile is a separate feature and stays inert here.
 
 const NOOP = (): void => {
-  /* export/compile are wired by their own features */
+  /* compile is wired by its own feature */
 };
 
 export function AutomationView(): JSX.Element {
@@ -26,6 +29,8 @@ export function AutomationView(): JSX.Element {
   const [exitCode, setExitCode] = useState<number | null>(null);
   // Bumped when a run finishes so the per-case history re-fetches the new row.
   const [historyKey, setHistoryKey] = useState(0);
+  // Feedback for the export actions (written paths, or a failure message).
+  const [exportMsg, setExportMsg] = useState<string | null>(null);
 
   useIpcEvent("run:line", (payload) => setLog((lines) => [...lines, payload.line]));
   useIpcEvent("run:exit", (payload) => {
@@ -63,6 +68,29 @@ export function AutomationView(): JSX.Element {
     }
   };
 
+  const handleExport = (): void => {
+    if (bridge === null || activeCase === null) {
+      setExportMsg("Selecione um caso para exportar.");
+      return;
+    }
+    setExportMsg("Exportando…");
+    const caseId = activeCase.id;
+    void Promise.all([bridge.exportJson({ caseId }), bridge.exportRobot({ caseId })])
+      .then(([json, robot]) => setExportMsg(`Exportado: ${json.path}, ${robot.path}`))
+      .catch((cause: unknown) => setExportMsg(errorMessage(cause)));
+  };
+
+  const handleExportLog = (executionId: string): void => {
+    if (bridge === null) {
+      return;
+    }
+    setExportMsg("Exportando log…");
+    void bridge
+      .exportLog({ executionId })
+      .then((result) => setExportMsg(`Log exportado: ${result.path}`))
+      .catch((cause: unknown) => setExportMsg(errorMessage(cause)));
+  };
+
   return (
     <AutomationScreen
       title={activeCase?.name ?? activeProject?.name ?? "Automação"}
@@ -71,7 +99,7 @@ export function AutomationView(): JSX.Element {
         onPause: handleStop,
         onStop: handleStop,
         onReload: handlePlay,
-        onExport: NOOP,
+        onExport: handleExport,
         onCompile: NOOP,
       }}
       sidebar={
@@ -85,10 +113,15 @@ export function AutomationView(): JSX.Element {
               </p>
             )}
             {error !== null && <p role="alert">{error}</p>}
+            {exportMsg !== null && <p aria-label="Status da exportação">{exportMsg}</p>}
             {log.length > 0 && <pre>{log.join("\n")}</pre>}
           </section>
           {activeCase !== null && (
-            <CaseExecutionHistory caseId={activeCase.id} reloadKey={historyKey} />
+            <CaseExecutionHistory
+              caseId={activeCase.id}
+              reloadKey={historyKey}
+              onExportLog={handleExportLog}
+            />
           )}
         </>
       }

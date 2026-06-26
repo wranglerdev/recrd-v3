@@ -52,6 +52,7 @@ import {
 import type { AppSettings, ConfigStore } from "../infrastructure/config/config-store.js";
 import type { DatabaseHandle } from "../infrastructure/db/connection.js";
 import { createAuditTrail } from "../infrastructure/db/audit-event-repository.js";
+import { createExecutionLogWriter } from "../infrastructure/execution/execution-log-writer.js";
 import { createMassRepository } from "../infrastructure/db/mass-repository.js";
 import { createRepositories } from "../infrastructure/db/repositories.js";
 import { createCompiledScriptRepository } from "../infrastructure/db/script-repository.js";
@@ -254,6 +255,9 @@ export function registerUseCases(container: Container): Container {
       return createExecutionUseCases({
         repository: repos.executions,
         caseName: (caseId) => repos.cases.findById(caseId)?.name,
+        userContext: c.resolve(UserContextToken),
+        newId: randomUUID,
+        saveLog: createExecutionLogWriter(c.resolve(AppPathsToken).executionsDir),
       });
     },
   });
@@ -307,6 +311,8 @@ export function buildIpcRegistry(container: Container): IpcRegistry {
     runner: container.resolve(RobotRunnerToken),
     emitter: container.resolve(EventEmitterToken),
     projects: container.resolve(ProjectUseCasesToken),
+    executions: container.resolve(ExecutionUseCasesToken),
+    clock: () => new Date(),
   });
   return registry;
 }

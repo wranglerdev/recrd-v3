@@ -293,6 +293,15 @@ describe("buildIpcRegistry", () => {
         expect(registry.has(channel)).toBe(true);
       }
 
+      // Drive run:start once (stubbing the spawn) to cover the run-handler wiring.
+      vi.spyOn(container.resolve(RobotRunnerToken), "start").mockReturnValue(undefined);
+      const runProject = container
+        .resolve(ProjectUseCasesToken)
+        .create({ name: "Run", robotPath: "/tmp/run" });
+      await expect(registry.dispatch("run:start", { projectId: runProject.id })).resolves.toEqual({
+        started: true,
+      });
+
       // The install use case forwards progress through the wired event emitter.
       await container.resolve(InstallUseCasesToken).run(["echo hi"], "/tmp");
       expect(emit).toHaveBeenCalledWith("env:install:line", { line: "$ echo hi" });

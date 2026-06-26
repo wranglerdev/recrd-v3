@@ -102,7 +102,7 @@ const REMOVE: Record<NodeKind, (bridge: RecrdApi, id: string) => Promise<unknown
 
 export function ProjectExplorer(): JSX.Element {
   const bridge = useBridge();
-  const { setActiveProject } = useActiveProject();
+  const { setActiveProject, setActiveCase } = useActiveProject();
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const { data, error, reload } = useIpcQuery<Forest>(
@@ -119,6 +119,8 @@ export function ProjectExplorer(): JSX.Element {
     if (meta?.kind === "project") {
       setActiveProject(forest?.projects.find((project) => project.id === id) ?? null);
     }
+    // Selecting a case makes it the run target (PRD §15); other kinds clear it.
+    setActiveCase(meta?.kind === "case" ? { id, name: meta.name } : null);
   };
 
   // Runs a mutation against the bridge then refreshes the forest.

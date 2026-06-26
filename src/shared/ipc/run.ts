@@ -8,6 +8,8 @@ import { defineChannelNames, type Invoke } from "./core.js";
 export interface StartRunRequest {
   /** The project whose Robot tree (`tests/`) is executed. */
   readonly projectId: string;
+  /** When set, the finished run is recorded as an Execution for this case. */
+  readonly caseId?: string;
 }
 
 /** Whether the run started; if not, why (already running, or no Robot path). */

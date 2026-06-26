@@ -16,7 +16,7 @@ describe("registerExecutionHandlers (PRD §8, §15)", () => {
   it("lists recent executions, forwarding the limit", async () => {
     const listRecent = vi.fn().mockReturnValue([RECENT]);
     const registry = new IpcRegistry();
-    registerExecutionHandlers(registry, { listRecent });
+    registerExecutionHandlers(registry, { listRecent, record: vi.fn() });
 
     await expect(registry.dispatch("execution:listRecent", { limit: 5 })).resolves.toEqual([
       RECENT,
@@ -27,7 +27,7 @@ describe("registerExecutionHandlers (PRD §8, §15)", () => {
   it("passes an undefined limit through when omitted", async () => {
     const listRecent = vi.fn().mockReturnValue([]);
     const registry = new IpcRegistry();
-    registerExecutionHandlers(registry, { listRecent });
+    registerExecutionHandlers(registry, { listRecent, record: vi.fn() });
 
     await expect(registry.dispatch("execution:listRecent", {})).resolves.toEqual([]);
     expect(listRecent).toHaveBeenCalledWith(undefined);

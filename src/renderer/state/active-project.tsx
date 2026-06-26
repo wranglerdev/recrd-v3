@@ -6,18 +6,27 @@ import type { ProjectDto } from "../../shared/ipc-contract.js";
 // sidebar/explorer and the feature screens share one source of truth without
 // prop-drilling.
 
+/** The currently selected test case (id + display name), used to scope runs. */
+export interface ActiveCase {
+  readonly id: string;
+  readonly name: string;
+}
+
 export interface ActiveProjectContextValue {
   readonly activeProject: ProjectDto | null;
   readonly setActiveProject: (project: ProjectDto | null) => void;
+  readonly activeCase: ActiveCase | null;
+  readonly setActiveCase: (testCase: ActiveCase | null) => void;
 }
 
 const ActiveProjectContext = createContext<ActiveProjectContextValue | null>(null);
 
 export function ActiveProjectProvider({ children }: { children: ReactNode }): JSX.Element {
   const [activeProject, setActiveProject] = useState<ProjectDto | null>(null);
+  const [activeCase, setActiveCase] = useState<ActiveCase | null>(null);
   const value = useMemo<ActiveProjectContextValue>(
-    () => ({ activeProject, setActiveProject }),
-    [activeProject],
+    () => ({ activeProject, setActiveProject, activeCase, setActiveCase }),
+    [activeProject, activeCase],
   );
   return <ActiveProjectContext.Provider value={value}>{children}</ActiveProjectContext.Provider>;
 }

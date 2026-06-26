@@ -14,7 +14,7 @@ const NOOP = (): void => {
 
 export function AutomationView(): JSX.Element {
   const bridge = useBridge();
-  const { activeProject } = useActiveProject();
+  const { activeProject, activeCase } = useActiveProject();
 
   const [running, setRunning] = useState(false);
   const [log, setLog] = useState<readonly string[]>([]);
@@ -39,7 +39,12 @@ export function AutomationView(): JSX.Element {
     setLog([]);
     setError(null);
     setExitCode(null);
-    void bridge.startRun({ projectId: activeProject.id }).then((result) => {
+    // A selected case scopes the run so the finished execution is recorded.
+    const request =
+      activeCase === null
+        ? { projectId: activeProject.id }
+        : { projectId: activeProject.id, caseId: activeCase.id };
+    void bridge.startRun(request).then((result) => {
       if (!result.started) {
         setRunning(false);
         setError(result.reason);
@@ -55,7 +60,7 @@ export function AutomationView(): JSX.Element {
 
   return (
     <AutomationScreen
-      title={activeProject?.name ?? "Automação"}
+      title={activeCase?.name ?? activeProject?.name ?? "Automação"}
       toolbar={{
         onPlay: handlePlay,
         onPause: handleStop,

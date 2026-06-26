@@ -12,4 +12,5 @@ export {
   ActiveProjectProvider,
   useActiveProject,
   type ActiveProjectContextValue,
+  type ActiveCase,
 } from "./active-project.js";

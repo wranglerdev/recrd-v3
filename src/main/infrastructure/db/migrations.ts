@@ -65,6 +65,7 @@ CREATE TABLE IF NOT EXISTS masses (
   name TEXT NOT NULL,
   columns TEXT NOT NULL,
   rows TEXT NOT NULL,
+  history TEXT NOT NULL DEFAULT '[]',
   created_by TEXT NOT NULL, created_at TEXT NOT NULL,
   updated_by TEXT NOT NULL, updated_at TEXT NOT NULL
 );

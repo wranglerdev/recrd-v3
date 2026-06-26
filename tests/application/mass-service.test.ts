@@ -1,0 +1,89 @@
+import { beforeEach, describe, expect, it } from "vitest";
+import {
+  createMassUseCases,
+  type MassRepository,
+  type MassUseCases,
+  type StoredMass,
+} from "../../src/application/mass/mass-service";
+import type { UserContext } from "../../src/domain/auth/user-context";
+
+class FakeMassRepository implements MassRepository {
+  readonly store: StoredMass[] = [];
+  create(mass: StoredMass): StoredMass {
+    this.store.push(mass);
+    return mass;
+  }
+}
+
+const USER: UserContext = { username: "jdoe", displayName: "J", domain: "CORP", sid: "S-1" };
+
+let repository: FakeMassRepository;
+let masses: MassUseCases;
+let existingProjects: Set<string>;
+
+beforeEach(() => {
+  repository = new FakeMassRepository();
+  existingProjects = new Set(["proj-1"]);
+  masses = createMassUseCases({
+    repository,
+    projectExists: (id) => existingProjects.has(id),
+    userContext: USER,
+    newId: () => "mass-1",
+    clock: () => new Date("2026-06-25T12:00:00.000Z"),
+  });
+});
+
+describe("createMassUseCases — importCsv (PRD §7, §16)", () => {
+  it("imports CSV into a persisted mass with audit and an import-history entry", () => {
+    const result = masses.importCsv({
+      projectId: "proj-1",
+      name: "Usuários",
+      csv: "usuario,senha\nadmin,123\nuser,456",
+      source: "/tmp/usuarios.csv",
+    });
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.mass).toMatchObject({
+        id: "mass-1",
+        projectId: "proj-1",
+        name: "Usuários",
+        columns: ["usuario", "senha"],
+        createdBy: "jdoe",
+        createdAt: "2026-06-25T12:00:00.000Z",
+      });
+      expect(result.mass.rows).toHaveLength(2);
+      expect(result.mass.history).toEqual([
+        { at: "2026-06-25T12:00:00.000Z", rowCount: 2, source: "/tmp/usuarios.csv" },
+      ]);
+      expect(repository.store).toHaveLength(1);
+    }
+  });
+
+  it("returns CSV validation errors without persisting", () => {
+    const result = masses.importCsv({
+      projectId: "proj-1",
+      name: "Bad",
+      csv: "a,a\n1,2", // duplicate column names
+      source: "x",
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.errors.join(" ")).toMatch(/duplicate/i);
+    }
+    expect(repository.store).toHaveLength(0);
+  });
+
+  it("throws when the parent project does not exist", () => {
+    expect(() =>
+      masses.importCsv({ projectId: "ghost", name: "M", csv: "a\n1", source: "x" }),
+    ).toThrow(/projeto inexistente/i);
+  });
+
+  it("throws when the name is blank", () => {
+    expect(() =>
+      masses.importCsv({ projectId: "proj-1", name: "  ", csv: "a\n1", source: "x" }),
+    ).toThrow(/nome da massa/i);
+  });
+});

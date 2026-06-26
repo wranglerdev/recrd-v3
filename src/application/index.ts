@@ -42,6 +42,15 @@ export {
   type SelectorWarning,
 } from "./compile/compile-pipeline.js";
 export {
+  createMassUseCases,
+  type ImportMassInput,
+  type ImportMassResult,
+  type MassRepository,
+  type MassUseCaseDeps,
+  type MassUseCases,
+  type StoredMass,
+} from "./mass/mass-service.js";
+export {
   createPlanUseCases,
   createSuiteUseCases,
   createCaseUseCases,

@@ -67,6 +67,7 @@ export const masses = sqliteTable("masses", {
   name: text("name").notNull(),
   columns: text("columns").notNull(), // JSON string[]
   rows: text("rows").notNull(), // JSON Record<string,string>[]
+  history: text("history").notNull().default("[]"), // JSON MassImport[] (PRD §7)
   ...auditColumns,
 });
 

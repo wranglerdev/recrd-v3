@@ -31,6 +31,22 @@ npm test          # typecheck + Vitest — confirma que o ambiente está saudáv
 | `npm run package`       | electron-builder `--win --x64`                              |
 | `npm run release`       | Release local (clean, `npm ci`, testes, empacota, checksum) |
 
+## E2E (Playwright) e o ABI nativo
+
+`better-sqlite3` é um módulo nativo cujo binário casa com **um** ABI por vez. A suíte
+unitária roda sob Node (prebuilt do Node); o Electron exige o ABI dele. Logo, as duas não
+ficam verdes com uma única instalação. Para rodar o E2E localmente:
+
+```bash
+npx electron-builder install-app-deps                     # rebuild p/ o ABI do Electron
+npx playwright test                                       # roda o E2E
+(cd node_modules/better-sqlite3 && npx prebuild-install)  # restaura o ABI do Node
+```
+
+No Windows, rode o E2E pelo PowerShell/cmd (não pelo Git Bash): o main chama
+`whoami /user`, que o Git Bash sombreia com o coreutils do MSYS. O CI separa os jobs
+(unit sob Node, E2E/empacotamento sob o rebuild do Electron). Ver issue `electron-9ac`.
+
 ## Fluxo de trabalho (TDD)
 
 O projeto segue **test-first** (PRD §22). O ciclo é **Red → Green → Refactor**:

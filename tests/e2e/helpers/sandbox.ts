@@ -83,6 +83,18 @@ export async function fillInSandbox(
   );
 }
 
+/** Hovers an element (fires a `mousemove`) so Inspect mode snapshots it. */
+export async function hoverInSandbox(app: ElectronApplication, selector: string): Promise<void> {
+  const sel = JSON.stringify(selector);
+  await inSandbox(
+    app,
+    `(() => {
+      const el = document.querySelector(${sel});
+      el.dispatchEvent(new MouseEvent("mousemove", { bubbles: true }));
+    })(); undefined;`,
+  );
+}
+
 /** Reads an element's text content from the fixture (for assert-text checks). */
 export async function readSandboxText(app: ElectronApplication, selector: string): Promise<string> {
   return inSandbox<string>(

@@ -16,6 +16,12 @@ const MAIN_ENTRY = join(repoRoot, "dist", "main", "main.js");
 export interface LaunchOptions {
   /** Extra env vars (e.g. the RECRD_E2E_* seam toggles) merged over process.env. */
   readonly env?: Readonly<Record<string, string>>;
+  /**
+   * Reuse an existing userData dir instead of creating a throwaway one — for
+   * relaunch flows that assert state persisted across restarts (electron-bzv.17).
+   * `close()` then leaves the dir in place so the next launch can read it.
+   */
+  readonly userDataDir?: string;
 }
 
 export interface LaunchedApp {
@@ -31,7 +37,10 @@ export interface LaunchedApp {
 
 /** Launches the app with an isolated userData dir and returns app + first window. */
 export async function launchApp(options: LaunchOptions = {}): Promise<LaunchedApp> {
-  const userDataDir = mkdtempSync(join(tmpdir(), "recrd-e2e-"));
+  // A caller-supplied dir is reused and kept on close; otherwise a throwaway dir
+  // is created and removed, isolating each launch.
+  const reused = options.userDataDir !== undefined;
+  const userDataDir = options.userDataDir ?? mkdtempSync(join(tmpdir(), "recrd-e2e-"));
   const app = await electron.launch({
     args: [MAIN_ENTRY, `--user-data-dir=${userDataDir}`],
     env: { ...process.env, ...options.env } as Record<string, string>,
@@ -46,7 +55,9 @@ export async function launchApp(options: LaunchOptions = {}): Promise<LaunchedAp
     paths: createAppPaths(userDataDir),
     async close() {
       await app.close();
-      rmSync(userDataDir, { recursive: true, force: true });
+      if (!reused) {
+        rmSync(userDataDir, { recursive: true, force: true });
+      }
     },
   };
 }

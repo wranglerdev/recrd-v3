@@ -50,10 +50,7 @@ export async function loadFixture(app: ElectronApplication, url = fixtureUrl()):
 
 /** Clicks an element in the fixture by CSS selector (drives the real capture). */
 export async function clickInSandbox(app: ElectronApplication, selector: string): Promise<void> {
-  await inSandbox(
-    app,
-    `document.querySelector(${JSON.stringify(selector)}).click(); undefined;`,
-  );
+  await inSandbox(app, `document.querySelector(${JSON.stringify(selector)}).click(); undefined;`);
 }
 
 /** Sets an input's value and fires a `change` event so the content-script records it. */
@@ -75,10 +72,7 @@ export async function fillInSandbox(
 }
 
 /** Reads an element's text content from the fixture (for assert-text checks). */
-export async function readSandboxText(
-  app: ElectronApplication,
-  selector: string,
-): Promise<string> {
+export async function readSandboxText(app: ElectronApplication, selector: string): Promise<string> {
   return inSandbox<string>(
     app,
     `document.querySelector(${JSON.stringify(selector)}).textContent ?? "";`,

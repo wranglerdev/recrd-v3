@@ -7,6 +7,10 @@ import { defineConfig } from "@playwright/test";
 export default defineConfig({
   testDir: "tests/e2e",
   testMatch: "**/*.e2e.ts",
+  // Resolve the @domain/@application/@main/@shared path aliases (and load .ts
+  // sources) the E2E helpers import — Playwright reads these from the tests
+  // tsconfig rather than the project-references root tsconfig.json.
+  tsconfig: "./tsconfig.tests.json",
   fullyParallel: false,
   workers: 1,
   forbidOnly: !!process.env.CI,

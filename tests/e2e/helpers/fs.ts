@@ -1,4 +1,5 @@
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join, relative, sep } from "node:path";
 
 // Filesystem assertion helpers for E2E (electron-bzv.4). Flow suites assert the
@@ -22,6 +23,23 @@ export function readFileIn(dir: string, name: string): string {
 /** True when a path exists on disk. */
 export function pathExists(path: string): boolean {
   return existsSync(path);
+}
+
+/** Creates a throwaway directory (e.g. a scaffold root / CSV fixture home). */
+export function makeTempDir(prefix = "recrd-e2e-fixture-"): string {
+  return mkdtempSync(join(tmpdir(), prefix));
+}
+
+/** Recursively removes a directory created by {@link makeTempDir} (best effort). */
+export function removeDir(dir: string): void {
+  rmSync(dir, { recursive: true, force: true });
+}
+
+/** Writes `content` to `name` under `dir`, returning the absolute file path. */
+export function writeFileUnder(dir: string, name: string, content: string): string {
+  const path = join(dir, name);
+  writeFileSync(path, content, "utf8");
+  return path;
 }
 
 /**

@@ -24,6 +24,7 @@ export {
   captureNavigate,
   inspectElement,
   massVariableValue,
+  massVariableReference,
   type ElementInspection,
 } from "./capture/capture.js";
 export type { ActionType, ManualScript, ScriptAction } from "./scripts/script-action.js";

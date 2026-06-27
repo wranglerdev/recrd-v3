@@ -1,5 +1,9 @@
 import type { ElementDescriptor } from "../selectors/element-descriptor.js";
-import { bestSelector } from "../selectors/selector-generator.js";
+import {
+  bestSelector,
+  generateSelectors,
+  type GeneratedSelector,
+} from "../selectors/selector-generator.js";
 import type { ScriptAction } from "../scripts/script-action.js";
 
 // Pure mapping from captured browser interactions to script actions (PRD §10).
@@ -37,14 +41,31 @@ export function massVariableValue(variable: string): string {
   return `{{${variable}}}`;
 }
 
+/**
+ * The normalised `{{variable}}` reference if `text` is the payload of a dragged
+ * mass column (PRD §12), or null otherwise. Used by the sandbox drop handler to
+ * tell a mass-variable drop apart from arbitrary dropped text, and to strip any
+ * surrounding/inner whitespace before it is recorded as the field's value.
+ */
+export function massVariableReference(text: string): string | null {
+  const match = /^\{\{\s*([^{}]+?)\s*\}\}$/.exec(text.trim());
+  return match === null ? null : `{{${match[1]}}}`;
+}
+
 export type ElementInspection = {
   readonly tag: string;
   readonly id: string | null;
   readonly classes: readonly string[];
   readonly xpath: string | null;
+  /** Ranked selector candidates for the element, most-preferred first (PRD §11). */
+  readonly selectors: readonly GeneratedSelector[];
 };
 
-/** Inspect-mode summary shown on hover (PRD §10). */
+/**
+ * Inspect-mode breakdown shown on hover (PRD §10, §11): the element's tag, id,
+ * classes and relative XPath plus the ranked selector candidates the Element
+ * Inspector panel surfaces (suggested pick + alternatives).
+ */
 export function inspectElement(element: ElementDescriptor): ElementInspection {
   const id = element.attributes["id"];
   const classAttr = element.attributes["class"];
@@ -54,5 +75,6 @@ export function inspectElement(element: ElementDescriptor): ElementInspection {
     id: id ?? null,
     classes,
     xpath: element.xpath ?? null,
+    selectors: generateSelectors(element),
   };
 }

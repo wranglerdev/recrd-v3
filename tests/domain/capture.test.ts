@@ -6,6 +6,7 @@ import {
   captureNavigate,
   inspectElement,
   massVariableValue,
+  massVariableReference,
 } from "@domain/capture/capture";
 import type { ElementDescriptor } from "@domain/selectors/element-descriptor";
 
@@ -50,8 +51,23 @@ describe("capture (PRD §10, §12)", () => {
   });
 });
 
+describe("massVariableReference (PRD §12)", () => {
+  it("normalises a dragged mass-column payload to its reference", () => {
+    expect(massVariableReference("{{usuario}}")).toBe("{{usuario}}");
+    expect(massVariableReference("  {{ senha }}  ")).toBe("{{senha}}");
+  });
+
+  it("rejects text that is not a single variable reference", () => {
+    expect(massVariableReference("usuario")).toBeNull();
+    expect(massVariableReference("")).toBeNull();
+    expect(massVariableReference("ola {{nome}}")).toBeNull();
+    expect(massVariableReference("{{a}}{{b}}")).toBeNull();
+    expect(massVariableReference("{{}}")).toBeNull();
+  });
+});
+
 describe("inspectElement (PRD §10 Inspect mode)", () => {
-  it("summarises tag, id, classes and xpath", () => {
+  it("summarises tag, id, classes, xpath and ranked selectors", () => {
     const inspection = inspectElement(
       el({
         tag: "input",
@@ -59,12 +75,18 @@ describe("inspectElement (PRD §10 Inspect mode)", () => {
         xpath: "//input[@id='login']",
       }),
     );
-    expect(inspection).toEqual({
-      tag: "input",
-      id: "login",
-      classes: ["form-control", "is-valid"],
-      xpath: "//input[@id='login']",
+    expect(inspection.tag).toBe("input");
+    expect(inspection.id).toBe("login");
+    expect(inspection.classes).toEqual(["form-control", "is-valid"]);
+    expect(inspection.xpath).toBe("//input[@id='login']");
+    // id-anchored: #login is the top-ranked candidate, xpath also offered.
+    expect(inspection.selectors[0]).toEqual({
+      strategy: "id",
+      value: "#login",
+      confidence: "high",
+      stable: true,
     });
+    expect(inspection.selectors.some((s) => s.strategy === "xpath")).toBe(true);
   });
 
   it("handles missing id/class/xpath", () => {
@@ -73,6 +95,7 @@ describe("inspectElement (PRD §10 Inspect mode)", () => {
       id: null,
       classes: [],
       xpath: null,
+      selectors: [],
     });
   });
 });

@@ -4,10 +4,11 @@ import {
   captureInput,
   captureKeyPress,
   captureNavigate,
+  inspectElement,
+  massVariableReference,
 } from "../domain/capture/capture.js";
 import type { ElementDescriptor } from "../domain/selectors/element-descriptor.js";
 import { generateSelectors } from "../domain/selectors/selector-generator.js";
-import { inspectElement } from "../domain/selectors/inspected-element.js";
 import type { ScriptAction } from "../domain/scripts/script-action.js";
 import { describeElement, isSignificantKey, keyName } from "./sandbox/dom-descriptor.js";
 
@@ -68,6 +69,39 @@ window.addEventListener(
 window.addEventListener("DOMContentLoaded", () => {
   send(captureNavigate(window.location.href));
 });
+
+// Mass variable drag-and-drop (PRD §12). A column chip dragged from the Masses
+// panel carries its `{{variable}}` reference as text/plain; dropping it onto a
+// field records an `input` action with that reference instead of a literal value,
+// so the compiled test reads the value from the mass at run time. `dragover` must
+// preventDefault for the field to be a valid drop target.
+window.addEventListener(
+  "dragover",
+  (event) => {
+    const element = targetElement(event);
+    if (element !== null && "value" in element && event.dataTransfer !== null) {
+      event.dataTransfer.dropEffect = "copy";
+      event.preventDefault();
+    }
+  },
+  true,
+);
+
+window.addEventListener(
+  "drop",
+  (event) => {
+    const element = targetElement(event);
+    const text = event.dataTransfer?.getData("text/plain") ?? "";
+    const reference = massVariableReference(text);
+    if (element !== null && "value" in element && reference !== null) {
+      event.preventDefault();
+      (element as HTMLInputElement).value = reference;
+      const descriptor = describeElement(element);
+      send(captureInput(descriptor, reference), descriptor);
+    }
+  },
+  true,
+);
 
 // --- Inspect mode (PRD §10) ------------------------------------------------
 // When enabled (toggled by the main process over `inspect:set`), a hover draws a

@@ -53,6 +53,56 @@ bd close <id>         # Complete work
 
 
 
+## Git Workflow
+
+**NEVER commit directly to `main`.** All work happens on a branch and merges via PR after CI passes.
+
+**MANDATORY BRANCHING:**
+
+1. **Always start from an up-to-date `main`:**
+   ```bash
+   git checkout main
+   git pull --rebase
+   ```
+2. **Create a new branch for every unit of work** — one branch per issue/feature/fix.
+   Name it `<type>/<bd-id>-<short-slug>`, e.g. `feat/electron-iyw-robot-stdout`,
+   `fix/electron-9ac-native-abi`. Types: `feat`, `fix`, `chore`, `docs`, `build`, `refactor`, `test`.
+   ```bash
+   git checkout -b feat/<bd-id>-<short-slug>
+   ```
+3. **Commit in small, conventional, imperative commits** (`feat:`, `fix:`, `chore:` …).
+4. **Push the branch and open a PR** — never push commits straight to `main`:
+   ```bash
+   git push -u origin feat/<bd-id>-<short-slug>
+   gh pr create --fill
+   ```
+
+**RUN CI BEFORE MERGING — this is mandatory.** A branch may only merge once **all**
+quality gates are green. Run them locally before opening/updating the PR, and confirm the
+CI run on the PR is green before merge:
+
+```bash
+npm run typecheck
+npm run lint
+npm run format:check
+npm test
+```
+
+Then verify the PR's CI status and only merge when it passes:
+
+```bash
+gh pr checks            # all checks must be green
+gh pr merge --squash    # merge only after CI is green
+```
+
+**RULES:**
+- One branch per issue; never reuse a merged branch.
+- Never merge a PR with failing or pending CI — wait for green.
+- Never force-push `main`; never `git push` directly to `main`.
+- Prefer **squash merge** to keep `main` history linear and readable.
+- Delete the branch after merge (`gh pr merge --squash --delete-branch`) and prune locally.
+- If CI fails, fix on the same branch and re-run — do not merge around it.
+
 ## Build & Test
 
 ```bash

@@ -19,20 +19,25 @@ export function MassScreen(props: MassScreenProps): JSX.Element {
   return (
     <section aria-label="Massa">
       <h2>{mass.name}</h2>
-      <table>
+      <table data-testid="mass-grid">
         <thead>
           <tr>
             {mass.columns.map((column) => (
-              <th key={column}>{column}</th>
+              <th key={column} data-testid="mass-column">
+                {column}
+              </th>
             ))}
           </tr>
         </thead>
         <tbody>
           {mass.rows.map((row, rowIndex) => (
-            <tr key={rowIndex}>
+            <tr key={rowIndex} data-testid="mass-row">
               {mass.columns.map((column) => (
                 <td key={column}>
                   <input
+                    data-testid="mass-cell"
+                    data-row={rowIndex}
+                    data-column={column}
                     aria-label={`${column} linha ${rowIndex + 1}`}
                     value={row[column] ?? ""}
                     onChange={(event) => props.onEditValue(rowIndex, column, event.target.value)}

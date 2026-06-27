@@ -54,6 +54,8 @@ function TreeItem({ node, selectedId, onSelect }: TreeItemProps): JSX.Element {
     <li role="treeitem" aria-selected={selected} aria-expanded={hasChildren ? expanded : undefined}>
       <div
         className="rc-tree__node"
+        data-testid="tree-node"
+        data-node-id={node.id}
         onClick={handleSelect}
         onKeyDown={(event) => {
           if (event.key === "Enter" || event.key === " ") {

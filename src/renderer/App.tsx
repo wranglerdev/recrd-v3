@@ -77,6 +77,7 @@ export function App(): JSX.Element {
                 key={item.view}
                 type="button"
                 className="app-shell__nav-item"
+                data-testid={`nav-${item.view}`}
                 aria-current={view === item.view ? "page" : undefined}
                 onClick={() => setView(item.view)}
               >

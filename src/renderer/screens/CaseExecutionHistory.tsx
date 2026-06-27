@@ -35,14 +35,18 @@ export function CaseExecutionHistory(props: CaseExecutionHistoryProps): JSX.Elem
       {executions.length === 0 ? (
         <p>Nenhuma execução para este caso.</p>
       ) : (
-        <ul>
+        <ul data-testid="execution-history">
           {executions.map((execution) => (
-            <li key={execution.id}>
+            <li key={execution.id} data-testid="execution-row" data-result={execution.result}>
               <span aria-hidden>{EXECUTION_RESULT_ICON[execution.result]}</span>{" "}
               {formatExecutionWhen(execution.startedAt)} (
               {formatExecutionDuration(execution.durationMs)})
               {props.onExportLog !== undefined && (
-                <button type="button" onClick={() => props.onExportLog?.(execution.id)}>
+                <button
+                  type="button"
+                  data-testid="execution-export-log"
+                  onClick={() => props.onExportLog?.(execution.id)}
+                >
                   Exportar log
                 </button>
               )}

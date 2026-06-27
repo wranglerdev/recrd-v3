@@ -186,7 +186,12 @@ function ContextPanel(props: {
 }): JSX.Element {
   const childKind = CHILD_KIND[props.kind];
   return (
-    <aside aria-label="Ações do item" className="project-explorer__context">
+    <aside
+      aria-label="Ações do item"
+      className="project-explorer__context"
+      data-testid="explorer-context"
+      data-kind={props.kind}
+    >
       <h3>
         {KIND_LABEL[props.kind]}: {props.name}
       </h3>
@@ -207,7 +212,7 @@ function ContextPanel(props: {
         />
       )}
 
-      <button type="button" onClick={props.onDelete}>
+      <button type="button" data-testid="explorer-delete" onClick={props.onDelete}>
         Excluir
       </button>
     </aside>

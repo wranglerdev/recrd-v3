@@ -15,23 +15,24 @@ export type CompileResultViewProps = {
 export function CompileResultView(props: CompileResultViewProps): JSX.Element {
   const { status, result } = props;
   return (
-    <section aria-label="Compilação">
+    <section aria-label="Compilação" data-testid="compile-result">
       <h2>Compilação</h2>
-      {status != null && <p>{status}</p>}
+      {status != null && <p data-testid="compile-status">{status}</p>}
       {result != null && result.ok && (
         <>
           {result.warnings.length > 0 && (
-            <ul aria-label="Avisos de seletor">
+            <ul aria-label="Avisos de seletor" data-testid="compile-warnings">
               {result.warnings.map((warning) => (
                 <li key={warning.index}>{warning.message}</li>
               ))}
             </ul>
           )}
-          <pre aria-label="Preview do .robot">{result.robot}</pre>
+          {/* prettier-ignore */}
+          <pre aria-label="Preview do .robot" data-testid="compile-robot-preview">{result.robot}</pre>
         </>
       )}
       {result != null && !result.ok && (
-        <ul aria-label="Erros de compilação" role="alert">
+        <ul aria-label="Erros de compilação" role="alert" data-testid="compile-errors">
           {result.scriptErrors.map((issue, index) => (
             <li key={`s${index}`}>{issue.message}</li>
           ))}

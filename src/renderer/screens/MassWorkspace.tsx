@@ -140,7 +140,12 @@ export function MassWorkspace(): JSX.Element {
     <section aria-label="Massas">
       <header>
         <h2>Massas</h2>
-        <button type="button" onClick={handleImport} disabled={importAction.loading}>
+        <button
+          type="button"
+          data-testid="mass-import"
+          onClick={handleImport}
+          disabled={importAction.loading}
+        >
           Importar CSV
         </button>
       </header>
@@ -151,11 +156,13 @@ export function MassWorkspace(): JSX.Element {
         <p>Nenhuma massa importada ainda.</p>
       ) : (
         <nav aria-label="Massas do projeto">
-          <ul>
+          <ul data-testid="mass-list">
             {masses.map((mass) => (
               <li key={mass.id}>
                 <button
                   type="button"
+                  data-testid="mass-select"
+                  data-mass-id={mass.id}
                   aria-current={mass.id === selectedId ? "true" : undefined}
                   onClick={() => setSelectedId(mass.id)}
                 >
@@ -218,9 +225,9 @@ function ImportHistory({ mass }: { readonly mass: MassDto }): JSX.Element {
       {mass.history.length === 0 ? (
         <p>Sem importações registradas.</p>
       ) : (
-        <ul>
+        <ul data-testid="mass-history">
           {mass.history.map((entry, index) => (
-            <li key={`${entry.at}-${index}`}>
+            <li key={`${entry.at}-${index}`} data-testid="mass-history-row">
               {entry.at} — {entry.rowCount} linha(s) de {entry.source}
             </li>
           ))}

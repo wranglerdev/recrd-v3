@@ -31,7 +31,7 @@ export function TimelinePanel(props: TimelinePanelProps): JSX.Element {
   }
 
   return (
-    <ol>
+    <ol data-testid="timeline">
       {props.steps.map((step, index) => {
         const { action, selectors } = step;
         const field = editableField(action);
@@ -40,10 +40,11 @@ export function TimelinePanel(props: TimelinePanelProps): JSX.Element {
         const unstable = current?.confidence === "low";
 
         return (
-          <li key={index}>
-            <span>{describeAction(action)}</span>
+          <li key={index} data-testid="timeline-step" data-step-type={action.type}>
+            <span data-testid="timeline-step-label">{describeAction(action)}</span>
             {field !== null && (
               <input
+                data-testid="timeline-step-field"
                 aria-label={`${field.label} da ação ${index + 1}`}
                 value={field.value}
                 onChange={(event) =>
@@ -53,6 +54,7 @@ export function TimelinePanel(props: TimelinePanelProps): JSX.Element {
             )}
             {chosen !== null && selectors.length > 1 && (
               <select
+                data-testid="timeline-step-selector"
                 aria-label={`Seletor da ação ${index + 1}`}
                 value={chosen}
                 onChange={(event) =>

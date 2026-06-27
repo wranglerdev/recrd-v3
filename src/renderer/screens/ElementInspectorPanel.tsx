@@ -25,6 +25,7 @@ export function ElementInspectorPanel(props: ElementInspectorPanelProps): JSX.El
       <label>
         <input
           type="checkbox"
+          data-testid="inspect-toggle"
           checked={enabled}
           onChange={(event) => onToggle(event.target.checked)}
         />
@@ -36,17 +37,19 @@ export function ElementInspectorPanel(props: ElementInspectorPanelProps): JSX.El
       {enabled && element === null && <p>Passe o mouse sobre um elemento no sandbox.</p>}
 
       {enabled && element !== null && (
-        <dl aria-label="Elemento inspecionado">
+        <dl aria-label="Elemento inspecionado" data-testid="inspected-element">
           <dt>Tag</dt>
-          <dd>{element.tag}</dd>
+          <dd data-testid="inspected-tag">{element.tag}</dd>
           <dt>Id</dt>
-          <dd>{element.id ?? "—"}</dd>
+          <dd data-testid="inspected-id">{element.id ?? "—"}</dd>
           <dt>Classes</dt>
-          <dd>{element.classes.length > 0 ? element.classes.join(" ") : "—"}</dd>
+          <dd data-testid="inspected-classes">
+            {element.classes.length > 0 ? element.classes.join(" ") : "—"}
+          </dd>
           <dt>XPath</dt>
-          <dd>{element.xpath ?? "—"}</dd>
+          <dd data-testid="inspected-xpath">{element.xpath ?? "—"}</dd>
           <dt>Seletor sugerido</dt>
-          <dd>
+          <dd data-testid="inspected-selector">
             {best === null ? (
               "—"
             ) : (

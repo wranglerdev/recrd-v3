@@ -23,24 +23,24 @@ const STATE_LABEL: Record<RecordingState, string> = {
 export function RecordingControls(props: RecordingControlsProps): JSX.Element {
   return (
     <section aria-label="Gravação">
-      <p>Gravação: {STATE_LABEL[props.state]}</p>
+      <p data-testid="recording-state">Gravação: {STATE_LABEL[props.state]}</p>
       {props.state === "idle" && (
-        <button type="button" onClick={props.onStart}>
+        <button type="button" data-testid="recording-start" onClick={props.onStart}>
           Gravar
         </button>
       )}
       {props.state === "recording" && (
-        <button type="button" onClick={props.onPause}>
+        <button type="button" data-testid="recording-pause" onClick={props.onPause}>
           Pausar
         </button>
       )}
       {props.state === "paused" && (
-        <button type="button" onClick={props.onResume}>
+        <button type="button" data-testid="recording-resume" onClick={props.onResume}>
           Retomar
         </button>
       )}
       {props.state !== "idle" && (
-        <button type="button" onClick={props.onStop}>
+        <button type="button" data-testid="recording-stop" onClick={props.onStop}>
           Parar
         </button>
       )}

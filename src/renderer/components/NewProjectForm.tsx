@@ -38,11 +38,19 @@ export function NewProjectForm(props: NewProjectFormProps): JSX.Element {
     <form onSubmit={handleSubmit} aria-label="Novo Projeto">
       <label>
         Nome
-        <input value={name} onChange={(event) => setName(event.target.value)} />
+        <input
+          data-testid="new-project-name"
+          value={name}
+          onChange={(event) => setName(event.target.value)}
+        />
       </label>
       <label>
         Descrição
-        <textarea value={description} onChange={(event) => setDescription(event.target.value)} />
+        <textarea
+          data-testid="new-project-description"
+          value={description}
+          onChange={(event) => setDescription(event.target.value)}
+        />
       </label>
       <fieldset>
         <legend>Repositório Robot</legend>
@@ -51,6 +59,7 @@ export function NewProjectForm(props: NewProjectFormProps): JSX.Element {
             type="radio"
             name="repository"
             value="new"
+            data-testid="new-project-repo-new"
             checked={repository === "new"}
             onChange={() => setRepository("new")}
           />
@@ -61,6 +70,7 @@ export function NewProjectForm(props: NewProjectFormProps): JSX.Element {
             type="radio"
             name="repository"
             value="existing"
+            data-testid="new-project-repo-existing"
             checked={repository === "existing"}
             onChange={() => setRepository("existing")}
           />
@@ -68,7 +78,7 @@ export function NewProjectForm(props: NewProjectFormProps): JSX.Element {
         </label>
       </fieldset>
       {props.error != null && props.error.length > 0 ? <p role="alert">{props.error}</p> : null}
-      <button type="submit" disabled={pending}>
+      <button type="submit" data-testid="new-project-submit" disabled={pending}>
         {pending ? "Criando…" : "Criar Projeto"}
       </button>
     </form>

@@ -221,16 +221,24 @@ export function AutomationView(): JSX.Element {
             onStop={handleStopRecording}
           />
           <section aria-label="Log de execução">
-            <p>{running ? "Executando…" : "Parado"}</p>
+            <p data-testid="run-status">{running ? "Executando…" : "Parado"}</p>
             {!running && exitCode !== null && (
-              <p>
+              <p data-testid="run-result-badge" data-exit-code={exitCode}>
                 Resultado:{" "}
                 <strong>{exitCode === 0 ? "Aprovado ✓" : `Falhou ✗ (código ${exitCode})`}</strong>
               </p>
             )}
-            {error !== null && <p role="alert">{error}</p>}
-            {exportMsg !== null && <p aria-label="Status da exportação">{exportMsg}</p>}
-            {log.length > 0 && <pre>{log.join("\n")}</pre>}
+            {error !== null && (
+              <p role="alert" data-testid="run-error">
+                {error}
+              </p>
+            )}
+            {exportMsg !== null && (
+              <p aria-label="Status da exportação" data-testid="export-status">
+                {exportMsg}
+              </p>
+            )}
+            {log.length > 0 && <pre data-testid="run-log">{log.join("\n")}</pre>}
           </section>
           {(compileMsg !== null || compileResult !== null) && (
             <CompileResultView status={compileMsg} result={compileResult} />

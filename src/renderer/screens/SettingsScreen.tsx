@@ -84,11 +84,19 @@ function SettingsForm({
         <legend>Caminhos das ferramentas</legend>
         <label>
           Python
-          <input value={python} onChange={(e) => setPython(e.target.value)} />
+          <input
+            data-testid="settings-python"
+            value={python}
+            onChange={(e) => setPython(e.target.value)}
+          />
         </label>
         <label>
           Robot
-          <input value={robot} onChange={(e) => setRobot(e.target.value)} />
+          <input
+            data-testid="settings-robot"
+            value={robot}
+            onChange={(e) => setRobot(e.target.value)}
+          />
         </label>
       </fieldset>
 
@@ -97,6 +105,7 @@ function SettingsForm({
         <label>
           <input
             type="checkbox"
+            data-testid="settings-capture-screenshots"
             checked={captureScreenshots}
             onChange={(e) => setCaptureScreenshots(e.target.checked)}
           />
@@ -106,6 +115,7 @@ function SettingsForm({
           Timeout padrão (ms)
           <input
             type="number"
+            data-testid="settings-timeout"
             value={timeout}
             onChange={(e) => setTimeoutMs(e.target.value)}
           />
@@ -113,8 +123,12 @@ function SettingsForm({
       </fieldset>
 
       {error != null ? <p role="alert">{error}</p> : null}
-      {status === "success" ? <p role="status">Configurações salvas.</p> : null}
-      <button type="submit" disabled={loading}>
+      {status === "success" ? (
+        <p role="status" data-testid="settings-saved">
+          Configurações salvas.
+        </p>
+      ) : null}
+      <button type="submit" data-testid="settings-save" disabled={loading}>
         {loading ? "Salvando…" : "Salvar"}
       </button>
     </form>

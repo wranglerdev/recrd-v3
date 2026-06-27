@@ -11,7 +11,7 @@ import { useActiveProject, useBridge, useIpcEvent, useIpcQuery } from "../state/
 
 function StatusRow({ label, ok }: { readonly label: string; readonly ok: boolean }): JSX.Element {
   return (
-    <li>
+    <li data-testid="environment-status-row" data-ok={ok}>
       <span aria-hidden>{ok ? "✔" : "✘"}</span> {label}: {ok ? "OK" : "Pendente"}
     </li>
   );
@@ -74,7 +74,7 @@ export function EnvironmentScreen(): JSX.Element {
               : "Ambiente incompleto — veja o plano de instalação abaixo."}
           </p>
 
-          <ul aria-label="Status do ambiente">
+          <ul aria-label="Status do ambiente" data-testid="environment-status" data-ready={data.report.ready}>
             <StatusRow
               label={`Python${data.report.python.version ? ` ${data.report.python.version}` : ""}`}
               ok={data.report.python.installed}
@@ -87,9 +87,9 @@ export function EnvironmentScreen(): JSX.Element {
           {data.plan.length > 0 && (
             <section aria-label="Plano de instalação">
               <h3>Plano de instalação</h3>
-              <ol>
+              <ol data-testid="install-plan">
                 {data.plan.map((command) => (
-                  <li key={command}>
+                  <li key={command} data-testid="install-plan-step">
                     <code>{command}</code>
                   </li>
                 ))}
@@ -101,7 +101,12 @@ export function EnvironmentScreen(): JSX.Element {
             (root === null ? (
               <p>Selecione um projeto com repositório Robot para instalar o ambiente.</p>
             ) : (
-              <button type="button" onClick={handleInstall} disabled={installing || !canInstall}>
+              <button
+                type="button"
+                data-testid="install-button"
+                onClick={handleInstall}
+                disabled={installing || !canInstall}
+              >
                 {installing ? "Instalando…" : "Instalar ambiente"}
               </button>
             ))}
@@ -113,7 +118,7 @@ export function EnvironmentScreen(): JSX.Element {
       {log.length > 0 && (
         <section aria-label="Progresso da instalação">
           <h3>Progresso</h3>
-          <pre>{log.join("\n")}</pre>
+          <pre data-testid="install-progress">{log.join("\n")}</pre>
         </section>
       )}
     </section>

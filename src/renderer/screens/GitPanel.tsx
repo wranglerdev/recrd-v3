@@ -47,20 +47,20 @@ export function GitPanel(): JSX.Element {
       {data !== null && data.isRepository ? (
         <>
           <p>
-            Branch atual: <strong>{data.branch}</strong>
+            Branch atual: <strong data-testid="git-branch">{data.branch}</strong>
           </p>
           {data.changes.length === 0 ? (
             <p>Sem alterações.</p>
           ) : (
-            <ul aria-label="Arquivos alterados">
+            <ul aria-label="Arquivos alterados" data-testid="git-changes">
               {data.changes.map((change) => (
-                <li key={change.path}>
+                <li key={change.path} data-testid="git-change-row" data-status={change.status}>
                   {change.path} — {STATUS_LABEL[change.status] ?? change.status}
                 </li>
               ))}
             </ul>
           )}
-          <button type="button" onClick={openExternal}>
+          <button type="button" data-testid="git-open-external" onClick={openExternal}>
             Abrir repositório (diff externo)
           </button>
         </>

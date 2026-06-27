@@ -36,3 +36,16 @@ export function createCsvFileDialog(): CsvFileDialog {
     },
   };
 }
+
+// Headless test seam (electron-bzv.1). E2E cannot drive the modal native picker,
+// so main.ts swaps in this deterministic fake when RECRD_E2E_CSV_PATH is set: it
+// reads the supplied file just like the real dialog would after a selection, with
+// no picker shown. Production never constructs this.
+export function createFakeCsvFileDialog(path: string): CsvFileDialog {
+  return {
+    async selectCsv() {
+      const content = await readFile(path, "utf8");
+      return { path, content };
+    },
+  };
+}

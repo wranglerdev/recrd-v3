@@ -1,14 +1,5 @@
-import { dirname, join } from "node:path";
-import { mkdtempSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { fileURLToPath } from "node:url";
-import {
-  _electron as electron,
-  expect,
-  test,
-  type ElectronApplication,
-  type Page,
-} from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
+import { launchApp } from "./helpers/launch.js";
 
 // Critical-flow E2E (PRD §23). Drives the real Electron app through the flows that
 // need no native dialog or external tooling: launch + shell, sidebar navigation,
@@ -20,21 +11,7 @@ import {
 // Requires `npm run build:renderer && npm run build:main` first (the pretest:e2e
 // hook) AND the native modules rebuilt for Electron's ABI (see electron-9ac):
 // `npx electron-builder install-app-deps`. Each test gets an isolated userData
-// dir so settings/db never bleed between runs.
-
-const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
-const MAIN_ENTRY = join(repoRoot, "dist", "main", "main.js");
-
-/** Launches the app with a throwaway userData dir and returns app + first window. */
-async function launchApp(): Promise<{ app: ElectronApplication; window: Page }> {
-  const userDataDir = mkdtempSync(join(tmpdir(), "recrd-e2e-"));
-  const app = await electron.launch({
-    args: [MAIN_ENTRY, `--user-data-dir=${userDataDir}`],
-  });
-  const window = await app.firstWindow();
-  await window.waitForLoadState("domcontentloaded");
-  return { app, window };
-}
+// dir (via the shared launchApp helper) so settings/db never bleed between runs.
 
 /** Clicks a primary sidebar destination by its visible label. */
 async function navigate(window: Page, label: RegExp): Promise<void> {

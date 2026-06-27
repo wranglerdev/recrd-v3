@@ -15,9 +15,23 @@ import {
 import { createUserContext } from "./infrastructure/auth/user-context-factory.js";
 import { ElectronStoreConfig } from "./infrastructure/config/electron-store-config.js";
 import { createDatabase, type DatabaseHandle } from "./infrastructure/db/connection.js";
-import { createCsvFileDialog } from "./infrastructure/dialog/csv-file-dialog.js";
-import { createDirectoryDialog } from "./infrastructure/dialog/directory-dialog.js";
+import {
+  createCsvFileDialog,
+  createFakeCsvFileDialog,
+} from "./infrastructure/dialog/csv-file-dialog.js";
+import {
+  createDirectoryDialog,
+  createFakeDirectoryDialog,
+} from "./infrastructure/dialog/directory-dialog.js";
 import { createExternalOpener } from "./infrastructure/shell/external-opener.js";
+import { RobotRunner } from "./infrastructure/robot/robot-runner.js";
+import { createFakeRobotSpawner } from "./infrastructure/e2e/fake-robot-spawner.js";
+import { createFakeInstallCommandRunner } from "./infrastructure/e2e/fake-install-command-runner.js";
+import {
+  isFakeRunnerEnabled,
+  parseFakeInstallConfig,
+  parseFakeRobotConfig,
+} from "./infrastructure/e2e/e2e-seam-config.js";
 import { createElectronLogger } from "./infrastructure/logging/electron-logger.js";
 import { createAppPaths, ensureAppDirectories } from "./infrastructure/paths/app-paths.js";
 import { resolveVersionInfo } from "./infrastructure/version/version-reader.js";
@@ -73,15 +87,39 @@ function bootstrap(): void {
 
   const userContext = createUserContext();
   const container = composeContainer({ paths, logger, config, appInfo, versionInfo, userContext });
+
+  // E2E test seams (electron-bzv.1, electron-bzv.3), active only under RECRD_E2E_*
+  // env vars: a headless directory/CSV dialog driven by a known path, and a
+  // deterministic Robot/install runner. Production never sets these, so the real
+  // Electron dialogs and spawn-backed runners are used.
+  const dialogDir = process.env.RECRD_E2E_DIALOG_DIR;
+  const directoryDialog =
+    dialogDir !== undefined && dialogDir !== ""
+      ? createFakeDirectoryDialog(dialogDir)
+      : createDirectoryDialog();
+  const csvPath = process.env.RECRD_E2E_CSV_PATH;
+  const csvFileDialog =
+    csvPath !== undefined && csvPath !== ""
+      ? createFakeCsvFileDialog(csvPath)
+      : createCsvFileDialog();
+  const fakeRunner = isFakeRunnerEnabled(process.env);
+  const robotRunner = fakeRunner
+    ? new RobotRunner(createFakeRobotSpawner(parseFakeRobotConfig(process.env)))
+    : new RobotRunner();
+  const installCommandRunner = fakeRunner
+    ? createFakeInstallCommandRunner(parseFakeInstallConfig(process.env))
+    : spawnInstallCommandRunner;
+
   registerInfrastructure(container, {
     database,
     sandboxViewFactory: createSandboxView,
     sandboxController,
-    csvFileDialog: createCsvFileDialog(),
-    directoryDialog: createDirectoryDialog(),
+    csvFileDialog,
+    directoryDialog,
     externalOpener: createExternalOpener(),
     eventEmitter,
-    installCommandRunner: spawnInstallCommandRunner,
+    installCommandRunner,
+    robotRunner,
   });
   registerUseCases(container);
   const registry = buildIpcRegistry(container);

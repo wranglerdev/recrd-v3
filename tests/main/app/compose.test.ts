@@ -115,6 +115,30 @@ describe("registerInfrastructure", () => {
       database.close();
     }
   });
+
+  it("registers an injected robot runner (E2E fake-runner seam)", () => {
+    const container = composeContainer(fakeServices());
+    const database = createDatabase(":memory:");
+    const robotRunner = new RobotRunner();
+    try {
+      registerInfrastructure(container, {
+        database,
+        sandboxViewFactory: vi.fn(),
+        sandboxController: createSandboxController(),
+        csvFileDialog: { selectCsv: vi.fn(async () => null) },
+        directoryDialog: { selectDirectory: vi.fn(async () => null) },
+        externalOpener: { openPath: vi.fn(async () => undefined) },
+        eventEmitter: { setTarget: vi.fn(), emit: vi.fn() },
+        installCommandRunner: vi.fn(async () => 0),
+        robotRunner,
+      });
+
+      // The injected runner is registered as-is instead of a fresh spawn-backed one.
+      expect(container.resolve(RobotRunnerToken)).toBe(robotRunner);
+    } finally {
+      database.close();
+    }
+  });
 });
 
 describe("registerUseCases", () => {

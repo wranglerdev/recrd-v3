@@ -142,6 +142,12 @@ export interface InfrastructureServices {
   readonly eventEmitter: SettableIpcEventEmitter;
   /** Runs install-plan commands, streaming their output (spawn-backed). */
   readonly installCommandRunner: StreamingCommandRunner;
+  /**
+   * Robot runner to register. Optional: production omits it and a real
+   * spawn-backed {@link RobotRunner} is built lazily; the E2E harness injects a
+   * RobotRunner driven by a deterministic fake spawner (electron-bzv.3).
+   */
+  readonly robotRunner?: RobotRunner;
 }
 
 /**
@@ -168,7 +174,9 @@ export function registerInfrastructure(
   container.register(AuditTrailToken, {
     useFactory: (c) => createAuditTrail(c.resolve(RepositoriesToken).auditEvents, randomUUID),
   });
-  container.register(RobotRunnerToken, { useFactory: () => new RobotRunner() });
+  container.register(RobotRunnerToken, {
+    useFactory: () => services.robotRunner ?? new RobotRunner(),
+  });
   container.register(SandboxViewFactoryToken, { useValue: services.sandboxViewFactory });
   container.register(SandboxControllerToken, { useValue: services.sandboxController });
   container.register(CsvFileDialogToken, { useValue: services.csvFileDialog });

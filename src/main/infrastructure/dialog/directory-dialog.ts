@@ -26,3 +26,15 @@ export function createDirectoryDialog(): DirectoryDialog {
     },
   };
 }
+
+// Headless test seam (electron-bzv.1). E2E cannot drive the modal native picker,
+// so main.ts swaps in this deterministic fake when RECRD_E2E_DIALOG_DIR is set:
+// selectDirectory resolves the supplied path (or null to simulate a cancel)
+// without ever showing a dialog. Production never constructs this.
+export function createFakeDirectoryDialog(path: string | null): DirectoryDialog {
+  return {
+    selectDirectory() {
+      return Promise.resolve(path);
+    },
+  };
+}

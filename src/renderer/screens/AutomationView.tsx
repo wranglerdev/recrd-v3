@@ -1,5 +1,6 @@
 import { useCallback, useState, type JSX } from "react";
 import type { CompileResponse, InspectedElementEvent } from "../../shared/ipc-contract.js";
+import { Panel, StatusMessage } from "../components/ui/index.js";
 import { useActiveProject, useBridge, useIpcEvent, useRecordingSession } from "../state/index.js";
 import { errorMessage } from "../state/useIpc.js";
 import { AutomationScreen } from "./AutomationScreen.js";
@@ -220,26 +221,43 @@ export function AutomationView(): JSX.Element {
             onResume={() => setRecordingState("recording")}
             onStop={handleStopRecording}
           />
-          <section aria-label="Log de execução">
-            <p data-testid="run-status">{running ? "Executando…" : "Parado"}</p>
-            {!running && exitCode !== null && (
-              <p data-testid="run-result-badge" data-exit-code={exitCode}>
-                Resultado:{" "}
-                <strong>{exitCode === 0 ? "Aprovado ✓" : `Falhou ✗ (código ${exitCode})`}</strong>
-              </p>
-            )}
-            {error !== null && (
-              <p role="alert" data-testid="run-error">
-                {error}
-              </p>
-            )}
-            {exportMsg !== null && (
-              <p aria-label="Status da exportação" data-testid="export-status">
-                {exportMsg}
-              </p>
-            )}
-            {log.length > 0 && <pre data-testid="run-log">{log.join("\n")}</pre>}
-          </section>
+          <Panel title="Execução">
+            <div className="run">
+              <div className="run__status">
+                <span className="run__indicator" data-running={running} aria-hidden="true" />
+                <span data-testid="run-status">{running ? "Executando…" : "Parado"}</span>
+              </div>
+              {!running && exitCode !== null && (
+                <p
+                  className="rc-result"
+                  data-testid="run-result-badge"
+                  data-exit-code={exitCode}
+                  data-result={exitCode === 0 ? "pass" : "fail"}
+                >
+                  {exitCode === 0 ? "Aprovado ✓" : `Falhou ✗ (código ${exitCode})`}
+                </p>
+              )}
+              {error !== null && (
+                <StatusMessage tone="error" data-testid="run-error">
+                  {error}
+                </StatusMessage>
+              )}
+              {exportMsg !== null && (
+                <p
+                  className="rc-status rc-status--info"
+                  aria-label="Status da exportação"
+                  data-testid="export-status"
+                >
+                  {exportMsg}
+                </p>
+              )}
+              {log.length > 0 && (
+                <pre className="rc-log" data-testid="run-log">
+                  {log.join("\n")}
+                </pre>
+              )}
+            </div>
+          </Panel>
           {(compileMsg !== null || compileResult !== null) && (
             <CompileResultView status={compileMsg} result={compileResult} />
           )}

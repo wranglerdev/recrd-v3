@@ -27,25 +27,28 @@ export function MassesPanel(): JSX.Element {
   const masses = data ?? [];
 
   if (masses.length === 0) {
-    return <p>Nenhuma massa neste projeto.</p>;
+    return <p className="rc-status rc-status--info">Nenhuma massa neste projeto.</p>;
   }
 
   return (
-    <ul>
+    <div className="rc-mass-chips">
       {masses.map((mass) => (
-        <li key={mass.id}>
-          <strong>{mass.name}</strong>
-          <ul>
+        <div className="rc-mass-chips__group" key={mass.id}>
+          <span className="rc-mass-chips__name">{mass.name}</span>
+          <div className="rc-chips">
             {mass.columns.map((column) => (
-              <li key={column}>
-                <span draggable onDragStart={(event) => onDragStart(event, column)}>
-                  {column}
-                </span>
-              </li>
+              <span
+                key={column}
+                className="rc-chip"
+                draggable
+                onDragStart={(event) => onDragStart(event, column)}
+              >
+                {column}
+              </span>
             ))}
-          </ul>
-        </li>
+          </div>
+        </div>
       ))}
-    </ul>
+    </div>
   );
 }

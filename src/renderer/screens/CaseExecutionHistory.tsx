@@ -1,5 +1,6 @@
 import type { JSX } from "react";
 import type { RecentExecutionDto } from "../../shared/ipc-contract.js";
+import { Button, Panel, StatusMessage } from "../components/ui/index.js";
 import { useBridge, useIpcQuery } from "../state/index.js";
 import {
   EXECUTION_RESULT_ICON,
@@ -30,30 +31,39 @@ export function CaseExecutionHistory(props: CaseExecutionHistoryProps): JSX.Elem
   const executions = data ?? [];
 
   return (
-    <section aria-label="Histórico de execuções">
-      <h2>Histórico de execuções</h2>
+    <Panel title="Histórico de execuções">
       {executions.length === 0 ? (
-        <p>Nenhuma execução para este caso.</p>
+        <StatusMessage>Nenhuma execução para este caso.</StatusMessage>
       ) : (
-        <ul data-testid="execution-history">
+        <ul className="execution-history" data-testid="execution-history">
           {executions.map((execution) => (
-            <li key={execution.id} data-testid="execution-row" data-result={execution.result}>
-              <span aria-hidden>{EXECUTION_RESULT_ICON[execution.result]}</span>{" "}
-              {formatExecutionWhen(execution.startedAt)} (
-              {formatExecutionDuration(execution.durationMs)})
+            <li
+              className="execution-history__row"
+              key={execution.id}
+              data-testid="execution-row"
+              data-result={execution.result}
+            >
+              <span className="execution-history__icon" aria-hidden>
+                {EXECUTION_RESULT_ICON[execution.result]}
+              </span>
+              <span className="execution-history__when">
+                {formatExecutionWhen(execution.startedAt)} (
+                {formatExecutionDuration(execution.durationMs)})
+              </span>
               {props.onExportLog !== undefined && (
-                <button
-                  type="button"
+                <Button
+                  variant="ghost"
+                  size="sm"
                   data-testid="execution-export-log"
                   onClick={() => props.onExportLog?.(execution.id)}
                 >
                   Exportar log
-                </button>
+                </Button>
               )}
             </li>
           ))}
         </ul>
       )}
-    </section>
+    </Panel>
   );
 }

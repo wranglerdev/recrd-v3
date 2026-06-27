@@ -1,4 +1,5 @@
 import type { JSX } from "react";
+import { Panel } from "../components/ui/index.js";
 
 // Test-mass screen (PRD §7): view and edit a mass's variable values. Prop-driven;
 // edits are delegated to the parent (which applies the domain operations).
@@ -17,9 +18,8 @@ export type MassScreenProps = {
 export function MassScreen(props: MassScreenProps): JSX.Element {
   const { mass } = props;
   return (
-    <section aria-label="Massa">
-      <h2>{mass.name}</h2>
-      <table data-testid="mass-grid">
+    <Panel title={mass.name} className="mass-grid-panel">
+      <table className="rc-grid" data-testid="mass-grid">
         <thead>
           <tr>
             {mass.columns.map((column) => (
@@ -35,6 +35,7 @@ export function MassScreen(props: MassScreenProps): JSX.Element {
               {mass.columns.map((column) => (
                 <td key={column}>
                   <input
+                    className="rc-grid__cell"
                     data-testid="mass-cell"
                     data-row={rowIndex}
                     data-column={column}
@@ -48,6 +49,6 @@ export function MassScreen(props: MassScreenProps): JSX.Element {
           ))}
         </tbody>
       </table>
-    </section>
+    </Panel>
   );
 }

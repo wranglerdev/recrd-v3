@@ -73,6 +73,88 @@
   gap: var(--space-4);
 }
 
+/* ---- Mass editable grid ---------------------------------------------------- */
+.rc-grid {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+.rc-grid th {
+  text-align: left;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-muted);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: var(--border-width) solid var(--color-border);
+  white-space: nowrap;
+}
+.rc-grid td {
+  padding: var(--space-1) var(--space-2);
+  border-bottom: var(--border-width) solid var(--color-border-subtle);
+}
+.rc-grid__cell {
+  width: 100%;
+  background-color: transparent;
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-2);
+  color: var(--color-text);
+}
+.rc-grid__cell:hover {
+  border-color: var(--color-border-subtle);
+}
+.rc-grid__cell:focus {
+  background-color: var(--color-surface);
+  border-color: var(--color-border-strong);
+}
+
+/* ---- Mass selector list ---------------------------------------------------- */
+.rc-mass-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+.rc-mass-list__item[aria-current="true"] {
+  background-color: var(--color-surface-active);
+  color: var(--color-text);
+}
+
+/* ---- Mass column chips (Automation panel) ---------------------------------- */
+.rc-mass-chips {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.rc-mass-chips__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.rc-mass-chips__name {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+}
+.rc-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+.rc-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-2);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-full);
+  background-color: var(--color-surface-overlay);
+  font-size: var(--font-size-xs);
+  font-family: var(--font-mono);
+  cursor: grab;
+}
+.rc-chip:hover {
+  border-color: var(--color-border-strong);
+  background-color: var(--color-surface-active);
+}
+
 /* ---- Git changed-files rows ------------------------------------------------ */
 .rc-git__path {
   flex: 1;
@@ -122,6 +204,120 @@
   min-height: 24rem;
 }
 
+/* ---- Sandbox navigation bar ------------------------------------------------ */
+.sandbox-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  background-color: var(--color-surface-raised);
+  border: var(--border-width) solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+}
+.sandbox-nav__url {
+  flex: 1;
+}
+.sandbox-nav .rc-field {
+  flex: 1;
+}
+
+/* ---- Recording controls ---------------------------------------------------- */
+.recording {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.recording__state {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+.recording__dot {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: var(--radius-full);
+  background-color: var(--color-border-strong);
+  flex: none;
+}
+.recording__state[data-state="recording"] .recording__dot {
+  background-color: var(--color-text);
+  animation: rc-pulse 1.2s ease-in-out infinite;
+}
+.recording__state[data-state="recording"] {
+  color: var(--color-text);
+}
+@keyframes rc-pulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* ---- Timeline of recorded steps -------------------------------------------- */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.timeline__step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-width) solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+}
+.timeline__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.timeline__index {
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background-color: var(--color-surface-overlay);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+.timeline__label {
+  flex: 1;
+  font-size: var(--font-size-sm);
+}
+.timeline__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex: none;
+}
+.timeline__warning {
+  font-size: var(--font-size-xs);
+  color: var(--color-text);
+}
+
+/* ---- Element inspector ----------------------------------------------------- */
+.inspector {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.inspector__alternatives {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.inspector__alternatives-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-muted);
+}
+
 /* ---- Result badge (tonal — the palette carries no colour) ------------------ */
 .rc-result {
   display: inline-flex;
@@ -141,6 +337,70 @@
 .rc-result[data-result="fail"] {
   background-color: var(--color-surface);
   color: var(--color-text-muted);
+}
+
+/* ---- Run log + result ------------------------------------------------------ */
+.run {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.run__status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+.run__indicator {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: var(--radius-full);
+  background-color: var(--color-border-strong);
+  flex: none;
+}
+.run__indicator[data-running="true"] {
+  background-color: var(--color-text);
+  animation: rc-pulse 1.2s ease-in-out infinite;
+}
+
+/* ---- Compile result -------------------------------------------------------- */
+.compile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.compile__warnings,
+.compile__errors {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--font-size-sm);
+  padding-left: var(--space-4);
+  list-style: disc;
+}
+.compile__warnings {
+  color: var(--color-text-muted);
+}
+
+/* ---- Execution history ----------------------------------------------------- */
+.execution-history {
+  display: flex;
+  flex-direction: column;
+}
+.execution-history__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  border-bottom: var(--border-width) solid var(--color-border-subtle);
+  font-size: var(--font-size-sm);
+}
+.execution-history__icon {
+  flex: none;
+}
+.execution-history__when {
+  flex: 1;
 }
 
 /* ---- Home -------------------------------------------------------------------*/

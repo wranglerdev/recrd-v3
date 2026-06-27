@@ -1,5 +1,6 @@
 import type { JSX } from "react";
 import type { InspectedElementEvent } from "../../shared/ipc-contract.js";
+import { StatusMessage } from "../components/ui/index.js";
 
 // Element Inspector panel (PRD §10, §11, §7ya.5). A "Modo Inspect" toggle arms the
 // sandbox hover overlay; while armed, the element under the cursor is streamed
@@ -21,8 +22,8 @@ export function ElementInspectorPanel(props: ElementInspectorPanelProps): JSX.El
   const best = element?.selectors[0] ?? null;
 
   return (
-    <div>
-      <label>
+    <div className="inspector">
+      <label className="rc-check">
         <input
           type="checkbox"
           data-testid="inspect-toggle"
@@ -32,12 +33,20 @@ export function ElementInspectorPanel(props: ElementInspectorPanelProps): JSX.El
         Modo Inspect
       </label>
 
-      {!enabled && <p>Ative o modo Inspect e passe o mouse sobre um elemento.</p>}
+      {!enabled && (
+        <StatusMessage>Ative o modo Inspect e passe o mouse sobre um elemento.</StatusMessage>
+      )}
 
-      {enabled && element === null && <p>Passe o mouse sobre um elemento no sandbox.</p>}
+      {enabled && element === null && (
+        <StatusMessage>Passe o mouse sobre um elemento no sandbox.</StatusMessage>
+      )}
 
       {enabled && element !== null && (
-        <dl aria-label="Elemento inspecionado" data-testid="inspected-element">
+        <dl
+          className="rc-deflist"
+          aria-label="Elemento inspecionado"
+          data-testid="inspected-element"
+        >
           <dt>Tag</dt>
           <dd data-testid="inspected-tag">{element.tag}</dd>
           <dt>Id</dt>
@@ -58,9 +67,7 @@ export function ElementInspectorPanel(props: ElementInspectorPanelProps): JSX.El
                 <span aria-label="Confiança">
                   ({best.strategy}, {best.confidence === "high" ? "alta" : "baixa"} confiança)
                 </span>
-                {best.confidence === "low" && (
-                  <span role="alert"> ⚠ seletor instável</span>
-                )}
+                {best.confidence === "low" && <span role="alert"> ⚠ seletor instável</span>}
               </>
             )}
           </dd>
@@ -68,13 +75,16 @@ export function ElementInspectorPanel(props: ElementInspectorPanelProps): JSX.El
       )}
 
       {enabled && element !== null && element.selectors.length > 1 && (
-        <ul aria-label="Seletores alternativos">
-          {element.selectors.slice(1).map((selector) => (
-            <li key={`${selector.strategy}:${selector.value}`}>
-              <code>{selector.value}</code> ({selector.strategy})
-            </li>
-          ))}
-        </ul>
+        <div className="inspector__alternatives">
+          <span className="inspector__alternatives-title">Seletores alternativos</span>
+          <ul className="rc-chips" aria-label="Seletores alternativos">
+            {element.selectors.slice(1).map((selector) => (
+              <li className="rc-chip" key={`${selector.strategy}:${selector.value}`}>
+                <code>{selector.value}</code> ({selector.strategy})
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
     </div>
   );

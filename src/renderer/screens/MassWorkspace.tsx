@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState, type JSX } from "react";
 import type { MassDto } from "../../shared/ipc-contract.js";
+import { Button, EmptyState, Input, Page, Panel, StatusMessage } from "../components/ui/index.js";
 import { useActiveProject, useBridge, useIpcAction, useIpcQuery } from "../state/index.js";
+import { formatExecutionWhen } from "./execution-format.js";
 import { MassScreen, type MassView } from "./MassScreen.js";
 
 // Mass workspace container (PRD §7): binds the presentational MassScreen grid to
@@ -127,40 +129,44 @@ export function MassWorkspace(): JSX.Element {
 
   if (projectId === null) {
     return (
-      <section aria-label="Massas">
-        <h2>Massas</h2>
-        <p>Selecione um projeto para ver suas massas.</p>
-      </section>
+      <Page title="Massas">
+        <StatusMessage>Selecione um projeto para ver suas massas.</StatusMessage>
+      </Page>
     );
   }
 
   const error = importAction.error ?? renameAction.error ?? editAction.error ?? listQuery.error;
 
   return (
-    <section aria-label="Massas">
-      <header>
-        <h2>Massas</h2>
-        <button
-          type="button"
+    <Page
+      title="Massas"
+      description="Conjuntos de dados de teste do projeto ativo."
+      actions={
+        <Button
           data-testid="mass-import"
           onClick={handleImport}
+          loading={importAction.loading}
           disabled={importAction.loading}
         >
           Importar CSV
-        </button>
-      </header>
-
-      {error !== null && <p role="alert">{error}</p>}
+        </Button>
+      }
+    >
+      {error !== null && <StatusMessage tone="error">{error}</StatusMessage>}
 
       {masses.length === 0 ? (
-        <p>Nenhuma massa importada ainda.</p>
+        <EmptyState
+          title="Nenhuma massa importada ainda."
+          description="Importe um CSV para criar o primeiro conjunto de dados."
+        />
       ) : (
         <nav aria-label="Massas do projeto">
-          <ul data-testid="mass-list">
+          <ul className="rc-mass-list" data-testid="mass-list">
             {masses.map((mass) => (
               <li key={mass.id}>
                 <button
                   type="button"
+                  className="rc-btn rc-btn--secondary rc-btn--sm rc-mass-list__item"
                   data-testid="mass-select"
                   data-mass-id={mass.id}
                   aria-current={mass.id === selectedId ? "true" : undefined}
@@ -186,7 +192,7 @@ export function MassWorkspace(): JSX.Element {
           <ImportHistory mass={selected} />
         </>
       )}
-    </section>
+    </Page>
   );
 }
 
@@ -198,6 +204,7 @@ function MassRename(props: {
   const [name, setName] = useState(props.current);
   return (
     <form
+      className="rc-form"
       aria-label="Renomear massa"
       onSubmit={(event) => {
         event.preventDefault();
@@ -207,32 +214,34 @@ function MassRename(props: {
         }
       }}
     >
-      <label>
-        Nome da massa
-        <input value={name} onChange={(event) => setName(event.target.value)} />
-      </label>
-      <button type="submit" disabled={props.pending}>
-        Renomear
-      </button>
+      <Input label="Nome da massa" value={name} onChange={(event) => setName(event.target.value)} />
+      <div className="rc-form__actions">
+        <Button type="submit" size="sm" disabled={props.pending}>
+          Renomear
+        </Button>
+      </div>
     </form>
   );
 }
 
 function ImportHistory({ mass }: { readonly mass: MassDto }): JSX.Element {
   return (
-    <section aria-label="Histórico de importação">
-      <h3>Histórico de importação</h3>
+    <Panel title="Histórico de importação">
       {mass.history.length === 0 ? (
-        <p>Sem importações registradas.</p>
+        <StatusMessage>Sem importações registradas.</StatusMessage>
       ) : (
-        <ul data-testid="mass-history">
+        <ul className="rc-list" data-testid="mass-history">
           {mass.history.map((entry, index) => (
-            <li key={`${entry.at}-${index}`} data-testid="mass-history-row">
-              {entry.at} — {entry.rowCount} linha(s) de {entry.source}
+            <li
+              className="rc-list__item"
+              key={`${entry.at}-${index}`}
+              data-testid="mass-history-row"
+            >
+              {formatExecutionWhen(entry.at)} — {entry.rowCount} linha(s) de {entry.source}
             </li>
           ))}
         </ul>
       )}
-    </section>
+    </Panel>
   );
 }

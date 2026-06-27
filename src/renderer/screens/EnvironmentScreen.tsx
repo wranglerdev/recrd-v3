@@ -1,12 +1,6 @@
 import { useState, type JSX } from "react";
 import type { EnvironmentStatusDto } from "../../shared/ipc-contract.js";
-import {
-  Button,
-  LoadingState,
-  Page,
-  Panel,
-  StatusMessage,
-} from "../components/ui/index.js";
+import { Button, LoadingState, Page, Panel, StatusMessage } from "../components/ui/index.js";
 import { useActiveProject, useBridge, useIpcEvent, useIpcQuery } from "../state/index.js";
 
 // Environment screen (PRD §14): shows the status of Python, the virtualenv,
@@ -70,7 +64,10 @@ export function EnvironmentScreen(): JSX.Element {
   const canInstall = data !== null && !data.report.ready && root !== null;
 
   return (
-    <Page title="Ambiente Robot" description="Status do Python, virtualenv, Robot Framework e Playwright.">
+    <Page
+      title="Ambiente Robot"
+      description="Status do Python, virtualenv, Robot Framework e Playwright."
+    >
       {error !== null && <StatusMessage tone="error">{error}</StatusMessage>}
       {loading && <LoadingState label="Verificando ambiente…" />}
 

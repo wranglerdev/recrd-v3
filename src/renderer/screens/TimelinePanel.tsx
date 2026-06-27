@@ -1,5 +1,6 @@
 import type { JSX } from "react";
 import type { ScriptActionDto } from "../../shared/ipc-contract.js";
+import { Button, IconButton, StatusMessage } from "../components/ui/index.js";
 import type { RecordedStep } from "../state/useRecordingSession.js";
 import {
   actionSelector,
@@ -27,11 +28,11 @@ export type TimelinePanelProps = {
 
 export function TimelinePanel(props: TimelinePanelProps): JSX.Element {
   if (props.steps.length === 0) {
-    return <p>Nenhuma ação gravada.</p>;
+    return <StatusMessage>Nenhuma ação gravada.</StatusMessage>;
   }
 
   return (
-    <ol data-testid="timeline">
+    <ol className="timeline" data-testid="timeline">
       {props.steps.map((step, index) => {
         const { action, selectors } = step;
         const field = editableField(action);
@@ -40,10 +41,45 @@ export function TimelinePanel(props: TimelinePanelProps): JSX.Element {
         const unstable = current?.confidence === "low";
 
         return (
-          <li key={index} data-testid="timeline-step" data-step-type={action.type}>
-            <span data-testid="timeline-step-label">{describeAction(action)}</span>
+          <li
+            className="timeline__step"
+            key={index}
+            data-testid="timeline-step"
+            data-step-type={action.type}
+          >
+            <div className="timeline__head">
+              <span className="timeline__index" aria-hidden="true">
+                {index + 1}
+              </span>
+              <span className="timeline__label" data-testid="timeline-step-label">
+                {describeAction(action)}
+              </span>
+              <div className="timeline__actions">
+                <IconButton
+                  label={`Mover ação ${index + 1} para cima`}
+                  icon="↑"
+                  disabled={index === 0}
+                  onClick={() => props.onMove(index, -1)}
+                />
+                <IconButton
+                  label={`Mover ação ${index + 1} para baixo`}
+                  icon="↓"
+                  disabled={index === props.steps.length - 1}
+                  onClick={() => props.onMove(index, 1)}
+                />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  aria-label={`Remover ação ${index + 1}`}
+                  onClick={() => props.onRemove(index)}
+                >
+                  Remover
+                </Button>
+              </div>
+            </div>
             {field !== null && (
               <input
+                className="rc-field__control timeline__field"
                 data-testid="timeline-step-field"
                 aria-label={`${field.label} da ação ${index + 1}`}
                 value={field.value}
@@ -54,6 +90,7 @@ export function TimelinePanel(props: TimelinePanelProps): JSX.Element {
             )}
             {chosen !== null && selectors.length > 1 && (
               <select
+                className="rc-field__control timeline__selector"
                 data-testid="timeline-step-selector"
                 aria-label={`Seletor da ação ${index + 1}`}
                 value={chosen}
@@ -68,30 +105,11 @@ export function TimelinePanel(props: TimelinePanelProps): JSX.Element {
                 ))}
               </select>
             )}
-            {unstable && <span role="alert">{UNSTABLE_WARNING}</span>}
-            <button
-              type="button"
-              aria-label={`Mover ação ${index + 1} para cima`}
-              disabled={index === 0}
-              onClick={() => props.onMove(index, -1)}
-            >
-              ↑
-            </button>
-            <button
-              type="button"
-              aria-label={`Mover ação ${index + 1} para baixo`}
-              disabled={index === props.steps.length - 1}
-              onClick={() => props.onMove(index, 1)}
-            >
-              ↓
-            </button>
-            <button
-              type="button"
-              aria-label={`Remover ação ${index + 1}`}
-              onClick={() => props.onRemove(index)}
-            >
-              Remover
-            </button>
+            {unstable && (
+              <span className="timeline__warning" role="alert">
+                {UNSTABLE_WARNING}
+              </span>
+            )}
           </li>
         );
       })}

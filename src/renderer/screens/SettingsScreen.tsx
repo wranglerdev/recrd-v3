@@ -1,12 +1,6 @@
 import { useState, type FormEvent, type JSX } from "react";
 import type { SettingsDto } from "../../shared/ipc-contract.js";
-import {
-  Button,
-  Input,
-  LoadingState,
-  Page,
-  StatusMessage,
-} from "../components/ui/index.js";
+import { Button, Input, LoadingState, Page, StatusMessage } from "../components/ui/index.js";
 import { useBridge, useIpcAction, useIpcQuery } from "../state/index.js";
 
 // Settings screen (PRD §3, §4): edits the python/robot tool paths and recording

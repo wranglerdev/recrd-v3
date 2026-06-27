@@ -1,4 +1,5 @@
 import type { JSX } from "react";
+import { StatusMessage } from "../components/ui/index.js";
 import { useActiveProject } from "../state/index.js";
 
 // Properties panel (PRD §9): shows the current selection — the active project and
@@ -9,11 +10,11 @@ export function PropertiesPanel(): JSX.Element {
   const { activeProject, activeCase } = useActiveProject();
 
   if (activeProject === null) {
-    return <p>Nenhum projeto selecionado.</p>;
+    return <StatusMessage>Nenhum projeto selecionado.</StatusMessage>;
   }
 
   return (
-    <dl>
+    <dl className="rc-deflist">
       <dt>Projeto</dt>
       <dd>{activeProject.name}</dd>
       <dt>Caso</dt>

@@ -1,4 +1,5 @@
 import { useRef, type JSX, type ReactNode } from "react";
+import { Button, IconButton, Panel, Toolbar } from "../components/ui/index.js";
 import { useResizeRect, type ViewportRect } from "./use-resize-rect.js";
 
 // Automation screen (PRD §9): header (toolbar + sandbox nav bar), a sidebar of
@@ -39,13 +40,12 @@ export type AutomationScreenProps = {
   readonly onSandboxViewportChange?: (rect: ViewportRect | null) => void;
 };
 
-const TOOLBAR_BUTTONS: { label: string; key: keyof ToolbarHandlers }[] = [
-  { label: "Play", key: "onPlay" },
-  { label: "Pause", key: "onPause" },
-  { label: "Stop", key: "onStop" },
-  { label: "Reload", key: "onReload" },
-  { label: "Exportar", key: "onExport" },
-  { label: "Compilar", key: "onCompile" },
+/** Icon-only transport controls (label is the accessible name). */
+const TRANSPORT: { label: string; icon: string; key: keyof ToolbarHandlers }[] = [
+  { label: "Play", icon: "▶", key: "onPlay" },
+  { label: "Pause", icon: "❚❚", key: "onPause" },
+  { label: "Stop", icon: "■", key: "onStop" },
+  { label: "Reload", icon: "↻", key: "onReload" },
 ];
 
 const PANELS: { label: string; key: keyof AutomationPanels }[] = [
@@ -67,29 +67,33 @@ export function AutomationScreen(props: AutomationScreenProps): JSX.Element {
   const panels = props.panels ?? {};
 
   return (
-    <div>
-      <header>
-        <h1>{props.title}</h1>
-        <nav aria-label="Controles">
-          {TOOLBAR_BUTTONS.map(({ label, key }) => (
-            <button key={key} type="button" onClick={props.toolbar[key]}>
-              {label}
-            </button>
+    <div className="automation">
+      <header className="automation__header">
+        <h1 className="automation__title">{props.title}</h1>
+        <Toolbar label="Controles" className="automation__toolbar">
+          {TRANSPORT.map(({ label, icon, key }) => (
+            <IconButton key={key} label={label} icon={icon} onClick={props.toolbar[key]} />
           ))}
-        </nav>
+          <Toolbar.Separator />
+          <Button variant="secondary" size="sm" onClick={props.toolbar.onExport}>
+            Exportar
+          </Button>
+          <Button variant="secondary" size="sm" onClick={props.toolbar.onCompile}>
+            Compilar
+          </Button>
+        </Toolbar>
         {props.navBar}
       </header>
-      <div>
-        <aside aria-label="Sidebar">
+      <div className="automation__body">
+        <aside className="automation__sidebar" aria-label="Sidebar">
           {PANELS.map(({ label, key }) => (
-            <section key={key} aria-label={label}>
-              <h2>{label}</h2>
+            <Panel key={key} title={label}>
               {panels[key]}
-            </section>
+            </Panel>
           ))}
           {props.sidebar}
         </aside>
-        <section aria-label="Browser Sandbox" ref={sandboxRef} />
+        <section className="automation__sandbox" aria-label="Browser Sandbox" ref={sandboxRef} />
       </div>
     </div>
   );

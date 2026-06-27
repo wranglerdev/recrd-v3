@@ -41,9 +41,7 @@ export function GitPanel(): JSX.Element {
 
   return (
     <Page title="Git" description="Status do repositório Robot do projeto ativo.">
-      {activeProject === null ? (
-        <StatusMessage>Nenhum projeto selecionado.</StatusMessage>
-      ) : null}
+      {activeProject === null ? <StatusMessage>Nenhum projeto selecionado.</StatusMessage> : null}
       {activeProject !== null && robotPath === null ? (
         <StatusMessage>O projeto não tem um repositório Robot configurado.</StatusMessage>
       ) : null}

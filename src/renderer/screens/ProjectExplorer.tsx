@@ -229,11 +229,7 @@ function ContextPanel(props: {
         )}
 
         <div className="rc-form__actions">
-          <Button
-            variant="secondary"
-            data-testid="explorer-delete"
-            onClick={props.onDelete}
-          >
+          <Button variant="secondary" data-testid="explorer-delete" onClick={props.onDelete}>
             Excluir
           </Button>
         </div>
@@ -264,11 +260,7 @@ function NameForm(props: {
         }
       }}
     >
-      <Input
-        label={props.label}
-        value={value}
-        onChange={(event) => setValue(event.target.value)}
-      />
+      <Input label={props.label} value={value} onChange={(event) => setValue(event.target.value)} />
       <div className="rc-form__actions">
         <Button type="submit" size="sm">
           {props.submitLabel}

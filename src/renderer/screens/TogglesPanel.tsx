@@ -1,5 +1,6 @@
 import { type JSX } from "react";
 import type { SettingsDto } from "../../shared/ipc-contract.js";
+import { Input, StatusMessage } from "../components/ui/index.js";
 import { useBridge, useIpcAction, useIpcQuery } from "../state/index.js";
 
 // Toggles panel (PRD §9): recording preferences that drive how a session is
@@ -23,7 +24,7 @@ export function TogglesPanel(): JSX.Element {
   });
 
   if (data === null) {
-    return <p>Preferências de gravação indisponíveis.</p>;
+    return <StatusMessage>Preferências de gravação indisponíveis.</StatusMessage>;
   }
 
   const recording = data.recording;
@@ -37,8 +38,8 @@ export function TogglesPanel(): JSX.Element {
   };
 
   return (
-    <div>
-      <label>
+    <div className="rc-form">
+      <label className="rc-check">
         <input
           type="checkbox"
           checked={recording.captureScreenshots}
@@ -46,21 +47,19 @@ export function TogglesPanel(): JSX.Element {
         />
         Capturar screenshots
       </label>
-      <label>
-        Timeout padrão (ms)
-        <input
-          type="number"
-          min={0}
-          value={recording.defaultTimeoutMs}
-          onChange={(event) => {
-            const next = Number(event.target.value);
-            if (Number.isFinite(next) && next >= 0) {
-              save({ defaultTimeoutMs: next });
-            }
-          }}
-        />
-      </label>
-      {error !== null && <p role="alert">{error}</p>}
+      <Input
+        label="Timeout padrão (ms)"
+        type="number"
+        min={0}
+        value={recording.defaultTimeoutMs}
+        onChange={(event) => {
+          const next = Number(event.target.value);
+          if (Number.isFinite(next) && next >= 0) {
+            save({ defaultTimeoutMs: next });
+          }
+        }}
+      />
+      {error !== null && <StatusMessage tone="error">{error}</StatusMessage>}
     </div>
   );
 }

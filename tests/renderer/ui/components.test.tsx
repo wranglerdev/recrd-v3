@@ -284,7 +284,11 @@ describe("Textarea (PRD §8)", () => {
 describe("Page (PRD §8, §9)", () => {
   it("labels the region by its title and renders header parts", () => {
     render(
-      <Page title="Configurações" description="Ajustes" actions={<button type="button">Salvar</button>}>
+      <Page
+        title="Configurações"
+        description="Ajustes"
+        actions={<button type="button">Salvar</button>}
+      >
         corpo
       </Page>,
     );
@@ -302,7 +306,12 @@ describe("Table (PRD §8, §16)", () => {
   ];
   const columns = [
     { key: "name", header: "Nome", cell: (r: (typeof rows)[number]) => r.name },
-    { key: "count", header: "Total", align: "end" as const, cell: (r: (typeof rows)[number]) => r.count },
+    {
+      key: "count",
+      header: "Total",
+      align: "end" as const,
+      cell: (r: (typeof rows)[number]) => r.count,
+    },
   ];
 
   it("renders a labelled table with column headers and rows", () => {
@@ -314,9 +323,7 @@ describe("Table (PRD §8, §16)", () => {
   });
 
   it("renders a caption when given", () => {
-    render(
-      <Table caption="2 casos" columns={columns} rows={rows} rowKey={(r) => r.id} />,
-    );
+    render(<Table caption="2 casos" columns={columns} rows={rows} rowKey={(r) => r.id} />);
     expect(screen.getByText("2 casos")).toBeInTheDocument();
   });
 });

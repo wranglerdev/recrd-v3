@@ -1,4 +1,5 @@
 import { useState, type FormEvent, type JSX } from "react";
+import { Button, IconButton, Input } from "../components/ui/index.js";
 import { useBridge } from "../state/index.js";
 
 // Browser Sandbox navigation bar (PRD §10, header Reload). A URL field that
@@ -22,24 +23,22 @@ export function SandboxNavBar(): JSX.Element {
   };
 
   return (
-    <form aria-label="Navegação do sandbox" onSubmit={handleSubmit}>
-      <button type="button" aria-label="Voltar" onClick={() => void bridge?.sandboxBack()}>
-        ◀
-      </button>
-      <button type="button" aria-label="Avançar" onClick={() => void bridge?.sandboxForward()}>
-        ▶
-      </button>
-      <button type="button" aria-label="Recarregar" onClick={() => void bridge?.sandboxReload()}>
-        ⟳
-      </button>
-      <input
+    <form className="sandbox-nav" aria-label="Navegação do sandbox" onSubmit={handleSubmit}>
+      <IconButton label="Voltar" icon="◀" onClick={() => void bridge?.sandboxBack()} />
+      <IconButton label="Avançar" icon="▶" onClick={() => void bridge?.sandboxForward()} />
+      <IconButton label="Recarregar" icon="⟳" onClick={() => void bridge?.sandboxReload()} />
+      <Input
+        className="sandbox-nav__url"
+        label="Endereço"
+        hideLabel
         type="text"
-        aria-label="Endereço"
         placeholder="https://exemplo.com"
         value={url}
         onChange={(event) => setUrl(event.target.value)}
       />
-      <button type="submit">Ir</button>
+      <Button type="submit" size="sm">
+        Ir
+      </Button>
     </form>
   );
 }

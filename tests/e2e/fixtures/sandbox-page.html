@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>recrd sandbox fixture</title>
+  </head>
+  <body>
+    <!-- Deterministic local fixture for the sandbox recording flow (electron-bzv.2).
+         A small form with stable ids/names so the content-script captures a
+         predictable navigate/click/input/keypress sequence. Loaded into the
+         BrowserView via sandbox:open with a file:// URL; never reached over the
+         network, so it is offline-deterministic across runs. -->
+    <main>
+      <h1 id="title">Formulário de teste</h1>
+
+      <form id="login-form">
+        <label for="username">Usuário</label>
+        <input id="username" name="username" type="text" />
+
+        <label for="password">Senha</label>
+        <input id="password" name="password" type="password" />
+
+        <label for="remember">
+          <input id="remember" name="remember" type="checkbox" />
+          Lembrar-me
+        </label>
+
+        <button id="submit" type="button">Entrar</button>
+      </form>
+
+      <a id="docs-link" href="#docs">Documentação</a>
+
+      <p id="result" data-state="idle">Aguardando ação.</p>
+    </main>
+
+    <script>
+      // Minimal local behaviour so click/input produce an observable DOM change
+      // the suites can assert (assert-text), without any network dependency.
+      document.getElementById("submit").addEventListener("click", () => {
+        const user = document.getElementById("username").value;
+        const result = document.getElementById("result");
+        result.dataset.state = "submitted";
+        result.textContent = user ? `Enviado: ${user}` : "Enviado sem usuário";
+      });
+    </script>
+  </body>
+</html>

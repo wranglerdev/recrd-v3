@@ -125,8 +125,17 @@ Before opening a PR, all of these must be green: `npm run typecheck`, `npm run l
 `better-sqlite3` is a native module whose compiled binary matches **one**
 `NODE_MODULE_VERSION` at a time: the Vitest unit suite runs under Node (ABI 115 on Node
 20), while Electron 34 needs ABI 132. They cannot both be green from a single install, so
-the E2E/packaging flows flip the ABI and must flip it back. The PowerShell wrappers under
-`scripts/win/` make this a one-liner and **always restore the Node ABI** afterwards:
+the flows that need a given ABI flip to it on the fly.
+
+**`npm run dev` and `npm test` now self-heal the ABI** — `scripts/lib/native-abi.ts`
+detects the current binary in a throwaway child process and runs `prebuild-install` only
+when it is wrong (`dev` → Electron ABI, `test` → Node ABI). The common dev/test loop
+therefore needs **no** manual `rebuild:*`; just alternate `npm run dev` and `npm test`.
+`npm run dev` also restarts Electron on every `main`/`preload` rebuild and tears the whole
+tree down (Electron + Vite + esbuild) on Ctrl-C or window close.
+
+The PowerShell wrappers under `scripts/win/` cover the E2E/packaging flows and **always
+restore the Node ABI** afterwards:
 
 ```powershell
 npm run e2e:win          # rebuild for Electron -> Playwright E2E -> restore Node ABI

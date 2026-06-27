@@ -1,0 +1,179 @@
+/*
+ * Screen-level styles (PRD §8, §9). The rc-* component library owns reusable
+ * widgets; these classes style screen-specific compositions (status lists, log
+ * surfaces, the project explorer layout). All values come from the design tokens
+ * in theme.css — no hard-coded colours.
+ */
+
+/* ---- Monospace log/output surface (Environment, Automation run log) -------- */
+.rc-log {
+  margin: 0;
+  padding: var(--space-3);
+  background-color: var(--color-bg);
+  border: var(--border-width) solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-muted);
+  white-space: pre-wrap;
+  overflow-x: auto;
+  max-height: 18rem;
+}
+
+/* ---- Environment status list ----------------------------------------------- */
+.rc-env-status {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.rc-env-status__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-width) solid var(--color-border-subtle);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface);
+}
+.rc-env-status__icon {
+  flex: none;
+  width: 1.25rem;
+  text-align: center;
+}
+.rc-env-status__row[data-ok="true"] {
+  color: var(--color-text);
+}
+.rc-env-status__row[data-ok="false"] {
+  color: var(--color-text-muted);
+}
+.rc-plan {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  counter-reset: step;
+}
+.rc-plan__step {
+  display: flex;
+  gap: var(--space-2);
+  align-items: baseline;
+  font-size: var(--font-size-sm);
+}
+
+/* ---- Project explorer ------------------------------------------------------ */
+.project-explorer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 28rem;
+}
+.project-explorer__context {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ---- Git changed-files rows ------------------------------------------------ */
+.rc-git__path {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+}
+.rc-git__status {
+  flex: none;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+/* ---- Automation layout ----------------------------------------------------- */
+.automation {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  height: 100%;
+}
+.automation__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.automation__title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+}
+.automation__body {
+  display: grid;
+  grid-template-columns: 20rem 1fr;
+  gap: var(--space-3);
+  flex: 1;
+  min-height: 0;
+}
+.automation__sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  overflow-y: auto;
+  padding-right: var(--space-1);
+}
+.automation__sandbox {
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface);
+  min-height: 24rem;
+}
+
+/* ---- Result badge (tonal — the palette carries no colour) ------------------ */
+.rc-result {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  border: var(--border-width) solid var(--color-border);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+.rc-result[data-result="pass"] {
+  background-color: var(--color-surface-active);
+  color: var(--color-text);
+  border-color: var(--color-border-strong);
+}
+.rc-result[data-result="fail"] {
+  background-color: var(--color-surface);
+  color: var(--color-text-muted);
+}
+
+/* ---- Home -------------------------------------------------------------------*/
+.home__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.home__recent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.home__recent-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: var(--border-width) solid var(--color-border-subtle);
+  font-size: var(--font-size-sm);
+}
+
+/* ---- Definition list (About) ----------------------------------------------- */
+.rc-deflist {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--space-2) var(--space-4);
+  font-size: var(--font-size-sm);
+}
+.rc-deflist dt {
+  color: var(--color-text-muted);
+}
+.rc-deflist dd {
+  color: var(--color-text);
+  font-family: var(--font-mono);
+}

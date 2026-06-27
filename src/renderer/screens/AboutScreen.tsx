@@ -1,5 +1,6 @@
 import type { JSX } from "react";
 import type { VersionInfo } from "../../shared/version-info.js";
+import { LoadingState, Page, Panel, StatusMessage } from "../components/ui/index.js";
 import { useBridge, useIpcQuery } from "../state/index.js";
 
 // "Sobre" screen (PRD §30): shows reproducible-build metadata read from the
@@ -19,28 +20,27 @@ export function AboutScreen(): JSX.Element {
   );
 
   return (
-    <section aria-label="Sobre">
-      <h2>Sobre</h2>
-      <p>recrd-agile-testing — gravador corporativo de automações.</p>
-
-      {loading ? <p>Carregando informações de versão…</p> : null}
-      {error != null ? <p role="alert">{error}</p> : null}
+    <Page title="Sobre" description="recrd-agile-testing — gravador corporativo de automações.">
+      {loading ? <LoadingState label="Carregando informações de versão…" /> : null}
+      {error != null ? <StatusMessage tone="error">{error}</StatusMessage> : null}
       {data === null && !loading && error == null ? (
-        <p>Metadados de versão indisponíveis.</p>
+        <StatusMessage>Metadados de versão indisponíveis.</StatusMessage>
       ) : null}
 
       {data !== null ? (
-        <dl>
-          <dt>Versão</dt>
-          <dd>{data.version}</dd>
-          <dt>Commit</dt>
-          <dd>{data.gitCommit}</dd>
-          <dt>Data do build</dt>
-          <dd>{formatBuildDate(data.buildDate)}</dd>
-          <dt>Alvo</dt>
-          <dd>{data.target}</dd>
-        </dl>
+        <Panel title="Build">
+          <dl className="rc-deflist">
+            <dt>Versão</dt>
+            <dd>{data.version}</dd>
+            <dt>Commit</dt>
+            <dd>{data.gitCommit}</dd>
+            <dt>Data do build</dt>
+            <dd>{formatBuildDate(data.buildDate)}</dd>
+            <dt>Alvo</dt>
+            <dd>{data.target}</dd>
+          </dl>
+        </Panel>
       ) : null}
-    </section>
+    </Page>
   );
 }

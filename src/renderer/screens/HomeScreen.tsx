@@ -1,5 +1,6 @@
 import type { JSX } from "react";
 import type { ExecutionResultDto } from "../../shared/ipc-contract.js";
+import { Button, EmptyState, Page, Panel } from "../components/ui/index.js";
 import { EXECUTION_RESULT_ICON as RESULT_ICON } from "./execution-format.js";
 
 // Home screen (PRD §8): recent executions + quick actions, designed to reach an
@@ -24,38 +25,39 @@ export type HomeScreenProps = {
 
 export function HomeScreen(props: HomeScreenProps): JSX.Element {
   return (
-    <main>
-      <section aria-label="Últimas execuções">
-        <h2>Últimas execuções</h2>
+    <Page title="Início" description="Comece uma automação em poucos cliques.">
+      <Panel title="Ações rápidas">
+        <div className="home__actions">
+          <Button onClick={props.onNewProject}>Novo Projeto</Button>
+          <Button variant="secondary" onClick={props.onRecordTest}>
+            Gravar Novo Teste
+          </Button>
+          <Button variant="secondary" onClick={props.onImportMass}>
+            Importar Massa
+          </Button>
+          <Button variant="secondary" onClick={props.onOpenLastProject}>
+            Abrir Último Projeto
+          </Button>
+        </div>
+      </Panel>
+
+      <Panel title="Últimas execuções">
         {props.recentExecutions.length === 0 ? (
-          <p>Nenhuma execução ainda.</p>
+          <EmptyState
+            title="Nenhuma execução ainda."
+            description="Grave e execute um teste para ver o histórico aqui."
+          />
         ) : (
-          <ul>
+          <ul className="home__recent" aria-label="Últimas execuções">
             {props.recentExecutions.map((execution) => (
-              <li key={execution.id}>
+              <li className="home__recent-item" key={execution.id}>
                 <span aria-hidden>{RESULT_ICON[execution.result]}</span> {execution.name} —{" "}
                 {execution.when} ({execution.duration})
               </li>
             ))}
           </ul>
         )}
-      </section>
-
-      <section aria-label="Ações rápidas">
-        <h2>Ações rápidas</h2>
-        <button type="button" onClick={props.onNewProject}>
-          Novo Projeto
-        </button>
-        <button type="button" onClick={props.onRecordTest}>
-          Gravar Novo Teste
-        </button>
-        <button type="button" onClick={props.onImportMass}>
-          Importar Massa
-        </button>
-        <button type="button" onClick={props.onOpenLastProject}>
-          Abrir Último Projeto
-        </button>
-      </section>
-    </main>
+      </Panel>
+    </Page>
   );
 }

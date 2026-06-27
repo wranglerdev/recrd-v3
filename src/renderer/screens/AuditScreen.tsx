@@ -1,6 +1,15 @@
 import type { JSX } from "react";
 import type { AuditEventDto, AuditEventTypeDto } from "../../shared/ipc-contract.js";
+import {
+  EmptyState,
+  LoadingState,
+  Page,
+  StatusMessage,
+  Table,
+  type TableColumn,
+} from "../components/ui/index.js";
 import { useBridge, useIpcQuery } from "../state/index.js";
+import { formatExecutionWhen } from "./execution-format.js";
 
 // Audit trail screen (PRD §16): lists the recorded audit events (mass import,
 // test change, compilation, export, execution) newest-first. Read-only — events
@@ -22,6 +31,17 @@ function summarise(details: Readonly<Record<string, unknown>>): string {
     .join(", ");
 }
 
+const COLUMNS: readonly TableColumn<AuditEventDto>[] = [
+  { key: "at", header: "Quando", cell: (event) => formatExecutionWhen(event.at) },
+  { key: "type", header: "Evento", cell: (event) => TYPE_LABEL[event.type] },
+  { key: "user", header: "Usuário", cell: (event) => event.user },
+  {
+    key: "details",
+    header: "Detalhes",
+    cell: (event) => <span className="rc-audit__details">{summarise(event.details)}</span>,
+  },
+];
+
 export function AuditScreen(): JSX.Element {
   const bridge = useBridge();
   const { data, loading, error } = useIpcQuery<readonly AuditEventDto[]>(
@@ -30,36 +50,25 @@ export function AuditScreen(): JSX.Element {
   );
 
   return (
-    <section aria-label="Auditoria">
-      <h2>Trilha de auditoria</h2>
+    <Page title="Trilha de auditoria" description="Histórico de ações registradas no dispositivo.">
+      {error !== null && <StatusMessage tone="error">{error}</StatusMessage>}
+      {loading && <LoadingState label="Carregando…" />}
 
-      {error !== null && <p role="alert">{error}</p>}
-      {loading && <p>Carregando…</p>}
-
-      {data !== null && data.length === 0 && <p>Nenhum evento registrado.</p>}
+      {data !== null && data.length === 0 && (
+        <EmptyState
+          title="Nenhum evento registrado."
+          description="As ações de importação, compilação, exportação e execução aparecem aqui."
+        />
+      )}
 
       {data !== null && data.length > 0 && (
-        <table>
-          <thead>
-            <tr>
-              <th>Quando</th>
-              <th>Evento</th>
-              <th>Usuário</th>
-              <th>Detalhes</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((event) => (
-              <tr key={event.id}>
-                <td>{event.at}</td>
-                <td>{TYPE_LABEL[event.type]}</td>
-                <td>{event.user}</td>
-                <td>{summarise(event.details)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <Table
+          label="Eventos de auditoria"
+          columns={COLUMNS}
+          rows={data}
+          rowKey={(event) => event.id}
+        />
       )}
-    </section>
+    </Page>
   );
 }

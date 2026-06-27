@@ -12,6 +12,7 @@ import { ProjectExplorer } from "./screens/ProjectExplorer.js";
 import { EnvironmentScreen } from "./screens/EnvironmentScreen.js";
 import { ActiveProjectProvider, useBridge, useIpcQuery } from "./state/index.js";
 import "./styles/app-shell.css";
+import "./styles/screens.css";
 
 // Application shell (PRD §8, §9): a persistent navigation sidebar, a main content
 // area driven by typed view-state routing, and a status bar that proves the IPC

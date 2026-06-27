@@ -1,4 +1,5 @@
 import { useState, type FormEvent, type JSX } from "react";
+import { Button, Input, Page, StatusMessage, Textarea } from "./ui/index.js";
 
 // Create/open a project with a Robot repository option (PRD §14). Presentational
 // and controlled; submission (the IPC call) is delegated to the parent, which
@@ -35,52 +36,59 @@ export function NewProjectForm(props: NewProjectFormProps): JSX.Element {
   };
 
   return (
-    <form onSubmit={handleSubmit} aria-label="Novo Projeto">
-      <label>
-        Nome
-        <input
+    <Page title="Novo Projeto" description="Crie um projeto e vincule um repositório Robot.">
+      <form className="rc-form" onSubmit={handleSubmit} aria-label="Novo Projeto">
+        <Input
+          label="Nome"
           data-testid="new-project-name"
           value={name}
           onChange={(event) => setName(event.target.value)}
         />
-      </label>
-      <label>
-        Descrição
-        <textarea
+        <Textarea
+          label="Descrição"
           data-testid="new-project-description"
           value={description}
           onChange={(event) => setDescription(event.target.value)}
         />
-      </label>
-      <fieldset>
-        <legend>Repositório Robot</legend>
-        <label>
-          <input
-            type="radio"
-            name="repository"
-            value="new"
-            data-testid="new-project-repo-new"
-            checked={repository === "new"}
-            onChange={() => setRepository("new")}
-          />
-          Criar novo repositório
-        </label>
-        <label>
-          <input
-            type="radio"
-            name="repository"
-            value="existing"
-            data-testid="new-project-repo-existing"
-            checked={repository === "existing"}
-            onChange={() => setRepository("existing")}
-          />
-          Utilizar repositório existente
-        </label>
-      </fieldset>
-      {props.error != null && props.error.length > 0 ? <p role="alert">{props.error}</p> : null}
-      <button type="submit" data-testid="new-project-submit" disabled={pending}>
-        {pending ? "Criando…" : "Criar Projeto"}
-      </button>
-    </form>
+        <fieldset className="rc-fieldset">
+          <legend className="rc-fieldset__legend">Repositório Robot</legend>
+          <label className="rc-check">
+            <input
+              type="radio"
+              name="repository"
+              value="new"
+              data-testid="new-project-repo-new"
+              checked={repository === "new"}
+              onChange={() => setRepository("new")}
+            />
+            Criar novo repositório
+          </label>
+          <label className="rc-check">
+            <input
+              type="radio"
+              name="repository"
+              value="existing"
+              data-testid="new-project-repo-existing"
+              checked={repository === "existing"}
+              onChange={() => setRepository("existing")}
+            />
+            Utilizar repositório existente
+          </label>
+        </fieldset>
+        {props.error != null && props.error.length > 0 ? (
+          <StatusMessage tone="error">{props.error}</StatusMessage>
+        ) : null}
+        <div className="rc-form__actions">
+          <Button
+            type="submit"
+            data-testid="new-project-submit"
+            loading={pending}
+            disabled={pending}
+          >
+            {pending ? "Criando…" : "Criar Projeto"}
+          </Button>
+        </div>
+      </form>
+    </Page>
   );
 }

@@ -1,6 +1,14 @@
 import { useState, type JSX } from "react";
 import type { ProjectDto, RecrdApi } from "../../shared/ipc-contract.js";
-import { Tree, type TreeNode } from "../components/ui/index.js";
+import {
+  Button,
+  EmptyState,
+  Input,
+  Page,
+  StatusMessage,
+  Tree,
+  type TreeNode,
+} from "../components/ui/index.js";
 import { useActiveProject, useBridge, useIpcQuery } from "../state/index.js";
 
 // Project Explorer (PRD §6, §9): a Project > Plan > Suite > Case tree wired to the
@@ -132,20 +140,26 @@ export function ProjectExplorer(): JSX.Element {
   };
 
   return (
-    <section aria-label="Explorador de projetos" className="project-explorer">
-      <header>
-        <h2>Projetos</h2>
+    <Page
+      title="Projetos"
+      label="Explorador de projetos"
+      description="Organize Projetos, Planos, Suítes e Casos."
+      className="project-explorer"
+      actions={
         <NameForm
           label="Novo projeto"
           submitLabel="Criar projeto"
           onSubmit={(name) => mutate((b) => b.createProject({ name }))}
         />
-      </header>
-
-      {error !== null && <p role="alert">{error}</p>}
+      }
+    >
+      {error !== null && <StatusMessage tone="error">{error}</StatusMessage>}
 
       {forest !== null && forest.nodes.length === 0 ? (
-        <p>Nenhum projeto ainda.</p>
+        <EmptyState
+          title="Nenhum projeto ainda."
+          description="Crie o primeiro projeto para começar."
+        />
       ) : (
         <Tree
           label="Hierarquia de projetos"
@@ -173,7 +187,7 @@ export function ProjectExplorer(): JSX.Element {
           }}
         />
       )}
-    </section>
+    </Page>
   );
 }
 
@@ -188,33 +202,42 @@ function ContextPanel(props: {
   return (
     <aside
       aria-label="Ações do item"
-      className="project-explorer__context"
+      className="rc-panel"
       data-testid="explorer-context"
       data-kind={props.kind}
     >
-      <h3>
-        {KIND_LABEL[props.kind]}: {props.name}
-      </h3>
-
-      <NameForm
-        key={`rename-${props.name}`}
-        label="Renomear"
-        submitLabel="Renomear"
-        initialValue={props.name}
-        onSubmit={props.onRename}
-      />
-
-      {childKind !== undefined && (
+      <header className="rc-panel__header">
+        <h2 className="rc-panel__title">
+          {KIND_LABEL[props.kind]}: {props.name}
+        </h2>
+      </header>
+      <div className="rc-panel__body project-explorer__context">
         <NameForm
-          label={`Novo ${KIND_LABEL[childKind]}`}
-          submitLabel={`Adicionar ${KIND_LABEL[childKind]}`}
-          onSubmit={props.onCreateChild}
+          key={`rename-${props.name}`}
+          label="Renomear"
+          submitLabel="Renomear"
+          initialValue={props.name}
+          onSubmit={props.onRename}
         />
-      )}
 
-      <button type="button" data-testid="explorer-delete" onClick={props.onDelete}>
-        Excluir
-      </button>
+        {childKind !== undefined && (
+          <NameForm
+            label={`Novo ${KIND_LABEL[childKind]}`}
+            submitLabel={`Adicionar ${KIND_LABEL[childKind]}`}
+            onSubmit={props.onCreateChild}
+          />
+        )}
+
+        <div className="rc-form__actions">
+          <Button
+            variant="secondary"
+            data-testid="explorer-delete"
+            onClick={props.onDelete}
+          >
+            Excluir
+          </Button>
+        </div>
+      </div>
     </aside>
   );
 }
@@ -228,6 +251,7 @@ function NameForm(props: {
   const [value, setValue] = useState(props.initialValue ?? "");
   return (
     <form
+      className="rc-form"
       aria-label={props.label}
       onSubmit={(event) => {
         event.preventDefault();
@@ -240,11 +264,16 @@ function NameForm(props: {
         }
       }}
     >
-      <label>
-        {props.label}
-        <input value={value} onChange={(event) => setValue(event.target.value)} />
-      </label>
-      <button type="submit">{props.submitLabel}</button>
+      <Input
+        label={props.label}
+        value={value}
+        onChange={(event) => setValue(event.target.value)}
+      />
+      <div className="rc-form__actions">
+        <Button type="submit" size="sm">
+          {props.submitLabel}
+        </Button>
+      </div>
     </form>
   );
 }

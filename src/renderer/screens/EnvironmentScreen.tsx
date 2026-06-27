@@ -1,5 +1,12 @@
 import { useState, type JSX } from "react";
 import type { EnvironmentStatusDto } from "../../shared/ipc-contract.js";
+import {
+  Button,
+  LoadingState,
+  Page,
+  Panel,
+  StatusMessage,
+} from "../components/ui/index.js";
 import { useActiveProject, useBridge, useIpcEvent, useIpcQuery } from "../state/index.js";
 
 // Environment screen (PRD §14): shows the status of Python, the virtualenv,
@@ -11,8 +18,11 @@ import { useActiveProject, useBridge, useIpcEvent, useIpcQuery } from "../state/
 
 function StatusRow({ label, ok }: { readonly label: string; readonly ok: boolean }): JSX.Element {
   return (
-    <li data-testid="environment-status-row" data-ok={ok}>
-      <span aria-hidden>{ok ? "✔" : "✘"}</span> {label}: {ok ? "OK" : "Pendente"}
+    <li className="rc-env-status__row" data-testid="environment-status-row" data-ok={ok}>
+      <span className="rc-env-status__icon" aria-hidden>
+        {ok ? "✔" : "✘"}
+      </span>{" "}
+      {label}: {ok ? "OK" : "Pendente"}
     </li>
   );
 }
@@ -60,67 +70,76 @@ export function EnvironmentScreen(): JSX.Element {
   const canInstall = data !== null && !data.report.ready && root !== null;
 
   return (
-    <section aria-label="Ambiente">
-      <h2>Ambiente Robot</h2>
-
-      {error !== null && <p role="alert">{error}</p>}
-      {loading && <p>Verificando ambiente…</p>}
+    <Page title="Ambiente Robot" description="Status do Python, virtualenv, Robot Framework e Playwright.">
+      {error !== null && <StatusMessage tone="error">{error}</StatusMessage>}
+      {loading && <LoadingState label="Verificando ambiente…" />}
 
       {data !== null && (
         <>
-          <p>
+          <StatusMessage>
             {data.report.ready
               ? "Ambiente pronto para execução."
               : "Ambiente incompleto — veja o plano de instalação abaixo."}
-          </p>
+          </StatusMessage>
 
-          <ul aria-label="Status do ambiente" data-testid="environment-status" data-ready={data.report.ready}>
-            <StatusRow
-              label={`Python${data.report.python.version ? ` ${data.report.python.version}` : ""}`}
-              ok={data.report.python.installed}
-            />
-            <StatusRow label="Virtualenv (.venv)" ok={data.report.venvPresent} />
-            <StatusRow label="Robot Framework" ok={data.report.robotFramework} />
-            <StatusRow label="Navegador Playwright" ok={data.report.playwrightBrowser} />
-          </ul>
+          <Panel title="Status do ambiente">
+            <ul
+              className="rc-env-status"
+              aria-label="Status do ambiente"
+              data-testid="environment-status"
+              data-ready={data.report.ready}
+            >
+              <StatusRow
+                label={`Python${data.report.python.version ? ` ${data.report.python.version}` : ""}`}
+                ok={data.report.python.installed}
+              />
+              <StatusRow label="Virtualenv (.venv)" ok={data.report.venvPresent} />
+              <StatusRow label="Robot Framework" ok={data.report.robotFramework} />
+              <StatusRow label="Navegador Playwright" ok={data.report.playwrightBrowser} />
+            </ul>
+          </Panel>
 
           {data.plan.length > 0 && (
-            <section aria-label="Plano de instalação">
-              <h3>Plano de instalação</h3>
-              <ol data-testid="install-plan">
+            <Panel title="Plano de instalação">
+              <ol className="rc-plan" data-testid="install-plan">
                 {data.plan.map((command) => (
-                  <li key={command} data-testid="install-plan-step">
+                  <li className="rc-plan__step" key={command} data-testid="install-plan-step">
                     <code>{command}</code>
                   </li>
                 ))}
               </ol>
-            </section>
+            </Panel>
           )}
 
           {!data.report.ready &&
             (root === null ? (
-              <p>Selecione um projeto com repositório Robot para instalar o ambiente.</p>
+              <StatusMessage>
+                Selecione um projeto com repositório Robot para instalar o ambiente.
+              </StatusMessage>
             ) : (
-              <button
-                type="button"
-                data-testid="install-button"
-                onClick={handleInstall}
-                disabled={installing || !canInstall}
-              >
-                {installing ? "Instalando…" : "Instalar ambiente"}
-              </button>
+              <div className="rc-form__actions">
+                <Button
+                  data-testid="install-button"
+                  onClick={handleInstall}
+                  loading={installing}
+                  disabled={installing || !canInstall}
+                >
+                  {installing ? "Instalando…" : "Instalar ambiente"}
+                </Button>
+              </div>
             ))}
         </>
       )}
 
-      {installError !== null && <p role="alert">{installError}</p>}
+      {installError !== null && <StatusMessage tone="error">{installError}</StatusMessage>}
 
       {log.length > 0 && (
-        <section aria-label="Progresso da instalação">
-          <h3>Progresso</h3>
-          <pre data-testid="install-progress">{log.join("\n")}</pre>
-        </section>
+        <Panel title="Progresso da instalação">
+          <pre className="rc-log" data-testid="install-progress">
+            {log.join("\n")}
+          </pre>
+        </Panel>
       )}
-    </section>
+    </Page>
   );
 }

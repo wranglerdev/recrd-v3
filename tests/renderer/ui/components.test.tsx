@@ -5,8 +5,14 @@ import {
   Button,
   IconButton,
   Input,
+  Textarea,
   Select,
   Panel,
+  Page,
+  Table,
+  StatusMessage,
+  LoadingState,
+  EmptyState,
   Toolbar,
   List,
   Tree,
@@ -256,5 +262,91 @@ describe("Spinner (PRD §8)", () => {
   it("exposes a status role with an accessible label", () => {
     render(<Spinner label="Compilando" />);
     expect(screen.getByRole("status")).toHaveTextContent("Compilando");
+  });
+});
+
+describe("Textarea (PRD §8)", () => {
+  it("associates the label and forwards attributes", () => {
+    render(<Textarea label="Descrição" data-testid="desc" />);
+    const control = screen.getByLabelText("Descrição");
+    expect(control).toBeInTheDocument();
+    expect(control).toHaveAttribute("data-testid", "desc");
+  });
+
+  it("marks invalid and links the error", () => {
+    render(<Textarea label="Descrição" error="Obrigatório" />);
+    const control = screen.getByLabelText("Descrição");
+    expect(control).toHaveAttribute("aria-invalid", "true");
+    expect(control.getAttribute("aria-describedby")).toBe(screen.getByRole("alert").id);
+  });
+});
+
+describe("Page (PRD §8, §9)", () => {
+  it("labels the region by its title and renders header parts", () => {
+    render(
+      <Page title="Configurações" description="Ajustes" actions={<button type="button">Salvar</button>}>
+        corpo
+      </Page>,
+    );
+    expect(screen.getByRole("region", { name: "Configurações" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Configurações", level: 1 })).toBeInTheDocument();
+    expect(screen.getByText("Ajustes")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Salvar" })).toBeInTheDocument();
+  });
+});
+
+describe("Table (PRD §8, §16)", () => {
+  const rows = [
+    { id: "1", name: "Login", count: 3 },
+    { id: "2", name: "Checkout", count: 12 },
+  ];
+  const columns = [
+    { key: "name", header: "Nome", cell: (r: (typeof rows)[number]) => r.name },
+    { key: "count", header: "Total", align: "end" as const, cell: (r: (typeof rows)[number]) => r.count },
+  ];
+
+  it("renders a labelled table with column headers and rows", () => {
+    render(<Table label="Casos" columns={columns} rows={rows} rowKey={(r) => r.id} />);
+    expect(screen.getByRole("table", { name: "Casos" })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Nome" })).toBeInTheDocument();
+    expect(screen.getByRole("cell", { name: "Checkout" })).toBeInTheDocument();
+    expect(screen.getAllByRole("row")).toHaveLength(3); // header + 2 body rows
+  });
+
+  it("renders a caption when given", () => {
+    render(
+      <Table caption="2 casos" columns={columns} rows={rows} rowKey={(r) => r.id} />,
+    );
+    expect(screen.getByText("2 casos")).toBeInTheDocument();
+  });
+});
+
+describe("Feedback states (PRD §8)", () => {
+  it("StatusMessage maps tone to ARIA role", () => {
+    const { rerender } = render(<StatusMessage tone="success">Salvo</StatusMessage>);
+    expect(screen.getByRole("status")).toHaveTextContent("Salvo");
+    rerender(<StatusMessage tone="error">Falhou</StatusMessage>);
+    expect(screen.getByRole("alert")).toHaveTextContent("Falhou");
+    rerender(<StatusMessage>Carregando</StatusMessage>);
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it("LoadingState exposes the label via the spinner status", () => {
+    render(<LoadingState label="Carregando…" />);
+    expect(screen.getByRole("status")).toHaveTextContent("Carregando…");
+  });
+
+  it("EmptyState renders title, description and action", () => {
+    render(
+      <EmptyState
+        title="Nada aqui"
+        description="Crie o primeiro"
+        action={<button type="button">Criar</button>}
+      />,
+    );
+    expect(screen.getByText("Nada aqui")).toBeInTheDocument();
+    expect(screen.getByText("Crie o primeiro")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Criar" })).toBeInTheDocument();
   });
 });

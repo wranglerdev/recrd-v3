@@ -1,5 +1,12 @@
 import { useState, type FormEvent, type JSX } from "react";
 import type { SettingsDto } from "../../shared/ipc-contract.js";
+import {
+  Button,
+  Input,
+  LoadingState,
+  Page,
+  StatusMessage,
+} from "../components/ui/index.js";
 import { useBridge, useIpcAction, useIpcQuery } from "../state/index.js";
 
 // Settings screen (PRD §3, §4): edits the python/robot tool paths and recording
@@ -14,22 +21,24 @@ export function SettingsScreen(): JSX.Element {
   );
 
   if (loading) {
-    return <p>Carregando configurações…</p>;
+    return (
+      <Page title="Configurações">
+        <LoadingState label="Carregando configurações…" />
+      </Page>
+    );
   }
   if (error != null) {
     return (
-      <section aria-label="Configurações">
-        <h2>Configurações</h2>
-        <p role="alert">{error}</p>
-      </section>
+      <Page title="Configurações">
+        <StatusMessage tone="error">{error}</StatusMessage>
+      </Page>
     );
   }
   if (data === null) {
     return (
-      <section aria-label="Configurações">
-        <h2>Configurações</h2>
-        <p>Configurações indisponíveis.</p>
-      </section>
+      <Page title="Configurações">
+        <StatusMessage>Configurações indisponíveis.</StatusMessage>
+      </Page>
     );
   }
 
@@ -77,60 +86,56 @@ function SettingsForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} aria-label="Configurações">
-      <h2>Configurações</h2>
-
-      <fieldset>
-        <legend>Caminhos das ferramentas</legend>
-        <label>
-          Python
-          <input
+    <Page title="Configurações" description="Caminhos das ferramentas e preferências de gravação.">
+      <form className="rc-form" onSubmit={handleSubmit} aria-label="Configurações">
+        <fieldset className="rc-fieldset">
+          <legend className="rc-fieldset__legend">Caminhos das ferramentas</legend>
+          <Input
+            label="Python"
             data-testid="settings-python"
             value={python}
             onChange={(e) => setPython(e.target.value)}
           />
-        </label>
-        <label>
-          Robot
-          <input
+          <Input
+            label="Robot"
             data-testid="settings-robot"
             value={robot}
             onChange={(e) => setRobot(e.target.value)}
           />
-        </label>
-      </fieldset>
+        </fieldset>
 
-      <fieldset>
-        <legend>Gravação</legend>
-        <label>
-          <input
-            type="checkbox"
-            data-testid="settings-capture-screenshots"
-            checked={captureScreenshots}
-            onChange={(e) => setCaptureScreenshots(e.target.checked)}
-          />
-          Capturar screenshots
-        </label>
-        <label>
-          Timeout padrão (ms)
-          <input
+        <fieldset className="rc-fieldset">
+          <legend className="rc-fieldset__legend">Gravação</legend>
+          <label className="rc-check">
+            <input
+              type="checkbox"
+              data-testid="settings-capture-screenshots"
+              checked={captureScreenshots}
+              onChange={(e) => setCaptureScreenshots(e.target.checked)}
+            />
+            Capturar screenshots
+          </label>
+          <Input
+            label="Timeout padrão (ms)"
             type="number"
             data-testid="settings-timeout"
             value={timeout}
             onChange={(e) => setTimeoutMs(e.target.value)}
           />
-        </label>
-      </fieldset>
+        </fieldset>
 
-      {error != null ? <p role="alert">{error}</p> : null}
-      {status === "success" ? (
-        <p role="status" data-testid="settings-saved">
-          Configurações salvas.
-        </p>
-      ) : null}
-      <button type="submit" data-testid="settings-save" disabled={loading}>
-        {loading ? "Salvando…" : "Salvar"}
-      </button>
-    </form>
+        {error != null ? <StatusMessage tone="error">{error}</StatusMessage> : null}
+        {status === "success" ? (
+          <StatusMessage tone="success" data-testid="settings-saved">
+            Configurações salvas.
+          </StatusMessage>
+        ) : null}
+        <div className="rc-form__actions">
+          <Button type="submit" data-testid="settings-save" loading={loading}>
+            {loading ? "Salvando…" : "Salvar"}
+          </Button>
+        </div>
+      </form>
+    </Page>
   );
 }

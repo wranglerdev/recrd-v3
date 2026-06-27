@@ -33,6 +33,18 @@ async function inSandbox<T>(app: ElectronApplication, expression: string): Promi
   }, expression);
 }
 
+/**
+ * True once the sandbox BrowserView is attached to the window. It is added only
+ * when the Automation screen reports a viewport rect (setSandboxVisible), so flow
+ * suites poll this after navigating there before driving the fixture.
+ */
+export async function isSandboxAttached(app: ElectronApplication): Promise<boolean> {
+  return app.evaluate(({ BrowserWindow }) => {
+    const [window] = BrowserWindow.getAllWindows();
+    return window !== undefined && window.getBrowserViews().length > 0;
+  });
+}
+
 /** Loads the fixture into the sandbox view and waits for it to be interactive. */
 export async function loadFixture(app: ElectronApplication, url = fixtureUrl()): Promise<void> {
   await app.evaluate(async ({ BrowserWindow }, target) => {

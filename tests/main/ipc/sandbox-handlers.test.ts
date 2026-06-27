@@ -11,6 +11,7 @@ function controller(overrides?: Partial<SandboxController>): SandboxController {
     goBack: vi.fn(),
     goForward: vi.fn(),
     reload: vi.fn(),
+    setInspect: vi.fn(),
     attach: vi.fn(),
     ...overrides,
   };
@@ -43,6 +44,15 @@ describe("registerSandboxHandlers (PRD §10)", () => {
 
     await registry.dispatch("sandbox:setVisible", { visible: false });
     expect(ctrl.setVisible).toHaveBeenCalledWith(false);
+  });
+
+  it("forwards the inspect toggle to the controller", async () => {
+    const ctrl = controller();
+    const registry = new IpcRegistry();
+    registerSandboxHandlers(registry, ctrl);
+
+    await registry.dispatch("sandbox:setInspect", { enabled: true });
+    expect(ctrl.setInspect).toHaveBeenCalledWith(true);
   });
 
   it("forwards back/forward/reload to the controller", async () => {

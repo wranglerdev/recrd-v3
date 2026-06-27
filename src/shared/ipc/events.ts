@@ -33,6 +33,20 @@ export interface CapturedActionEvent {
   readonly selectors?: readonly SelectorCandidateDto[];
 }
 
+/**
+ * Detail of the element under the cursor in Inspect mode (PRD §10). The sandbox
+ * content-script snapshots the hovered element and the main process forwards it
+ * to the renderer's Element Inspector panel. Mirrors the domain `InspectedElement`
+ * (kept structurally identical so the content-script can emit it directly).
+ */
+export interface InspectedElementEvent {
+  readonly tag: string;
+  readonly id: string | null;
+  readonly classes: readonly string[];
+  readonly xpath: string | null;
+  readonly selectors: readonly SelectorCandidateDto[];
+}
+
 /** Completion of a streamed install: ok, or the command that failed. */
 export interface InstallDoneEvent {
   readonly ok: boolean;
@@ -50,6 +64,7 @@ export type IpcEventMap = {
   "run:line": StreamLineEvent;
   "run:exit": RunExitEvent;
   "capture:action": CapturedActionEvent;
+  "inspect:element": InspectedElementEvent;
 };
 
 export type IpcEventChannel = keyof IpcEventMap;
@@ -60,6 +75,7 @@ export const IPC_EVENT_CHANNELS = [
   "run:line",
   "run:exit",
   "capture:action",
+  "inspect:element",
 ] as const satisfies readonly IpcEventChannel[];
 
 export type IpcEventListener<C extends IpcEventChannel> = (payload: IpcEventMap[C]) => void;

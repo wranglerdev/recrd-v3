@@ -12,6 +12,7 @@ export function registerSandboxHandlers(
   registry.handle("sandbox:open", (request) => controller.open(request.url));
   registry.handle("sandbox:setBounds", (request) => controller.setBounds(request));
   registry.handle("sandbox:setVisible", (request) => controller.setVisible(request.visible));
+  registry.handle("sandbox:setInspect", (request) => controller.setInspect(request.enabled));
   registry.handle("sandbox:back", () => controller.goBack());
   registry.handle("sandbox:forward", () => controller.goForward());
   registry.handle("sandbox:reload", () => controller.reload());

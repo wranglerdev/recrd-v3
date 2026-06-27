@@ -28,6 +28,8 @@ export interface SandboxViewPort {
   goForward(): void;
   /** Reloads the current page, preserving the session when possible. */
   reload(): void;
+  /** Pushes the Inspect-mode toggle to the embedded view's content-script. */
+  setInspect(enabled: boolean): void;
 }
 
 export interface SandboxController {
@@ -43,9 +45,12 @@ export interface SandboxController {
   goForward(): void;
   /** Reloads the current sandbox page (keeps the session when possible). */
   reload(): void;
+  /** Enables or disables Inspect mode (hover overlay) in the sandbox (PRD §10). */
+  setInspect(enabled: boolean): void;
   /**
    * Attaches the Electron-backed view port (once the window exists). The current
-   * visibility/bounds are reflected onto the freshly-attached view immediately.
+   * visibility/bounds/inspect state are reflected onto the freshly-attached view
+   * immediately.
    */
   attach(port: SandboxViewPort): void;
 }
@@ -54,8 +59,9 @@ export function createSandboxController(): SandboxController {
   let port: SandboxViewPort | null = null;
   let bounds: SandboxRect | null = null;
   let visible = false;
+  let inspect = false;
 
-  /** Reflects the current visibility/bounds onto the attached port (no-op until attached). */
+  /** Reflects the current visibility/bounds/inspect onto the attached port (no-op until attached). */
   function apply(): void {
     if (port === null) {
       return;
@@ -64,6 +70,7 @@ export function createSandboxController(): SandboxController {
     if (visible && bounds !== null) {
       port.setBounds(bounds);
     }
+    port.setInspect(inspect);
   }
 
   return {
@@ -96,6 +103,10 @@ export function createSandboxController(): SandboxController {
     },
     reload() {
       port?.reload();
+    },
+    setInspect(enabled) {
+      inspect = enabled;
+      port?.setInspect(enabled);
     },
     attach(next) {
       port = next;

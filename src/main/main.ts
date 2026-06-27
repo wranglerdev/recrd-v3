@@ -1,7 +1,11 @@
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { app, BrowserWindow, ipcMain } from "electron";
-import type { AppInfo, CapturedActionEvent } from "../shared/ipc-contract.js";
+import type {
+  AppInfo,
+  CapturedActionEvent,
+  InspectedElementEvent,
+} from "../shared/ipc-contract.js";
 import {
   buildIpcRegistry,
   composeContainer,
@@ -88,6 +92,13 @@ function bootstrap(): void {
   // the event emitter pushes it to the active window's webContents.
   ipcMain.on("capture:action", (_event, payload: CapturedActionEvent) => {
     eventEmitter.emit("capture:action", payload);
+  });
+
+  // Relay the element snapshotted under the cursor in Inspect mode to the
+  // renderer's Element Inspector panel (PRD §10). The content-script sends over
+  // `inspect:hover`; the emitter pushes it on the typed `inspect:element` channel.
+  ipcMain.on("inspect:hover", (_event, payload: InspectedElementEvent) => {
+    eventEmitter.emit("inspect:element", payload);
   });
 
   logger.info("recrd starting", {

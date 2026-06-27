@@ -9,6 +9,7 @@ describe("IPC_EVENT_CHANNELS", () => {
       "run:line",
       "run:exit",
       "capture:action",
+      "inspect:element",
     ]);
   });
 

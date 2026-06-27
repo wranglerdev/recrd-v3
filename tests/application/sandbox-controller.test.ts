@@ -11,6 +11,7 @@ function fakePort(): SandboxViewPort & {
   goBack: ReturnType<typeof vi.fn>;
   goForward: ReturnType<typeof vi.fn>;
   reload: ReturnType<typeof vi.fn>;
+  setInspect: ReturnType<typeof vi.fn>;
 } {
   return {
     setBounds: vi.fn(),
@@ -19,6 +20,7 @@ function fakePort(): SandboxViewPort & {
     goBack: vi.fn(),
     goForward: vi.fn(),
     reload: vi.fn(),
+    setInspect: vi.fn(),
   };
 }
 
@@ -124,5 +126,18 @@ describe("createSandboxController (PRD §10)", () => {
       controller.goForward();
       controller.reload();
     }).not.toThrow();
+  });
+
+  it("pushes the inspect toggle to the port and reflects it on attach", () => {
+    const controller = createSandboxController();
+    // Before a port is attached the toggle is buffered, not lost.
+    controller.setInspect(true);
+
+    const port = fakePort();
+    controller.attach(port);
+    expect(port.setInspect).toHaveBeenLastCalledWith(true);
+
+    controller.setInspect(false);
+    expect(port.setInspect).toHaveBeenLastCalledWith(false);
   });
 });

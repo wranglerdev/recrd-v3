@@ -44,5 +44,9 @@ export function createSandboxViewPort(window: BrowserWindow, view: BrowserView):
     reload() {
       view.webContents.reload();
     },
+    setInspect(enabled) {
+      // Tell the injected content-script to toggle the hover overlay (PRD §10).
+      view.webContents.send("inspect:set", enabled);
+    },
   };
 }

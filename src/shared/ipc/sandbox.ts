@@ -22,10 +22,16 @@ export interface SetSandboxVisibleRequest {
   readonly visible: boolean;
 }
 
+/** Toggles Inspect mode (hover overlay + Element Inspector feed) (PRD §10). */
+export interface SetSandboxInspectRequest {
+  readonly enabled: boolean;
+}
+
 export type SandboxChannels = {
   "sandbox:open": { request: OpenSandboxRequest; response: void };
   "sandbox:setBounds": { request: SandboxBoundsRequest; response: void };
   "sandbox:setVisible": { request: SetSandboxVisibleRequest; response: void };
+  "sandbox:setInspect": { request: SetSandboxInspectRequest; response: void };
   "sandbox:back": { request: void; response: void };
   "sandbox:forward": { request: void; response: void };
   "sandbox:reload": { request: void; response: void };
@@ -37,6 +43,7 @@ export const SANDBOX_CHANNELS = defineChannelNames<
     "sandbox:open",
     "sandbox:setBounds",
     "sandbox:setVisible",
+    "sandbox:setInspect",
     "sandbox:back",
     "sandbox:forward",
     "sandbox:reload",
@@ -45,6 +52,7 @@ export const SANDBOX_CHANNELS = defineChannelNames<
   "sandbox:open",
   "sandbox:setBounds",
   "sandbox:setVisible",
+  "sandbox:setInspect",
   "sandbox:back",
   "sandbox:forward",
   "sandbox:reload",
@@ -58,6 +66,8 @@ export interface SandboxApi {
   setSandboxBounds(request: SandboxBoundsRequest): Promise<void>;
   /** Shows or hides the sandbox view. */
   setSandboxVisible(request: SetSandboxVisibleRequest): Promise<void>;
+  /** Enables or disables Inspect mode in the sandbox (hover overlay). */
+  setSandboxInspect(request: SetSandboxInspectRequest): Promise<void>;
   /** Navigates the sandbox back in its history. */
   sandboxBack(): Promise<void>;
   /** Navigates the sandbox forward in its history. */
@@ -71,6 +81,7 @@ export function createSandboxApi(invoke: Invoke<SandboxChannels>): SandboxApi {
     openSandbox: (request) => invoke("sandbox:open", request),
     setSandboxBounds: (request) => invoke("sandbox:setBounds", request),
     setSandboxVisible: (request) => invoke("sandbox:setVisible", request),
+    setSandboxInspect: (request) => invoke("sandbox:setInspect", request),
     sandboxBack: () => invoke("sandbox:back", undefined),
     sandboxForward: () => invoke("sandbox:forward", undefined),
     sandboxReload: () => invoke("sandbox:reload", undefined),

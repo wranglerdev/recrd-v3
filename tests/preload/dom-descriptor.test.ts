@@ -5,6 +5,7 @@ import {
   describeElement,
   isSignificantKey,
   keyName,
+  xpath,
 } from "../../src/preload/sandbox/dom-descriptor";
 
 afterEach(() => {
@@ -48,6 +49,28 @@ describe("cssPath", () => {
   it("omits the index for unique siblings", () => {
     document.body.innerHTML = `<section><form><input /></form></section>`;
     expect(cssPath(document.querySelector("input")!)).toBe("body > section > form > input");
+  });
+});
+
+describe("xpath", () => {
+  it("anchors on an id when the element has one", () => {
+    document.body.innerHTML = `<form><input id="email" /></form>`;
+    expect(xpath(document.querySelector("input")!)).toBe('//*[@id="email"]');
+  });
+
+  it("builds a positional relative path when there is no id", () => {
+    document.body.innerHTML = `<ul><li>a</li><li><a href="#">b</a></li></ul>`;
+    expect(xpath(document.querySelector("a")!)).toBe("//body/ul/li[2]/a");
+  });
+
+  it("omits the positional index for unique siblings", () => {
+    document.body.innerHTML = `<section><form><button>Ok</button></form></section>`;
+    expect(xpath(document.querySelector("button")!)).toBe("//body/section/form/button");
+  });
+
+  it("is included in the element descriptor snapshot", () => {
+    document.body.innerHTML = `<input id="user" />`;
+    expect(describeElement(document.querySelector("input")!).xpath).toBe('//*[@id="user"]');
   });
 });
 

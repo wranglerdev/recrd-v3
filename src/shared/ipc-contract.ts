@@ -161,6 +161,7 @@ export type {
   StreamLineEvent,
   InstallDoneEvent,
   CapturedActionEvent,
+  InspectedElementEvent,
   SelectorCandidateDto,
 } from "./ipc/events.js";
 export { IPC_EVENT_CHANNELS } from "./ipc/events.js";

@@ -1,10 +1,11 @@
 import { useCallback, useState, type JSX } from "react";
-import type { CompileResponse } from "../../shared/ipc-contract.js";
+import type { CompileResponse, InspectedElementEvent } from "../../shared/ipc-contract.js";
 import { useActiveProject, useBridge, useIpcEvent, useRecordingSession } from "../state/index.js";
 import { errorMessage } from "../state/useIpc.js";
 import { AutomationScreen } from "./AutomationScreen.js";
 import { CaseExecutionHistory } from "./CaseExecutionHistory.js";
 import { CompileResultView } from "./CompileResultView.js";
+import { ElementInspectorPanel } from "./ElementInspectorPanel.js";
 import { MassesPanel } from "./MassesPanel.js";
 import { PropertiesPanel } from "./PropertiesPanel.js";
 import { RecordingControls, type RecordingState } from "./RecordingControls.js";
@@ -43,6 +44,25 @@ export function AutomationView(): JSX.Element {
   // Recording lifecycle (PRD §10): capture is only recorded while in the
   // "recording" state, driven by the explicit controls below.
   const [recordingState, setRecordingState] = useState<RecordingState>("idle");
+
+  // Inspect mode (PRD §10): a toggle arms the sandbox hover overlay; the element
+  // under the cursor streams in over `inspect:element` for the Inspector panel.
+  const [inspectEnabled, setInspectEnabled] = useState(false);
+  const [inspected, setInspected] = useState<InspectedElementEvent | null>(null);
+  useIpcEvent("inspect:element", setInspected);
+
+  const handleToggleInspect = useCallback(
+    (enabled: boolean): void => {
+      setInspectEnabled(enabled);
+      if (!enabled) {
+        setInspected(null);
+      }
+      if (bridge !== null) {
+        void bridge.setSandboxInspect({ enabled });
+      }
+    },
+    [bridge],
+  );
 
   // Record sandbox interactions into the active case's manual script, persisting
   // incrementally (PRD §10).
@@ -182,6 +202,13 @@ export function AutomationView(): JSX.Element {
         masses: <MassesPanel />,
         properties: <PropertiesPanel />,
         toggles: <TogglesPanel />,
+        inspector: (
+          <ElementInspectorPanel
+            enabled={inspectEnabled}
+            onToggle={handleToggleInspect}
+            element={inspected}
+          />
+        ),
       }}
       onSandboxViewportChange={handleSandboxViewport}
       sidebar={

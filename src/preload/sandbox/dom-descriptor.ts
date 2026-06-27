@@ -28,7 +28,37 @@ export function cssPath(element: Element): string {
   return parts.join(" > ");
 }
 
-/** Snapshots an element's tag, attributes, short visible text and CSS path. */
+/**
+ * Builds a relative XPath for `element`, preferring an `id` anchor
+ * (`//*[@id="…"]`) and otherwise a positional path from the nearest ancestor.
+ * Stays relative (leading `//`) so the selector generator accepts it (PRD §11).
+ */
+export function xpath(element: Element): string {
+  const id = element.getAttribute("id");
+  if (id !== null && id.length > 0) {
+    return `//*[@id="${id}"]`;
+  }
+  const parts: string[] = [];
+  let node: Element | null = element;
+  while (node !== null && node.tagName.toLowerCase() !== "html") {
+    const tag = node.tagName.toLowerCase();
+    const parent = node.parentElement;
+    let step = tag;
+    if (parent !== null) {
+      const sameTag = Array.from(parent.children).filter(
+        (child) => child.tagName === node!.tagName,
+      );
+      if (sameTag.length > 1) {
+        step += `[${sameTag.indexOf(node) + 1}]`;
+      }
+    }
+    parts.unshift(step);
+    node = node.parentElement;
+  }
+  return `//${parts.join("/")}`;
+}
+
+/** Snapshots an element's tag, attributes, short visible text, CSS path and XPath. */
 export function describeElement(element: Element): ElementDescriptor {
   const attributes: Record<string, string> = {};
   for (const attr of Array.from(element.attributes)) {
@@ -41,6 +71,7 @@ export function describeElement(element: Element): ElementDescriptor {
     attributes,
     ...(text.length > 0 && text.length <= MAX_TEXT_LENGTH ? { text } : {}),
     ...(path.length > 0 ? { cssPath: path } : {}),
+    xpath: xpath(element),
   };
 }
 

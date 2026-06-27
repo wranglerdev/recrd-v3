@@ -65,6 +65,17 @@ jobs:
       - name: Install Playwright/Electron system libraries
         run: npx playwright install-deps
 
+      - name: Rebuild native modules for Electron ABI (better-sqlite3)
+        # better-sqlite3 from `npm ci` is built for Node's ABI; Electron needs its
+        # own (ABI 132). Without this the main process throws on createDatabase and
+        # every E2E test times out. We fetch the matching prebuilt explicitly —
+        # `electron-builder install-app-deps` reports success but leaves the
+        # Node-ABI binary in place. See issue electron-9ac.
+        run: |
+          EV=$(node -p "require('electron/package.json').version")
+          cd node_modules/better-sqlite3
+          npx prebuild-install --runtime electron --target "$EV" --arch x64
+
       - name: Run Electron E2E (headless via xvfb)
         run: xvfb-run -a npm run test:e2e
 

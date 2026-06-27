@@ -70,22 +70,34 @@ npm run package        # electron-builder --win --x64 (NSIS + portable)
 Before opening a PR, all of these must be green: `npm run typecheck`, `npm run lint`,
 `npm run format:check`, `npm test`.
 
-### E2E (Playwright + Electron) — native-ABI caveat
+### E2E + packaging (Windows) — native-ABI workflow
 
-`npm run test:e2e` builds the renderer + main (the `pretest:e2e` hook) and drives the
-real app. `better-sqlite3` is a native module whose binary matches **one** Node ABI at a
-time: the unit suite runs under Node (its prebuilt), while Electron needs its own ABI. So
-they cannot both be green from a single install. To run E2E locally:
+`better-sqlite3` is a native module whose compiled binary matches **one**
+`NODE_MODULE_VERSION` at a time: the Vitest unit suite runs under Node (ABI 115 on Node
+20), while Electron 34 needs ABI 132. They cannot both be green from a single install, so
+the E2E/packaging flows flip the ABI and must flip it back. The PowerShell wrappers under
+`scripts/win/` make this a one-liner and **always restore the Node ABI** afterwards:
 
-```bash
-npx electron-builder install-app-deps           # rebuild better-sqlite3 for Electron
-npx playwright test                             # run the E2E suite
-(cd node_modules/better-sqlite3 && npx prebuild-install)   # restore Node ABI for unit tests
+```powershell
+npm run e2e:win          # rebuild for Electron -> Playwright E2E -> restore Node ABI
+npm run package:win      # build -> electron-builder (--win --x64) -> restore Node ABI
+npm run rebuild:electron # just flip better-sqlite3 to the Electron ABI
+npm run rebuild:node     # just restore the Node ABI (for the unit suite)
 ```
 
-On Windows run the E2E suite from PowerShell/cmd, not Git Bash — the main process calls
-`whoami /user`, which Git Bash shadows with MSYS coreutils. CI uses separate jobs (unit
-under Node, E2E/package under the Electron rebuild). See issue `electron-9ac`.
+Switch the ABI with `prebuild-install --runtime electron --target <electronVersion>`, **not**
+`electron-builder install-app-deps`: `@electron/rebuild` reports success but leaves the
+Node-ABI binary in place, so the app still throws `NODE_MODULE_VERSION 115 vs 132` and every
+E2E test times out (`scripts/win/rebuild-native.ps1` does this correctly).
+
+Run the E2E suite from PowerShell/cmd, not Git Bash — the main process calls `whoami /user`,
+which Git Bash shadows with MSYS coreutils (`e2e.ps1` refuses to run there). Local
+installer generation also needs **Windows Developer Mode** (or an elevated shell):
+electron-builder extracts winCodeSign's macOS `.dylib` symlinks, which need symlink
+privilege — without it `win-unpacked\*.exe` is still produced but the NSIS/portable
+installers are not (`package.ps1` warns; CI's windows-latest runners are unaffected). CI
+uses separate jobs (unit under Node, E2E/package under the Electron rebuild). See issues
+`electron-9ac` and `electron-ckd`.
 
 ## Architecture Overview
 

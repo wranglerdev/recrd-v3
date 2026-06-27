@@ -27,6 +27,10 @@
     "test:coverage": "vitest run --coverage",
     "pretest:e2e": "npm run build:renderer && npm run build:main",
     "test:e2e": "playwright test",
+    "rebuild:electron": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/win/rebuild-native.ps1 -For electron",
+    "rebuild:node": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/win/rebuild-native.ps1 -For node",
+    "e2e:win": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/win/e2e.ps1",
+    "package:win": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/win/package.ps1",
     "release": "tsx scripts/release.ts",
     "package": "electron-builder --win --x64"
   },
